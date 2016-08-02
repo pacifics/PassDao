@@ -1,5 +1,3 @@
-import "TokenManager.sol";
-
 /*
 This file is part of the DAO.
 
@@ -23,7 +21,7 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-//import "TokenManager.sol";
+import "TokenManager.sol";
 
 contract DAOInterface {
 
@@ -475,7 +473,7 @@ contract DAO is DAOInterface, TokenManager
     }
 
 
-    function () returns (bool success) {buyToken(msg.sender);}
+    function () {buyToken(msg.sender);}
 
 
     function setRecipientData(
