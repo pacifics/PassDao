@@ -858,7 +858,7 @@ contract DAO is DAOInterface, TokenManager
     }
 
 
-    function () returns (bool success) {buyToken(msg.sender);}
+    function () {buyToken(msg.sender);}
 
 
     function setRecipientData(
