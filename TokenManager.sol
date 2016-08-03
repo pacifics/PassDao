@@ -269,7 +269,7 @@ modifier onlyTokenholders {if (balances[msg.sender] == 0) throw; _ }
     
 
     function tokenPrice() internal returns (uint tokenPrice) {
-        return (1 + (FundingRules.inflationRate) * (now - FundingRules.startTime)/(365 days)) * FundingRules.TokenPrice;
+        return (1 + (FundingRules.inflationRate) * (now - FundingRules.startTime)/(100*365 days)) * FundingRules.TokenPrice;
     }
 }    
   
