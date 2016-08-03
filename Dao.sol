@@ -99,8 +99,6 @@ contract DAOInterface {
     struct PrivateFundingProposal {
         // Index to identify the board meeting of the proposal
         uint BoardMeetingID;
-        // The address of the creator of the proposal
-//        address creator; 
         // The amount to fund
         uint fundingAmount; 
         // The price (in wei) for a token
@@ -181,7 +179,6 @@ contract DAOInterface {
     // Modifier that allows only curator to check the identity of a contractor or private funding creator
     modifier onlyCurator {if (msg.sender != address(DaoRules.curator)) throw; _ } 
     
-
 /*
     /// @dev The constructor function
     /// @param _curator The address of the curator
@@ -371,7 +368,7 @@ contract DAOInterface {
     ) constant returns (uint);
 
     //// @dev internal function to close a board meeting
-    /// @param _boardMeeting THe index of the proposal
+    /// @param _boardMeetingID THe index of the proposal
     function closeBoardMeeting(uint _boardMeetingID);
    
     /// @notice Interface function to get the number of meetings 
