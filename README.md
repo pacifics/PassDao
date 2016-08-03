@@ -21,7 +21,7 @@ The smart contract have the next main functions:
 
  - Set a contractor proposal: every contractor can offer the DAO to sell products or execute services and ask for a voting process called board meeting. To make a new proposal will cost 10 ethers (to avoid useless proposals, can be updated by voting). Before the board meeting, the identity of the contractor must be checked by the curator.
 
- - Approve a contractor proposal: shareholders can vote for or against a contractor proposal during a board meeting which can last from two to eight weeks (can be updated by voting). If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the contractor proposal is approved and can be completed. For each proposal, the voting process will reward the voters (reward amount can be updated by voting). This will incentive the Community members to be active members. 
+ - Approve a contractor proposal: shareholders can vote for or against a contractor proposal during a board meeting which can last from two to eight weeks (can be updated by voting). If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the contractor proposal is approved and the payment is completed. For each proposal, the voting process will reward the voters (reward amount can be updated by voting). This will incentive the Community members to be active members. 
 
  - Recieve contractor tokens: sending ethers to a contractor gives to DAO voters the right to recieve contractor tokens in proportion of their Dao shares. This will allow contractors to reward the Community. For the PM contractor, this function gives to DAO holders reputation tokens. 
 
