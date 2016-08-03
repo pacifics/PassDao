@@ -100,7 +100,7 @@ contract DAOInterface {
         // Index to identify the board meeting of the proposal
         uint BoardMeetingID;
         // The address of the creator of the proposal
-        address creator; 
+//        address creator; 
         // The amount to fund
         uint fundingAmount; 
         // The price (in wei) for a token
@@ -180,6 +180,8 @@ contract DAOInterface {
 
     // Modifier that allows only curator to check the identity of a contractor or private funding creator
     modifier onlyCurator {if (msg.sender != address(DaoRules.curator)) throw; _ } 
+    
+
 /*
     /// @dev The constructor function
     /// @param _curator The address of the curator
@@ -236,7 +238,6 @@ contract DAOInterface {
     /// @param _hashOfTheDocument The hash to identify the proposal document
     /// @param _TokenPrice The quantity of contractor tokens will depend on this price
     /// @param _initialSupply If the recipient ask for an initial supply of contractor tokens
-    /// @param _MinutesSetPeriod Period before the board meeting 
     /// Default and minimum value is the period for curator to check the identity of the recipient
     /// @param _minutesRewardPeriod Period for the voters to recieve contractor tokens after the payment of the amount
     /// @param _MinutesDebatingPeriod Proposed period of the board meeting
@@ -246,7 +247,6 @@ contract DAOInterface {
         bytes32 _hashOfTheDocument,
         uint _TokenPrice, 
         uint256 _initialSupply,
-        uint _MinutesSetPeriod,
         uint _minutesRewardPeriod,
         uint _MinutesDebatingPeriod
     );
@@ -254,13 +254,11 @@ contract DAOInterface {
     /// @notice Function to make a proposal for a private funding of the Dao
     /// @param _fundingAmount The maximum amount to fund
     /// @param _tokenPrice The quantity of created tokens will depend on this price
-    /// @param _MinutesSetPeriod Period before the board meeting
     /// @param _minutesFundingPeriod Period for the partners to fund the Dao after the board meeting decision
     /// @param _MinutesDebatingPeriod Proposed period of the board meeting
     function newPrivateFundingProposal(
         uint _fundingAmount, 
         uint _tokenPrice,    
-        uint _MinutesSetPeriod,
         uint _minutesFundingPeriod,
         uint _MinutesDebatingPeriod
     );
@@ -273,7 +271,6 @@ contract DAOInterface {
     /// @param _minTokensToCreate Minimum quantity of tokens to fuel the funding
     /// @param _maxTokensToCreate If the maximum is reached, 
     /// the funding is closed
-    /// @param _MinutesSetPeriod Period before the board meeting
     /// @param _MinutesDebatingPeriod Proposed period of the board meeting
     /// @param _inflationRate If 0, the token price doesn't change 
     /// during the funding
@@ -283,7 +280,6 @@ contract DAOInterface {
         uint _initialTokenPrice,    
         uint _minTokensToCreate,
         uint _maxTokensToCreate,
-        uint _MinutesSetPeriod,
         uint _MinutesDebatingPeriod,
         uint _inflationRate
     );
@@ -305,7 +301,6 @@ contract DAOInterface {
     /// during a board meeting
     /// @param _executeMinutesProposalPeriod The period in minutes to execute 
     /// a decision after a board meeting
-    /// @param _MinutesSetPeriod Period before the board meeting
     /// @param _MinutesDebatingPeriod Proposed period of the board meeting
     function newDaoRulesProposal(
         address _curator,
@@ -317,7 +312,6 @@ contract DAOInterface {
         uint _minMinutesIdentityCheckingPeriod,
         uint _minBoardMeetingFees,
         uint _executeMinutesProposalPeriod,
-        uint _MinutesSetPeriod,
         uint _MinutesDebatingPeriod
     );
 
@@ -333,6 +327,13 @@ contract DAOInterface {
         uint _quantity
     ) returns (bool success);
 
+    /// @notice Function to extent the set period before a board meeting
+    /// @param _BoardMeetingID The index of the board meeting
+    /// @param _MinutesProposalPeriod The period to extent
+    function extentSetPeriod(
+        uint _BoardMeetingID,
+        uint  _MinutesProposalPeriod);
+        
     /// @notice Function to vote during a board meeting
     /// @param _BoardMeetingID The index of the board meeting
     /// @param _supportsProposal True if the proposal is supported
@@ -359,13 +360,6 @@ contract DAOInterface {
     /// @return Whether the transfer was successful or not    
     function RecieveContractorTokens(uint _contractorProposalID) returns (bool);
 
-
-    /// @notice Interface function to get the recipient of a contractor proposal 
-    /// or the creator of a private funding proposal
-    /// @param _BoardMeetingID The index of the board meeting
-    /// @return The address
-    function getRecipient(uint _BoardMeetingID) constant returns (address);
-
     /// @notice Interface function for a partner to get the funding amount 
     /// the partner can pay in case of private funding
     /// @param _PrivatefundingProposalID THe index of the proposal
@@ -376,6 +370,10 @@ contract DAOInterface {
         address _partner
     ) constant returns (uint);
 
+    //// @dev internal function to close a board meeting
+    /// @param _boardMeeting THe index of the proposal
+    function closeBoardMeeting(uint _boardMeetingID);
+   
     /// @notice Interface function to get the number of meetings 
     /// @return the number of meetings (passed or current)
     function getNumberOfMeetings() constant returns (uint);
@@ -385,6 +383,7 @@ contract DAOInterface {
     /// @return the balance
     function actualBalance() constant returns (uint);
 
+    /// @dev internal function to create a board meeting
     /// @param _ContractorProposalID The index of the proposal if contractor
     /// @param _DaoRulesProposalID The index of the proposal if Dao rules
     /// @param _privateFundingProposalID The index of the proposal if private funding
@@ -405,21 +404,25 @@ contract DAOInterface {
         uint _boardMeetingDeposit
     ) internal returns (uint);
 
+    /// @dev internal function to return deposit to the recipient if the curator didn't check his identity
     /// @param _BoardMeetingID The index of the board meeting
     /// @return True if not set
     function returnDepositsifnotSet(uint _BoardMeetingID) 
     internal returns (bool);
-    
-    // @return The minimum quorum for the proposal to pass 
+
+    /// @dev internal function to get the minimum quorum needed for a proposal    
+    /// @return The minimum quorum for the proposal to pass 
     function minQuorum() internal constant returns (uint _minQuorum);
-    
+
+    /// @dev internal function to know if the shareholder account is blocked    
     /// @param _account The address of the account which is checked.
     /// @return Whether the account is blocked (not allowed to transfer tokens) or not.
     function isBlocked(address _account) internal returns (bool);
-*/    
+*/
     event RecipientIdentityChecked(address curator, address recipient);
     event newBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
-    event AccountCreated(address recipient, address AccountContractAddress);
+    event TokenManagerCreated(address recipient, address TokenManagerAddress);
+    event BoardMeetingDelayed(uint _BoardMeetingID, uint _MinutesProposalPeriod);
     event Voted(uint indexed proposalID, bool position, address voter, uint rewardedAmount);
     event ProposalTallied(uint indexed proposalID);
     event NewTokenManagerAccount(address TokenManagerAddress);
@@ -440,7 +443,7 @@ contract DAO is DAOInterface, TokenManager
         uint _minMinutesDebatePeriod, 
         uint _maxMinutesDebatePeriod, 
         uint _curatorFees,
-        uint _minMinutesIdendityCheckingPeriod,
+        uint _minMinutesIdentityCheckingPeriod,
         uint _minBoardMeetingFees,
         uint _executeMinutesProposalPeriod, 
         bool _publicTokenCreation, 
@@ -462,7 +465,7 @@ contract DAO is DAOInterface, TokenManager
         DaoRules.executeMinutesProposalPeriod = _executeMinutesProposalPeriod;
         DaoRules.curatorFees = _curatorFees;
         DaoRules.boardMeetingDeposit = _boardMeetingDeposit;
-        DaoRules.minMinutesIdentityCheckingPeriod = _minMinutesIdendityCheckingPeriod;
+        DaoRules.minMinutesIdentityCheckingPeriod = _minMinutesIdentityCheckingPeriod;
 
         BoardMeetings.length = 1; 
         ContractorProposals.length = 1;
@@ -493,7 +496,6 @@ contract DAO is DAOInterface, TokenManager
             sumOfDeposits -= _deposit;
             recipientIdentity[_thirdParty].depositForCurator = 0;
         }
-
         RecipientIdentityChecked(msg.sender, _thirdParty);
     }
     
@@ -504,7 +506,6 @@ contract DAO is DAOInterface, TokenManager
         bytes32 _hashOfTheDocument,
         uint _TokenPrice, 
         uint256 _initialSupply,
-        uint _MinutesSetPeriod,
         uint _minutesRewardPeriod,
         uint _MinutesDebatingPeriod
     ) {
@@ -520,8 +521,8 @@ contract DAO is DAOInterface, TokenManager
         sumOfDeposits += DaoRules.curatorFees;
         recipientIdentity[c.recipient].isChecked = false;
 
-        c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, 0, now + (_MinutesSetPeriod * 1 minutes), 
-        _MinutesDebatingPeriod, msg.value - DaoRules.curatorFees, 0);    
+        c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, 0, 
+        now + (DaoRules.minMinutesIdentityCheckingPeriod * 1 minutes), _MinutesDebatingPeriod, msg.value - DaoRules.curatorFees, 0);    
         
         c.amount = _amount;
         c.hashOfTheDocument = _hashOfTheDocument; 
@@ -534,7 +535,6 @@ contract DAO is DAOInterface, TokenManager
     function newPrivateFundingProposal(
         uint _fundingAmount, 
         uint _tokenPrice,    
-        uint _MinutesSetPeriod,
         uint _minutesFundingPeriod,
         uint _MinutesDebatingPeriod
     ) {
@@ -544,14 +544,13 @@ contract DAO is DAOInterface, TokenManager
         uint _PrivateFundingProposalID = PrivateFundingProposals.length++;
         PrivateFundingProposal f = PrivateFundingProposals[_PrivateFundingProposalID];
 
-        f.creator = msg.sender; 
-        recipientIdentity[f.creator].isChecked = false;
+        recipientIdentity[msg.sender].isChecked = false;
 
-        recipientIdentity[f.creator].depositForCurator = DaoRules.curatorFees;
+        recipientIdentity[msg.sender].depositForCurator = DaoRules.curatorFees;
         sumOfDeposits += DaoRules.curatorFees;
         
-        f.BoardMeetingID = newBoardMeeting(0, 0, _PrivateFundingProposalID, 0, now + (_MinutesSetPeriod * 1 minutes),
-            _MinutesDebatingPeriod, msg.value - DaoRules.curatorFees, 0);   
+        f.BoardMeetingID = newBoardMeeting(0, 0, _PrivateFundingProposalID, 0, 
+        now + (DaoRules.minMinutesIdentityCheckingPeriod * 1 minutes),_MinutesDebatingPeriod, msg.value - DaoRules.curatorFees, 0);   
         
         f.fundingAmount = _fundingAmount;
         f.tokenPrice = _tokenPrice;
@@ -566,17 +565,16 @@ contract DAO is DAOInterface, TokenManager
         uint _initialTokenPrice,    
         uint _minTokensToCreate,
         uint _maxTokensToCreate,
-        uint _MinutesSetPeriod,
         uint _MinutesDebatingPeriod,
         uint _inflationRate
-    ) onlyTokenholders {
+    ) {
 
         if (msg.value < DaoRules.boardMeetingDeposit) throw;
         
         uint _PublicFundingProposalID = PublicFundingProposals.length++;
         PublicFundingProposal f = PublicFundingProposals[_PublicFundingProposalID];
 
-        f.BoardMeetingID = newBoardMeeting(0, 0, 0, _PublicFundingProposalID, now + (_MinutesSetPeriod * 1 minutes), 
+        f.BoardMeetingID = newBoardMeeting(0, 0, 0, _PublicFundingProposalID, now, 
             _MinutesDebatingPeriod, msg.value - DaoRules.boardMeetingDeposit, DaoRules.boardMeetingDeposit);   
         
         f.startTime = _startTime;
@@ -599,9 +597,8 @@ contract DAO is DAOInterface, TokenManager
         uint _minMinutesDebatePeriod, 
         uint _maxMinutesDebatePeriod,
         uint _executeMinutesProposalPeriod,
-        uint _MinutesDebatingPeriod,
-        uint _MinutesSetPeriod
-    ) onlyTokenholders {
+        uint _MinutesDebatingPeriod
+    ) {
     
         if (msg.value < DaoRules.boardMeetingDeposit) throw; 
         
@@ -612,7 +609,7 @@ contract DAO is DAOInterface, TokenManager
         r.minMinutesIdentityCheckingPeriod = _minMinutesIdentityCheckingPeriod;
         r.curatorFees = _curatorFees;
         r.minQuorumDivisor = _minQuorumDivisor;
-        r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, 0, now + (_MinutesSetPeriod * 1 minutes), 
+        r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, 0, now, 
             _MinutesDebatingPeriod, msg.value - DaoRules.boardMeetingDeposit, DaoRules.boardMeetingDeposit);      
         r.minBoardMeetingFees = _minBoardMeetingFees;
         r.boardMeetingDeposit = _boardMeetingDeposit;
@@ -633,20 +630,34 @@ contract DAO is DAOInterface, TokenManager
         BoardMeeting p = BoardMeetings[f.BoardMeetingID];
 
         if (now > p.setDeadline 
-            || msg.sender != f.creator 
-            || !recipientIdentity[f.creator].isChecked
-            || recipientIdentity[f.creator].ID == 0
+            || msg.sender != address(p.creator)
+            || !recipientIdentity[p.creator].isChecked
+            || recipientIdentity[p.creator].ID == 0
+            || _quantity <= 0
             ) { 
         throw;
         }
         
-        if (now < p.setDeadline && _quantity > 0) {
-            f.weight[_partner] += _quantity; 
-            f.totalWeight += _quantity;
-            return true;
-        } 
+        f.weight[_partner] += _quantity; 
+        f.totalWeight += _quantity;
+        return true;
     }
 
+
+    function extentSetPeriod(
+        uint _BoardMeetingID,
+        uint  _MinutesProposalPeriod) noEther {
+        
+        BoardMeeting p = BoardMeetings[_BoardMeetingID];
+        if (now > p.setDeadline 
+            || msg.sender != address(p.creator)) throw;
+        
+        p.setDeadline += _MinutesProposalPeriod * 1 minutes;
+        p.votingDeadline += _MinutesProposalPeriod * 1 minutes;
+        
+        BoardMeetingDelayed(_BoardMeetingID, _MinutesProposalPeriod);
+    }
+        
 
     function vote(
         uint _BoardMeetingID, 
@@ -703,15 +714,14 @@ contract DAO is DAOInterface, TokenManager
         {
         BoardMeeting p = BoardMeetings[_BoardMeetingID];
 
-        if (now < p.votingDeadline 
+        if (now < p.votingDeadline
             || !p.open ) {
             throw;
         }
         
         uint quorum = p.yea + p.nay;
         
-        if (p.open 
-            && p.deposit > 0
+        if (p.deposit > 0
             && now > p.votingDeadline) {
                 sumOfDeposits -= p.deposit;
                 if (quorum >= minQuorum()) {
@@ -720,24 +730,26 @@ contract DAO is DAOInterface, TokenManager
                 }
         }        
         
-        if (p.open 
-            &&  (now > p.votingDeadline + DaoRules.executeMinutesProposalPeriod * 1 minutes 
-                    || now > p.votingDeadline && ( quorum < minQuorum() || p.yea < p.nay ) )
-                )  
-                {
+        if (now > p.votingDeadline + DaoRules.executeMinutesProposalPeriod * 1 minutes 
+                    || now > p.votingDeadline && ( quorum < minQuorum() || p.yea < p.nay ) ) {
             p.open = false;
             return;
         }
 
+        if (now > p.votingDeadline && ( quorum < minQuorum() || p.yea < p.nay )) {
+            return;
+        }
+        
         if (p.privateFundingProposalID != 0) {
             PrivateFundingProposal pf = PrivateFundingProposals[p.privateFundingProposalID];
-            extentFunding(false, pf.tokenPrice, 0, 
+            this.extentFunding(false, pf.tokenPrice, 0, 
                 pf.fundingAmount/pf.tokenPrice, now, now + pf.minutesFundingPeriod * 1 minutes, 0);
+            
         }
         
         if (p.publicFundingProposalID != 0) {
             PublicFundingProposal cf = PublicFundingProposals[p.publicFundingProposalID];
-            extentFunding(true, cf.initialTokenPrice, cf.minTokensToCreate, cf.maxTokensToCreate, cf.startTime, 
+            this.extentFunding(true, cf.initialTokenPrice, cf.minTokensToCreate, cf.maxTokensToCreate, cf.startTime, 
             cf.closingTime, cf.inflationRate);
         }
 
@@ -752,7 +764,7 @@ contract DAO is DAOInterface, TokenManager
                         c.tokenPrice, c.initialSupply, c.amount/c.tokenPrice + c.initialSupply, now, now + c.minutesRewardPeriod * 1 minutes,
                         0, c.recipient, c.initialSupply) ;
                     recipientIdentity[c.recipient].tokenManager = m;
-                    AccountCreated(c.recipient, address(m));
+                    TokenManagerCreated(c.recipient, address(m));
                     recipientIdentity[c.recipient].hasATokenManager = true;
                 }
                 else {
@@ -774,14 +786,12 @@ contract DAO is DAOInterface, TokenManager
             DaoRules.executeMinutesProposalPeriod = r.executeMinutesProposalPeriod;
             DaoRules.curatorFees = r.curatorFees;
             DaoRules.minMinutesIdentityCheckingPeriod = r.minMinutesIdentityCheckingPeriod;
-            if (!p.creator.send(p.deposit)) throw;
-            sumOfDeposits -= p.deposit;
-            p.deposit = 0;
         }
         
         _success = true; 
         p.dateOfExecution = now;
 
+        takeBoardingFees(_BoardMeetingID);
         p.open = false;
 
         ProposalTallied(_BoardMeetingID);
@@ -806,7 +816,7 @@ contract DAO is DAOInterface, TokenManager
     
 
     function RecieveContractorTokens(uint _contractorProposalID) 
-    onlyTokenholders noEther returns (bool) {
+    noEther returns (bool) {
 
         address _Tokenholder = msg.sender;
 
@@ -814,8 +824,8 @@ contract DAO is DAOInterface, TokenManager
         BoardMeeting p = BoardMeetings[c.BoardMeetingID];
         
         if (now > p.dateOfExecution + c.minutesRewardPeriod * 1 minutes) {
-            sumOfDeposits -= p.fees - p.totalRewardedAmount;
-            p.totalRewardedAmount = p.fees;
+            p.open = false;
+            takeBoardingFees(c.BoardMeetingID);
             return;
         }
 
@@ -855,19 +865,6 @@ contract DAO is DAOInterface, TokenManager
         }
     }
 
-    
-    function getRecipient(uint _BoardMeetingID) constant returns (address) {
-
-        BoardMeeting p = BoardMeetings[_BoardMeetingID];
-
-        if (p.ContractorProposalID != 0) {
-            return ContractorProposals[p.ContractorProposalID].recipient;
-        }
-        else if (p.privateFundingProposalID != 0) {
-            return PrivateFundingProposals[p.privateFundingProposalID].creator;
-        }
-    }
-    
 
     function getFundingAmount(
         uint _PrivatefundingProposalID, 
@@ -880,6 +877,13 @@ contract DAO is DAOInterface, TokenManager
         return f.fundingAmount*f.weight[_partner]/f.totalWeight;
     }
 
+
+    function takeBoardingFees(uint _boardMeetingID) {
+        BoardMeeting p = BoardMeetings[_boardMeetingID];
+        sumOfDeposits -= p.fees - p.totalRewardedAmount;
+        p.totalRewardedAmount = p.fees;
+        }
+        
 
     function getNumberOfMeetings() constant returns (uint) {
         return BoardMeetings.length - 1;
@@ -942,21 +946,27 @@ contract DAO is DAOInterface, TokenManager
         bool _isnotSet;
         BoardMeeting p = BoardMeetings[_BoardMeetingID];
         
-        address _recipient = getRecipient(_BoardMeetingID);
-
-        if (p.privateFundingProposalID != 0 
-        &&PrivateFundingProposals[p.privateFundingProposalID].totalWeight == 0) {
-            _isnotSet = true; 
+       address _recipient;        
+        if (p.ContractorProposalID != 0) {
+            _recipient = ContractorProposals[p.ContractorProposalID].recipient;
         }
-
-        if (!recipientIdentity[_recipient].isChecked || recipientIdentity[_recipient].ID == 0) {
-            _isnotSet = true;
+        else if (p.privateFundingProposalID != 0) {
+            _recipient =  p.creator;
+            if (PrivateFundingProposals[p.privateFundingProposalID].totalWeight == 0) {
+                _isnotSet = true; 
+            }
         }
-        
+        else return;
+
         uint _deposits = p.fees;
         
         if (!recipientIdentity[_recipient].isChecked) {
             _deposits += recipientIdentity[_recipient].depositForCurator;
+            _isnotSet = true;
+        }
+        else
+        if (recipientIdentity[_recipient].ID == 0) {
+            _isnotSet = true;
         }
 
         if (_isnotSet) {
