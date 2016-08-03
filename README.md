@@ -7,7 +7,7 @@
 =
 
 ## Overview
-This DAO is open source and can be used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain.
+This DAO is open source and used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain.
 Note: Although the word "contract" is used in The DAO’s code, the term is a programming convention and is not being used as a legal term of art. The term is a programming convention, not a representation that the code is in and of itself a legally binding and enforceable contract. If you have questions about legal enforceability, consult with legal counsel.
 
 =
