@@ -38,7 +38,7 @@ The smart contract have the next main functions:
 Basic, standardized Token contract. Defines the functions to check token balances, send tokens, send tokens on behalf of a 3rd party and the corresponding approval process.
 
 - AccountManager.sol:
-The Account Manager smart contract is associated with a recipient and used for the management of tokens by a client smart contract (the dao).
+The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao).
 
 - Funding.sol:
 The Funding smart contract used for the funding of the Dao.
