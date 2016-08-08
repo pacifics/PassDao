@@ -44,4 +44,4 @@ The Account Manager smart contract is associated with a recipient (the Dao for d
 Basic, standardized Token contract. Defines the functions to check token balances, send tokens, send tokens on behalf of a 3rd party and the corresponding approval process.
 
 - Funding.sol:
-Standard Funding smart contract used for the funding of the Dao. One smart contract is associated with each funding. 
+Standard smart contract used for the funding of the Dao. One smart contract is associated with each funding. 
