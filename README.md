@@ -17,7 +17,7 @@ Note: Although the word "contract" is used in The DAO’s code, the term is a pr
 ## Short description
 The smart contract have the next main functions: 
 
- - Fund: everyone from the ether Community who wants to join our Community and get shares can fund sending ethers. The funding has two stages. During the first stage (two weeks), the new partners (ether holders) indicate the amount they intend to fund (they pay only gas for transaction). This first stage will allow to determine limits in amount and ether balance for each partner address with the next main goal : to have a decentralized Community. The second stage (two weeks) will allow partners to fund the Dao according to the set limits. After this first funding, the new partners ans shareholders can vote for a new crowdfunding or a private funding. 
+ - Fund: everyone from the ether Community who wants to join our Community and get shares can fund sending ethers. The funding has two stages. During the first stage (two weeks), the new partners (ether holders) indicate the amount they intend to fund (they pay only gas for transaction). This first stage will allow to determine limits in amount and ether balance share for all partner addresses with the next main goal : to have a decentralized Community. The second stage (two weeks) will allow partners to fund the Dao according to their intention and the set limits. After this first funding, the new partners become shareholders and can vote for a new crowdfunding or a private funding. 
 
  - Set a contractor proposal: every contractor can offer the DAO to sell products or execute services and ask for a voting process called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum can be updated by voting). The fees go to the voters according to their share in Dao. This will incentive the Community members to be active members. 
  
@@ -27,7 +27,7 @@ The smart contract have the next main functions:
 
 - Transfer tokens: after an initial period, the Dao can vote to let their members transfer their shares in Dao.
 
-- Refund: the Dao can vote to refund its balance.
+- Refund: the Dao can vote to refund its balance. In this case, each shareholder recieves ethers in proportion of the dao balance and their funded amount.
 
 
 =
