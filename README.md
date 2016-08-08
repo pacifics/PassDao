@@ -41,7 +41,7 @@ Basic, standardized Token contract. Defines the functions to check token balance
 The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao).
 
 - Funding.sol:
-The Funding smart contract used for the funding of the Dao.
+The Funding smart contract used for the funding of the Dao. The initial funding has two stages. During the first stage (two weeks), the new partners (ether holders) indicate the amount they intend to fund (they pay only gas for transaction). This first stage will allow to determine limits in amount and ether balance for each partner address with the next main goal : to have a decentralized Community. The second stage will allow partners to fund the Dao according to the set limits.
 
 - DAO.sol:
 Smart contract for a Decentralized Autonomous Organization (DAO) to automate organizational governance and decision-making.
