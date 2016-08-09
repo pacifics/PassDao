@@ -29,6 +29,18 @@ The smart contract have the next main functions:
 
 =
 
+# About Security
+
+- There is no useless blocked ethers. The funding starts with only funding intentions and the maximum funding amount is limited according of what is needed to start the project and to ensure decentralization.
+
+- There is no "calldata" function. There is a "send" function for approved contractor proposals.
+
+- There is no split function. There is one Dao which works according to the democraty law.
+
+- The Dao will decide when the shares can be transfered.
+
+=
+
 # Solidity Files
 
 - DAO.sol:
@@ -44,19 +56,6 @@ Basic, standardized Token contract. Defines the functions to check token balance
 Standard smart contract used for the funding of the Dao. One smart contract is associated with each funding. 
 
 =
-
-# About Security
-
-- There is no useless blocked ethers. The funding starts with only funding intentions and the maximum funding amount is limited according of what is needed to start the project and to ensure decentralization.
-
-- There is no "calldata" function. There is a "send" function for approved contractor proposals.
-
-- There is no split function. There is one Dao which works according to the democraty law.
-
-- The Dao will decide when the shares can be transfered.
-
-=
-
 ## See Beta version on Testnet
 
 For the presale, the Funding address : 0xb6875e1A6FceB5509543E116625449C1622B4EaA
