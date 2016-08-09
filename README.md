@@ -43,7 +43,6 @@ The smart contract have the next main functions:
 
 - Transfer tokens: after an initial period, the Dao can vote to let their members transfer their shares in Dao.
 
-- Refund: the Dao can vote to refund its balance. In this case, each shareholder recieves ethers in proportion of the dao balance and their funded amount.
 
 =
 # Solidity Files
