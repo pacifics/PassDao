@@ -20,7 +20,7 @@ To make proposals and vote, the Dao address : 0xaEFb92D6a6f6EF875Cc98190866A9F16
 
 =
 
-To fund and transfer Dao shares, the Dao Account Manager address : 0xC4DB31856959468431814a219e6C42C50DDf73f0
+To see balances and transfer Dao shares, the Dao Account Manager address : 0xC4DB31856959468431814a219e6C42C50DDf73f0
 
 =
 
@@ -45,10 +45,10 @@ The smart contract have the next main functions:
 
 - Refund: the Dao can vote to refund its balance. In this case, each shareholder recieves ethers in proportion of the dao balance and their funded amount.
 
+=
+# Solidity Files
 
 =
-
-## Solidity files
 
 - DAO.sol:
 Smart contract for a Decentralized Autonomous Organization (DAO) to automate organizational governance and decision-making.
@@ -61,3 +61,18 @@ Basic, standardized Token contract. Defines the functions to check token balance
 
 - Funding.sol:
 Standard smart contract used for the funding of the Dao. One smart contract is associated with each funding. 
+
+=
+
+# About Security
+
+=
+
+- There is no "calldata" function. There is a "send" function for approved contractor proposals.
+
+- There is no split function. There is one Dao wich works according to the democraty law.
+
+- The funding amount is limited according of what is needed to start the project and for decentralization.
+
+- The Dao will decide when the shares can be transfered.
+
