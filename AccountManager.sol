@@ -56,8 +56,6 @@ contract AccountManagerInterface {
         uint RecipientID; 
         // Name of the recipient
         string RecipientName;  
-        // True if the recipient is whitelisted by the curator
-        bool isRecipientChecked;
     }
  
      // address of the Dao    
