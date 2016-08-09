@@ -8,16 +8,6 @@ Website : http://pacifics.org/
 
 =
 
-## See Beta version on Testnet
-
-For the presale, the Funding address : 0xb6875e1A6FceB5509543E116625449C1622B4EaA
-
-To make proposals, the Dao address : 0xaEFb92D6a6f6EF875Cc98190866A9F167F6c5d60
-
-To see balances, the Dao Account Manager address : 0xC4DB31856959468431814a219e6C42C50DDf73f0
-
-=
-
 ## Overview
 This DAO is open source and used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. One of the many advantages of having a "robot" run our organization is that it is immune to any outside influence as it’s guaranteed to execute only what it was programmed to. 
 Note: Although the word "contract" is used in The DAO’s code, the term is a programming convention and is not being used as a legal term of art. 
@@ -65,3 +55,12 @@ Standard smart contract used for the funding of the Dao. One smart contract is a
 
 - The Dao will decide when the shares can be transfered.
 
+=
+
+## See Beta version on Testnet
+
+For the presale, the Funding address : 0xb6875e1A6FceB5509543E116625449C1622B4EaA
+
+To make proposals, the Dao address : 0xaEFb92D6a6f6EF875Cc98190866A9F167F6c5d60
+
+To see balances, the Dao Account Manager address : 0xC4DB31856959468431814a219e6C42C50DDf73f0
