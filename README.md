@@ -10,11 +10,11 @@ Website : http://pacifics.org/
 
 ## See Beta version on Testnet
 
-For the presale and to give intention to fund, the Funding address : 0xb6875e1A6FceB5509543E116625449C1622B4EaA
+For the presale, the Funding address : 0xb6875e1A6FceB5509543E116625449C1622B4EaA
 
-To make proposals and vote, the Dao address : 0xaEFb92D6a6f6EF875Cc98190866A9F167F6c5d60
+To make proposals, the Dao address : 0xaEFb92D6a6f6EF875Cc98190866A9F167F6c5d60
 
-To see balances and transfer Dao shares, the Dao Account Manager address : 0xC4DB31856959468431814a219e6C42C50DDf73f0
+To see balances, the Dao Account Manager address : 0xC4DB31856959468431814a219e6C42C50DDf73f0
 
 =
 
