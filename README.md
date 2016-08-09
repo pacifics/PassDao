@@ -37,11 +37,9 @@ The smart contract have the next main functions:
 
 - Transfer tokens: after an initial period, the Dao can vote to let their members transfer their shares in Dao.
 
-
 =
+
 # Solidity Files
-
-=
 
 - DAO.sol:
 Smart contract for a Decentralized Autonomous Organization (DAO) to automate organizational governance and decision-making.
@@ -58,8 +56,6 @@ Standard smart contract used for the funding of the Dao. One smart contract is a
 =
 
 # About Security
-
-=
 
 - There is no "calldata" function. There is a "send" function for approved contractor proposals.
 
