@@ -11,7 +11,13 @@ Website : http://pacifics.org/
 ## See Beta version on Testnet
 
 For the presale and to give your intention to fund.
-To see the Dao interface,
+
+=
+
+The Dao address : 0xaEFb92D6a6f6EF875Cc98190866A9F167F6c5d60
+
+=
+
 To see the Dao Account Manager Interface.
 
 =
