@@ -8,6 +8,14 @@ Website : http://pacifics.org/
 
 =
 
+## See Beta version on Testnet
+
+For the presale and to give your intention to fund.
+To see the Dao interface,
+To see the Dao Account Manager Interface.
+
+=
+
 ## Overview
 This DAO is open source and used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. One of the many advantages of having a "robot" run our organization is that it is immune to any outside influence as it’s guaranteed to execute only what it was programmed to. 
 Note: Although the word "contract" is used in The DAO’s code, the term is a programming convention and is not being used as a legal term of art. 
