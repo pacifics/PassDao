@@ -57,11 +57,11 @@ Standard smart contract used for the funding of the Dao. One smart contract is a
 
 # About Security
 
+- There is no useless blocked ethers. The funding start with only funding intentions and the maximum funding amount is limited according of what is needed to start the project and for decentralization.
+
 - There is no "calldata" function. There is a "send" function for approved contractor proposals.
 
 - There is no split function. There is one Dao which works according to the democraty law.
-
-- The funding amount is limited according of what is needed to start the project and for decentralization.
 
 - The Dao will decide when the shares can be transfered.
 
