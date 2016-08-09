@@ -130,8 +130,6 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-//import "Token.sol";
-
 contract AccountManagerInterface {
 
     // Rules for the funding
@@ -480,8 +478,6 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 /*
  * Standard smart contract used for the funding of the Dao.
 */
-
-//import "AccountManager.sol";
 
 contract Funding {
 
