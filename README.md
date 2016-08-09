@@ -59,7 +59,7 @@ Standard smart contract used for the funding of the Dao. One smart contract is a
 
 - There is no "calldata" function. There is a "send" function for approved contractor proposals.
 
-- There is no split function. There is one Dao wich works according to the democraty law.
+- There is no split function. There is one Dao which works according to the democraty law.
 
 - The funding amount is limited according of what is needed to start the project and for decentralization.
 
