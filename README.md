@@ -37,7 +37,11 @@ The smart contract have the next main functions:
 
 - There is no useless blocked ethers. The presale starts with only funding intentions and the maximum funding amount is limited according to what is needed to start the project and to ensure decentralization. If the Dao shareholders want to refund a part of the Dao balance, they can vote to send it to a contractor smart contract which will reward shareholders according to their share in Dao.
 
-- There is no "calldata" function.
+- There is no "calldata" function which could allow contractor smart contracts to run complex or recursive functions.
+ 
+- Rewards to the contractors are done with ethers and step by step for each contractor. Each new step starts with a new contractor proposal which includes a report about the result of the last proposal. All the votes of shareholders for all approved proposals of the contractor are stored as tokens in the account manager of the contractor.
+
+- If the work of a contractor allows the development of our project, it should increase the reputation token value wich belong to the Community. In this case, there is no need for shareholders to report any revenue from the contractor.
 
 - There is no split function. There is one Dao which works according to the democraty law.
 
