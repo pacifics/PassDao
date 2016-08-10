@@ -36,7 +36,7 @@ The smart contract have the next main functions:
 
 - There is no split function. There is one Dao which works according to the democraty law.
 
-- Make a proposal will cost and a period to consider or set is foreseen before voting process. For funding and Dao rules proposal, fees return to the creator if the quorum is reached.
+- Make a proposal will cost and a period to consider or set the proposal is foreseen before voting process. For funding and Dao rules proposal, fees return to the creator if the quorum is reached.
 
 - The shareholders should vote as it's the only way to recieve board meeting fees and contractor tokens.
 
