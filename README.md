@@ -25,7 +25,7 @@ The smart contract have the next main functions:
 
  - Recieve contractor tokens: sending ethers to a contractor gives to DAO voters the right to recieve contractor tokens in proportion of their Dao shares. This will allow contractors to reward the Community according to the contractor proposal. For the PM contractor, this function gives to DAO holders reputation tokens. 
 
-- Transfer Dao shares: the Dao can vote to let their members transfer their shares in Dao.
+- Able transfer of Dao shares and tokens : the Dao can vote to let their members transfer their shares and contractor tokens.
 
 =
 
