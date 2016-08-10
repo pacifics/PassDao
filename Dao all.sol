@@ -130,8 +130,6 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-//import "Token.sol";
-
 contract AccountManagerInterface {
 
     // Rules for the funding
@@ -199,7 +197,6 @@ contract AccountManagerInterface {
 
 }
 
-///@title Token Manager contract is used by the DAO for the management of tokens
 contract AccountManager is Token, AccountManagerInterface {
 
 
@@ -233,42 +230,55 @@ contract AccountManager is Token, AccountManagerInterface {
 
     /// @notice Create Token with `msg.sender` as the beneficiary in case of public funding
     /// @dev Allow funding from partners if private funding
-    /// @return Whether tokens are created or not
-    function () returns (bool) {
+    /// @return Whether successful or not
+    function () returns (bool _success) {
         if (msg.sender == address(client) || msg.sender == FundingRules.mainPartner) {
-            return; }
+            return true; }
         else {
-            createToken(msg.sender, msg.value);
-            weiGiven[msg.sender] += msg.value;
-            weiGivenTotal += msg.value;
-            return true;
+            return buyToken(msg.sender, msg.value);
         }
     }
 
     /// @notice Create Token with `_tokenHolder` as the beneficiary
     /// @param _tokenHolder the beneficiary of the created tokens
     /// @param _amount the amount funded
+    /// @return Whether the transfer was successful or not
     function buyTokenFor(
         address _tokenHolder,
         uint _amount
-        ) onlyPrivateTokenCreation {
+        ) onlyPrivateTokenCreation returns (bool _succes) {
         
         if (msg.sender != FundingRules.mainPartner) throw;
 
-        createToken(_tokenHolder, _amount);
-        weiGiven[_tokenHolder] += _amount;
-        weiGivenTotal += _amount;
+        return buyToken(_tokenHolder, _amount);
 
     }
+     
+    /// @notice Create Token with `_tokenHolder` as the beneficiary
+    /// @param _tokenHolder the beneficiary of the created tokens
+    /// @param _amount the amount funded
+    /// @return Whether the transfer was successful or not
+    function buyToken(
+        address _tokenHolder,
+        uint _amount) internal returns (bool _succes) {
+        
+        if (createToken(_tokenHolder, _amount)) {
+            weiGiven[_tokenHolder] += _amount;
+            weiGivenTotal += _amount;
+            return true;
+        }
+        else throw;
 
+    }
+    
     /// @notice Refund in case the funding id not fueled
-    // @return Whether ethers are refund or not
+    /// @return Whether ethers are refund or not
     function refund() noEther returns (bool) {
         
         if (!isFueled && now > FundingRules.closingTime) {
         
             uint _amount = weiGiven[msg.sender]*uint(this.balance)/weiGivenTotal;
-            if (_amount >0 && msg.sender.call.value(_amount)()) {
+            if (msg.sender.call.value(_amount)()) {
                 Refund(msg.sender, weiGiven[msg.sender]);
                 totalSupply -= balances[msg.sender];
                 balances[msg.sender] = 0; 
@@ -364,12 +374,14 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Function used by the Dao to reward of tokens
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The amount in Wei
+    /// @return Whether the transfer was successful or not
     function rewardToken(
         address _tokenHolder, 
         uint _amount
-        ) external  onlyClient {
+        ) external  onlyClient returns (bool _success) {
         
-        createToken(_tokenHolder, _amount);
+        if (createToken(_tokenHolder, _amount)) return true;
+        else throw;
 
     }
 
@@ -400,10 +412,11 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Internal function for the creation of tokens
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
+    /// @return Whether the transfer was successful or not
     function createToken(
         address _tokenHolder, 
         uint _amount
-    ) internal {
+    ) internal returns (bool _success) {
 
         uint _tokenholderID;
         uint _quantity = _amount/tokenPrice();
@@ -428,7 +441,9 @@ contract AccountManager is Token, AccountManagerInterface {
             isFueled = true; 
             FuelingToDate(totalSupply);
         }
-
+        
+        return true;
+        
     }
    
     // Function transfer only if the funding is not fueled and the account is not blocked
@@ -497,8 +512,6 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
-
-//import "AccountManager.sol";
 
 contract DAOInterface {
 
