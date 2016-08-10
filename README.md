@@ -58,8 +58,8 @@ Standard smart contract used for the funding of the Dao. One smart contract is a
 =
 ## See Beta version on Testnet
 
-For the presale, the Funding address : 0xb6875e1A6FceB5509543E116625449C1622B4EaA
+For the presale, the Funding address : 0x04C79D29919E80ab55e4C172D95E4dd75d41d0a4
 
-To make proposals, the Dao address : 0xaEFb92D6a6f6EF875Cc98190866A9F167F6c5d60
+To make proposals, the Dao address : 0x039410191201f32b774Bf566dDC5810b6b1Fca8f
 
-To see balances, the Dao Account Manager address : 0xC4DB31856959468431814a219e6C42C50DDf73f0
+To see balances, the Dao Account Manager address : 0xE45Ad502bF9B7B25819A6F088A7f8fC89CaE82ec
