@@ -1,22 +1,4 @@
 /*
-This file is part of the DAO.
-
-The DAO is free software: you can redistribute it and/or modify
-it under the terms of the GNU lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-The DAO is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU lesser General Public License for more details.
-
-You should have received a copy of the GNU lesser General Public License
-along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
-/*
  * Standard smart contract used for the funding of the Dao.
 */
 
@@ -43,6 +25,10 @@ contract Funding {
     uint public startTime;
     // The closing time to intend to fund
     uint public closingTime;
+    /// Limit in amount a partner can fund
+    uint public amountLimit; 
+    /// The partner can fund only under a defined percentage of their ether balance 
+    uint public divisorBalanceLimit;
     // True if all the partners are set and the funding can start
     bool public allSet;
     // Array of partners which wish to fund 
@@ -113,10 +99,12 @@ contract Funding {
     }
     
     /// @dev Function used by the creator to set partner
-    /// @param _amountLimit Limit in amount a partner can fund
-    /// @param _divisorBalanceLimit  The partner can fund 
-    /// only under a defined percentage of their ether balance 
-    function setPartners(uint _amountLimit, uint _divisorBalanceLimit) noEther onlyCreator {
+    /// @param _from The index of the first partner to set
+    /// @param _to The index of the last partner to set
+    function setPartners(
+            uint _from,
+            uint _to
+        ) noEther onlyCreator {
 
         if (now < closingTime 
             || allSet) {
@@ -124,20 +112,37 @@ contract Funding {
         }
         
         uint _amount;
-        for (uint i = 1; i < partners.length; i++) {
+        for (uint i = _from; i < _to; i++) {
             
             Partner t = partners[i];
-            _amount = partnerFundLimit(i, _amountLimit, _divisorBalanceLimit);
+            if (t.weight > 0) totalWeight -= t.weight;
+            _amount = partnerFundLimit(i, amountLimit, divisorBalanceLimit);
             t.weight = _amount; 
             totalWeight += _amount;
-            
         }
+    }
 
+    /// @dev Function used by the creator to set the funding limits
+    /// @param _amountLimit Limit in amount a partner can fund
+    /// @param _divisorBalanceLimit  The partner can fund 
+    /// only under a defined percentage of their ether balance 
+    function setLimits(
+            uint _amountLimit, 
+            uint _divisorBalanceLimit
+    ) noEther onlyCreator {
+        
+        amountLimit = _amountLimit;
+        divisorBalanceLimit = _divisorBalanceLimit;
+
+    }
+
+    /// @dev Function used by the creator to close the set of partners
+    function closeSet() noEther onlyCreator {
+        
         allSet = true;
         closingTime = now;
-        
         AllPartnersSet(totalWeight);
-
+        
     }
 
     /// @dev Internal function to fund
@@ -153,13 +158,15 @@ contract Funding {
         || msg.value > _fundingAmount
         || !OurAccountManager.send(msg.value)) throw;
 
-        OurAccountManager.buyTokenFor(msg.sender, msg.value);
-        t.hasFunded = true;
-        
-        Funded(msg.sender, msg.value);
+        if (OurAccountManager.buyTokenFor(msg.sender, msg.value)) {
+            t.hasFunded = true;
+            Funded(msg.sender, msg.value);
+            return true;
+        }
+        else throw;
         
     }
-    
+
     /// @dev Allow to calculate the result of the intention procedure
     /// @param _amountLimit Limit in amount a partner can fund
     /// @param _divisorBalanceLimit  The partner can fund 
