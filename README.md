@@ -43,7 +43,7 @@ The smart contract have the next main functions:
 
 - Make a proposal will cost and a period to consider or set the proposal is foreseen before voting process. For funding and Dao rules proposals, fees return to the creator if the quorum is reached.
 
-- The shareholders should vote as it's the only way to recieve board meeting fees and contractor tokens.
+- The shareholders should vote on contractor proposals as it's the only way to recieve board meeting fees and contractor tokens.
 
 - The Dao will decide when the shares and contractor tokens can be transfered.
 
