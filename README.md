@@ -14,7 +14,7 @@ Our DAO is open source and used for our project to put together a transparent or
 =
 
 ## Note
-This Dao is for Ethereum Blockchain only and is not foreseen to run on "Ethereum Classic" Blockchain.
+This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
 
 =
 
