@@ -43,7 +43,7 @@ The smart contract have the next main functions:
 
 - If the work of a contractor allows the development of our project, it should increase the reputation token value wich belong to the Community. In this case, there is no need for shareholders to report any revenue from the contractor.
 
-- There is no split function. There is one Dao which works according to the democraty law.
+- There is no split function. There is one Dao which works according to the democracy law.
 
 - Make a proposal will cost and a period to consider or set the proposal is foreseen before voting process. For funding and Dao rules proposals, fees return to the creator if the quorum is reached.
 
