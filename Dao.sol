@@ -67,8 +67,6 @@ contract DAOInterface {
         uint tokenPrice;  
         // The initial supply of contractor tokens for the recipient
         uint256 initialSupply; 
-        // Period for voters to recieve contractor tokens after the execution of the proposal
-        uint minutesRewardPeriod;
         // The number of shares of the voters allow them to recieve contractor tokens
         mapping (address => uint) weightToRecieve;
         // The total number of shares of the voters of the contractor proposal
@@ -117,9 +115,6 @@ contract DAOInterface {
     // The Dao account manager contract
     AccountManager public DaoAccountManager;
 
-    // the accumulated sum of all current proposal deposits and not rewarded boarding fees
-    uint sumOfDeposits; 
-    
     // Map to check if a recipient has an account manager or not
     mapping (address => bool) hasAnAccountManager; 
     // The account management contract of the recipient
@@ -237,8 +232,6 @@ contract DAO is DAOInterface
         p.votingDeadline = _setdeadline + (_DebatePeriod * 1 minutes); 
 
         p.open = true; 
-        
-        sumOfDeposits += _boardMeetingFees;
 
         newBoardMeetingAdded(_BoardMeetingID, p.setDeadline, p.votingDeadline);
 
@@ -255,7 +248,6 @@ contract DAO is DAOInterface
     /// @param _TokenPrice The quantity of contractor tokens will depend on this price
     /// @param _initialSupply If the recipient ask for an initial supply of contractor tokens
     /// Default and minimum value is the period for curator to check the identity of the recipient
-    /// @param _minutesRewardPeriod Period for the voters to recieve contractor tokens after the payment of the amount
     /// @param _MinutesDebatingPeriod Proposed period of the board meeting
     /// @return The index of the proposal
     function newContractorProposal(
@@ -266,7 +258,6 @@ contract DAO is DAOInterface
         bytes32 _hashOfTheDocument,
         uint _TokenPrice, 
         uint256 _initialSupply,
-        uint _minutesRewardPeriod,
         uint _MinutesDebatingPeriod
     ) returns (uint) {
 
@@ -290,7 +281,6 @@ contract DAO is DAOInterface
 
         c.amount = _amount;
         c.hashOfTheDocument = _hashOfTheDocument; 
-        c.minutesRewardPeriod = _minutesRewardPeriod;
         c.tokenPrice = _TokenPrice;
 
                 
@@ -420,7 +410,6 @@ contract DAO is DAOInterface
             uint _rewardedamount = p.fees*DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
             if (!p.creator.send(_rewardedamount)) throw;
             p.totalRewardedAmount += _rewardedamount;
-            sumOfDeposits -= _rewardedamount;
         }
 
         if (_supportsProposal) {
@@ -439,12 +428,12 @@ contract DAO is DAOInterface
 
         p.hasVoted[msg.sender] = true;
 
-        uint _ID = DaoAccountManager.blockedAccount(msg.sender);
-        if (_ID == 0) {
-            DaoAccountManager.blockAccount(msg.sender, _BoardMeetingID);
+        uint _deadline = DaoAccountManager.blockedAccountDeadLine(msg.sender);
+        if (_deadline == 0) {
+            DaoAccountManager.blockAccount(msg.sender, p.votingDeadline);
         }
-        else if (p.votingDeadline > BoardMeetings[_ID].votingDeadline) {
-            DaoAccountManager.blockAccount(msg.sender, _BoardMeetingID);
+        else if (p.votingDeadline > _deadline) {
+            DaoAccountManager.blockAccount(msg.sender, p.votingDeadline);
         }
 
         Voted(_BoardMeetingID, _supportsProposal, msg.sender, _rewardedamount);
@@ -471,7 +460,6 @@ contract DAO is DAOInterface
                     if (!p.creator.send(p.fees)) throw;
                     p.fees = 0;
                 }
-                sumOfDeposits -= p.fees;
         }        
 
         if (now > p.votingDeadline + DaoRules.minutesExecuteProposalPeriod * 1 minutes 
@@ -493,8 +481,8 @@ contract DAO is DAOInterface
 
             ContractorProposal c = ContractorProposals[p.ContractorProposalID];
             DaoAccountManager.sendTo(c.recipient, c.amount);
-            ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.tokenPrice, c.initialSupply, 
-                    c.amount/c.tokenPrice + c.initialSupply, now, now + c.minutesRewardPeriod * 1 minutes, 0);
+            ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.tokenPrice, 0, 
+                    c.amount/c.tokenPrice, now, 0, 0);
                     
         }
         
@@ -520,34 +508,37 @@ contract DAO is DAOInterface
         ProposalTallied(_BoardMeetingID);
     }
 
-    /// @notice Function for voters to recieve contractor tokens 
+    /// @notice Function to reward contractor tokens for voters 
     /// after the execution of the contractor proposal,
     /// @param _contractorProposalID The index of the proposal
+    /// @param _Tokenholder The address of the tokenholder
     /// @return Whether the transfer was successful or not    
-    function RecieveContractorTokens(uint _contractorProposalID) 
+    function RewardContractorTokens(uint _contractorProposalID, address _Tokenholder) 
     noEther returns (bool) {
-
-        address _Tokenholder = msg.sender;
 
         ContractorProposal c = ContractorProposals[_contractorProposalID];
         BoardMeeting p = BoardMeetings[c.BoardMeetingID];
 
         if (p.dateOfExecution == 0 || c.weightToRecieve[_Tokenholder]==0) {throw; }
         
-        if (now > p.dateOfExecution + c.minutesRewardPeriod * 1 minutes) {
-            p.open = false;
-            takeBoardingFees(c.BoardMeetingID);
-            return;
-        }
-
-        uint _amount = c.amount*c.weightToRecieve[_Tokenholder]/c.totalWeight;
+        uint _amount = (c.amount*c.weightToRecieve[_Tokenholder])/c.totalWeight;
 
         AccountManager m = ContractorAccountManager[c.recipient];
-        if (!m.rewardToken(_Tokenholder, _amount)) throw;
+        m.rewardToken(_Tokenholder, _amount);
         c.weightToRecieve[_Tokenholder] = 0;
 
         TokensBoughtFor(_contractorProposalID, _Tokenholder, _amount);
 
+    }
+
+    /// @notice Function to able or disable transfer of contractor tokens
+    /// like the Dao account manager
+    /// @param _contractorAccountManager The address of the contractor account manager
+    function transferAble(address _contractorAccountManager) noEther {
+
+        AccountManager m = AccountManager(_contractorAccountManager);
+        m.TransferAble(DaoRules.tokenTransferAble);
+        
     }
 
     /// @dev internal function to put to the Dao balance the board meeting fees of non voters
@@ -556,7 +547,6 @@ contract DAO is DAOInterface
         BoardMeeting p = BoardMeetings[_boardMeetingID];
         if (p.fees - p.totalRewardedAmount >0) {
             if (!DaoAccountManager.send(p.fees - p.totalRewardedAmount)) throw;
-            sumOfDeposits -= p.fees - p.totalRewardedAmount;
             p.totalRewardedAmount = p.fees;
         }
     }
@@ -571,31 +561,6 @@ contract DAO is DAOInterface
     /// @return The minimum quorum for the proposal to pass 
     function minQuorum() constant returns (uint) {
         return uint(DaoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
-    }
- 
-    /// @dev internal function to know if the shareholder account is blocked    
-    /// @param _account The address of the account which is checked.
-    /// @return Whether the account is blocked (not allowed to transfer tokens) or not.
-    function isBlocked(address _account) internal returns (bool) {
- 
-        uint _ID = DaoAccountManager.blockedAccount(msg.sender);
-        
-        if (_ID == 0) return false;
-        
-        BoardMeeting p = BoardMeetings[_ID];
-        if (now > p.votingDeadline) {
-            DaoAccountManager.blockAccount(_account, 0);
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    /// @notice If the caller is blocked by a proposal whose voting deadline
-    /// has exprired then unblock him.
-    /// @return Whether the account is blocked (not allowed to transfer tokens) or not.
-    function unblockMe() returns (bool) {
-        return isBlocked(msg.sender);
     }
 
 
