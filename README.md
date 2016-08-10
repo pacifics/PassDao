@@ -9,7 +9,12 @@ Website : http://pacifics.org/
 =
 
 ## Overview
-This DAO is open source and used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. 
+Our DAO is open source and used for our project to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. 
+
+=
+
+## Note
+This Dao is for Ethereum Blockchain only and is not foreseen to run on "Ethereum Classic" Blockchain.
 
 =
 
