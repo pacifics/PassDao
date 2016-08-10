@@ -30,7 +30,7 @@ The smart contract have the next main functions:
 
 # About Security
 
-- There is no useless blocked ethers. The funding starts with only funding intentions and the maximum funding amount is limited according to what is needed to start the project and to ensure decentralization. If the Dao shareholders want to refund a part of the Dao balance, they can vote to send it to a contractor smart contract which will reward shareholders according to their share in Dao.
+- There is no useless blocked ethers. The presale starts with only funding intentions and the maximum funding amount is limited according to what is needed to start the project and to ensure decentralization. If the Dao shareholders want to refund a part of the Dao balance, they can vote to send it to a contractor smart contract which will reward shareholders according to their share in Dao.
 
 - There is no "calldata" function.
 
