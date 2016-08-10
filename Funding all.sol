@@ -130,6 +130,8 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
+//import "Token.sol";
+
 contract AccountManagerInterface {
 
     // Rules for the funding
@@ -169,8 +171,8 @@ contract AccountManagerInterface {
 
     // True if the funding is fueled
     bool isFueled;
-    // If true, the tokens can be refunded
-    bool public refundAble;
+   // If true, the tokens can be transfered
+    bool public transferAble;
     // Total amount funded
     uint weiGivenTotal;
 
@@ -236,7 +238,9 @@ contract AccountManager is Token, AccountManagerInterface {
         if (msg.sender == address(client) || msg.sender == FundingRules.mainPartner) {
             return; }
         else {
-            buyToken();
+            createToken(msg.sender, msg.value);
+            weiGiven[msg.sender] += msg.value;
+            weiGivenTotal += msg.value;
             return true;
         }
     }
@@ -249,27 +253,47 @@ contract AccountManager is Token, AccountManagerInterface {
         uint _amount
         ) onlyPrivateTokenCreation {
         
-        if (!createToken(_tokenHolder, _amount) || msg.sender != FundingRules.mainPartner) throw;
+        if (msg.sender != FundingRules.mainPartner) throw;
 
+        createToken(_tokenHolder, _amount);
         weiGiven[_tokenHolder] += _amount;
         weiGivenTotal += _amount;
 
     }
 
     /// @notice Refund in case the funding id not fueled
-    function refund() {
+    // @return Whether ethers are refund or not
+    function refund() noEther returns (bool) {
         
-        if ((!isFueled && now > FundingRules.closingTime)
-        || refundAble) {
+        if (!isFueled && now > FundingRules.closingTime) {
         
-            uint _amount = weiGiven[msg.sender]*this.balance/weiGivenTotal;
+            uint _amount = weiGiven[msg.sender]*uint(this.balance)/weiGivenTotal;
             if (_amount >0 && msg.sender.call.value(_amount)()) {
                 Refund(msg.sender, weiGiven[msg.sender]);
                 totalSupply -= balances[msg.sender];
                 balances[msg.sender] = 0; 
                 weiGiven[msg.sender] = 0;
+                return true;
             }
 
+        }
+    }
+
+    /// @notice If the tokenholder account is blocked by a proposal whose voting deadline
+    /// has exprired then unblock him.
+    /// @param _account The address of the tokenHolder
+    /// @return Whether the account is blocked (not allowed to transfer tokens) or not.
+    function unblockAccount(address _account) noEther returns (bool) {
+    
+        uint _deadLine = blocked[_account];
+        
+        if (_deadLine == 0) return false;
+        
+        if (now > _deadLine) {
+            blocked[_account] = 0;
+            return false;
+        } else {
+            return true;
         }
     }
 
@@ -343,59 +367,49 @@ contract AccountManager is Token, AccountManagerInterface {
     function rewardToken(
         address _tokenHolder, 
         uint _amount
-        ) external  onlyClient returns (bool success) {
+        ) external  onlyClient {
         
-        return createToken(_tokenHolder, _amount);
+        createToken(_tokenHolder, _amount);
 
     }
 
-    /// @dev Function used by the client
-    /// @param _account The address to block
-    /// @param _ID index used by the client
-    function blockAccount(
-        address _account, 
-        uint _ID) 
-    external onlyClient {
-        blocked[_account] = _ID;
-    }    
-        
-    /// @dev Function used by the client
+    /// @dev Function used by the client to block tokens transfer of from a tokenholder
     /// @param _account The address of the tokenHolder
-    /// @return 0 if the tokenholder account is blocked and an client index if not
-    function blockedAccount(address _account) external constant returns (uint) {
-        return blocked[_account];
-    }
-
-    /// @dev Function used by the client to able or disable the refund of tokens
-    /// @param _refundAble Whether the client want to able to refund or not
-    function RefundAble(bool _refundAble) external onlyClient {
-        refundAble = _refundAble;
-    }
-
-    /// @dev Internal function for the creation of tokens with `msg.sender` as the beneficiary
-    function buyToken() 
-    internal onlyPublicTokenCreation {
+    /// @return When the account can be unblocked
+    function blockedAccountDeadLine(address _account) external constant returns (uint) {
         
-        if (!createToken(msg.sender, msg.value)) throw;
-        weiGiven[msg.sender] += msg.value;
-        weiGivenTotal += msg.value;
+        return blocked[_account];
 
+    }
+    
+    /// @dev Function used by the client to block tokens transfer of from a tokenholder
+    /// @param _account The address of the tokenHolder
+    /// @param _deadLine When the account can be unblocked
+    function blockAccount(address _account, uint _deadLine) external onlyClient {
+        
+        blocked[_account] = _deadLine;
+
+    }
+    
+    /// @dev Function used by the client to able or disable the refund of tokens
+    /// @param _transferAble Whether the client want to able to refund or not
+    function TransferAble(bool _transferAble) external onlyClient {
+        transferAble = _transferAble;
     }
 
     /// @dev Internal function for the creation of tokens
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
-    /// @return Whether the token creation was successful
     function createToken(
         address _tokenHolder, 
         uint _amount
-    ) internal returns (bool success) {
+    ) internal {
 
         uint _tokenholderID;
         uint _quantity = _amount/tokenPrice();
 
         if ((totalSupply + _quantity > FundingRules.maxTokensToCreate)
-            || (now > FundingRules.closingTime) 
+            || (now > FundingRules.closingTime && FundingRules.closingTime !=0) 
             || _amount <= 0
             || (now < FundingRules.startTime) ) {
             throw;
@@ -415,19 +429,21 @@ contract AccountManager is Token, AccountManagerInterface {
             FuelingToDate(totalSupply);
         }
 
-        return true;
     }
    
     // Function transfer only if the funding is not fueled and the account is not blocked
     function transfer(
         address _to, 
         uint256 _value
-        ) returns (bool success) {
+        ) returns (bool success) {  
 
         if (isFueled
+            && transferAble
             && blocked[msg.sender] == 0
-            && now > FundingRules.closingTime) {
-                super.transfer(_to, _value);
+            && blocked[_to] == 0
+            && _to != address(this)
+            && now > FundingRules.closingTime
+            && super.transfer(_to, _value)) {
                 return true;
             } else {
             throw;
@@ -443,9 +459,12 @@ contract AccountManager is Token, AccountManagerInterface {
         ) returns (bool success) {
         
         if (isFueled
-            && blocked[msg.sender] == 0
-            && now > FundingRules.closingTime) {
-            super.transfer(_to, _value);
+            && transferAble
+            && blocked[_from] == 0
+            && blocked[_to] == 0
+            && _to != address(this)
+            && now > FundingRules.closingTime 
+            && super.transfer(_to, _value)) {
             return true;
         } else {
             throw;
@@ -455,7 +474,6 @@ contract AccountManager is Token, AccountManagerInterface {
     
 }    
   
-
 
 /*
 This file is part of the DAO.
@@ -478,6 +496,8 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 /*
  * Standard smart contract used for the funding of the Dao.
 */
+
+//import "AccountManager.sol";
 
 contract Funding {
 
