@@ -64,6 +64,7 @@ Basic, standardized Token contract. Defines the functions to check token balance
 Smart contract used for the presale of Dao shares. 
 
 =
+
 ## See Beta version on Testnet
 
 For the presale, the Funding address : 0x04C79D29919E80ab55e4C172D95E4dd75d41d0a4
