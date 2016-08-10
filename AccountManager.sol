@@ -130,7 +130,9 @@ contract AccountManager is Token, AccountManagerInterface {
         if (msg.sender == address(client) || msg.sender == FundingRules.mainPartner) {
             return; }
         else {
-            buyToken();
+            createToken(msg.sender, msg.value);
+            weiGiven[msg.sender] += msg.value;
+            weiGivenTotal += msg.value;
             return true;
         }
     }
@@ -143,15 +145,17 @@ contract AccountManager is Token, AccountManagerInterface {
         uint _amount
         ) onlyPrivateTokenCreation {
         
-        if (!createToken(_tokenHolder, _amount) || msg.sender != FundingRules.mainPartner) throw;
+        if (msg.sender != FundingRules.mainPartner) throw;
 
+        createToken(_tokenHolder, _amount);
         weiGiven[_tokenHolder] += _amount;
         weiGivenTotal += _amount;
 
     }
 
     /// @notice Refund in case the funding id not fueled
-    function refund() {
+    // @return Whether ethers are refund or not
+    function refund() noEther returns (bool) {
         
         if (!isFueled && now > FundingRules.closingTime) {
         
@@ -161,8 +165,27 @@ contract AccountManager is Token, AccountManagerInterface {
                 totalSupply -= balances[msg.sender];
                 balances[msg.sender] = 0; 
                 weiGiven[msg.sender] = 0;
+                return true;
             }
 
+        }
+    }
+
+    /// @notice If the tokenholder account is blocked by a proposal whose voting deadline
+    /// has exprired then unblock him.
+    /// @param _account The address of the tokenHolder
+    /// @return Whether the account is blocked (not allowed to transfer tokens) or not.
+    function unblockAccount(address _account) noEther returns (bool) {
+    
+        uint _deadLine = blocked[_account];
+        
+        if (_deadLine == 0) return false;
+        
+        if (now > _deadLine) {
+            blocked[_account] = 0;
+            return false;
+        } else {
+            return true;
         }
     }
 
@@ -236,59 +259,49 @@ contract AccountManager is Token, AccountManagerInterface {
     function rewardToken(
         address _tokenHolder, 
         uint _amount
-        ) external  onlyClient returns (bool success) {
+        ) external  onlyClient {
         
-        return createToken(_tokenHolder, _amount);
+        createToken(_tokenHolder, _amount);
 
     }
 
-    /// @dev Function used by the client
-    /// @param _account The address to block
-    /// @param _ID index used by the client
-    function blockAccount(
-        address _account, 
-        uint _ID) 
-    external onlyClient {
-        blocked[_account] = _ID;
-    }    
-        
-    /// @dev Function used by the client
+    /// @dev Function used by the client to block tokens transfer of from a tokenholder
     /// @param _account The address of the tokenHolder
-    /// @return 0 if the tokenholder account is blocked and an client index if not
-    function blockedAccount(address _account) external constant returns (uint) {
+    /// @return When the account can be unblocked
+    function blockedAccountDeadLine(address _account) external constant returns (uint) {
+        
         return blocked[_account];
-    }
 
+    }
+    
+    /// @dev Function used by the client to block tokens transfer of from a tokenholder
+    /// @param _account The address of the tokenHolder
+    /// @param _deadLine When the account can be unblocked
+    function blockAccount(address _account, uint _deadLine) external onlyClient {
+        
+        blocked[_account] = _deadLine;
+
+    }
+    
     /// @dev Function used by the client to able or disable the refund of tokens
     /// @param _transferAble Whether the client want to able to refund or not
     function TransferAble(bool _transferAble) external onlyClient {
         transferAble = _transferAble;
     }
-    
-    /// @dev Internal function for the creation of tokens with `msg.sender` as the beneficiary
-    function buyToken() 
-    internal onlyPublicTokenCreation {
-        
-        if (!createToken(msg.sender, msg.value)) throw;
-        weiGiven[msg.sender] += msg.value;
-        weiGivenTotal += msg.value;
-
-    }
 
     /// @dev Internal function for the creation of tokens
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
-    /// @return Whether the token creation was successful
     function createToken(
         address _tokenHolder, 
         uint _amount
-    ) internal returns (bool success) {
+    ) internal {
 
         uint _tokenholderID;
         uint _quantity = _amount/tokenPrice();
 
         if ((totalSupply + _quantity > FundingRules.maxTokensToCreate)
-            || (now > FundingRules.closingTime) 
+            || (now > FundingRules.closingTime && FundingRules.closingTime !=0) 
             || _amount <= 0
             || (now < FundingRules.startTime) ) {
             throw;
@@ -308,20 +321,21 @@ contract AccountManager is Token, AccountManagerInterface {
             FuelingToDate(totalSupply);
         }
 
-        return true;
     }
    
     // Function transfer only if the funding is not fueled and the account is not blocked
     function transfer(
         address _to, 
         uint256 _value
-        ) returns (bool success) {
+        ) returns (bool success) {  
 
         if (isFueled
             && transferAble
             && blocked[msg.sender] == 0
-            && now > FundingRules.closingTime) {
-                super.transfer(_to, _value);
+            && blocked[_to] == 0
+            && _to != address(this)
+            && now > FundingRules.closingTime
+            && super.transfer(_to, _value)) {
                 return true;
             } else {
             throw;
@@ -338,9 +352,11 @@ contract AccountManager is Token, AccountManagerInterface {
         
         if (isFueled
             && transferAble
-            && blocked[msg.sender] == 0
-            && now > FundingRules.closingTime) {
-            super.transfer(_to, _value);
+            && blocked[_from] == 0
+            && blocked[_to] == 0
+            && _to != address(this)
+            && now > FundingRules.closingTime 
+            && super.transfer(_to, _value)) {
             return true;
         } else {
             throw;
