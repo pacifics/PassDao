@@ -36,6 +36,8 @@ The smart contract have the next main functions:
 
 - There is no split function. There is one Dao which works according to the democraty law.
 
+- The shareholders should vote as it's the only way to recieve board meeting fees and contractor tokens.
+
 - The Dao will decide when the shares and contractor tokens can be transfered.
 
 =
