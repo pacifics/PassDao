@@ -61,7 +61,7 @@ The smart contract have the next main functions:
 Smart contract for a Decentralized Autonomous Organization (DAO) to automate organizational governance and decision-making.
 
 - AccountManager.sol:
-The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao).
+The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the contractor recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao).
 
 - Token.sol:
 Basic, standardized Token contract. Defines the functions to check token balances, send tokens, send tokens on behalf of a 3rd party and the corresponding approval process.
