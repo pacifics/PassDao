@@ -408,7 +408,7 @@ contract DAO is DAOInterface
 
         if (p.fees > 0 && p.ContractorProposalID != 0) {
             uint _rewardedamount = p.fees*DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
-            if (!p.creator.send(_rewardedamount)) throw;
+            if (!msg.sender.send(_rewardedamount)) throw;
             p.totalRewardedAmount += _rewardedamount;
         }
 
