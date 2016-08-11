@@ -19,7 +19,7 @@ This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Et
 =
 
 ## Short description
-The smart contract have the next main functions: 
+The smart contracts have the next main functions: 
 
  - Fund: everyone from the ether Community who wants to join our Community and get shares can fund sending ethers. The funding has two stages. During the first stage (two weeks), the new partners (ether holders) indicate the amount they intend to fund (they pay only gas for transaction). This first stage will allow to determine limits in amount and ether balance share for all partner addresses with the next main goal : to have a decentralized Community. The second stage (two weeks) will allow partners to fund the Dao according to their intention and the set limits. After this first funding, the new partners become shareholders and can vote for a new crowdfunding or a private funding. 
 
