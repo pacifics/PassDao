@@ -85,6 +85,8 @@ contract DAOInterface {
         uint fundingAmount; 
         // The price (in wei) for a token
         uint tokenPrice; 
+        // Minimum quantity of tokens to fuel the funding
+        uint minTokensToCreate;
         // Rate per year applied to the token price 
         uint inflationRate;
         // Period for the partners to fund after the execution of the decision
@@ -124,7 +126,7 @@ contract DAOInterface {
     BoardMeeting[] public BoardMeetings; 
     // Proposals to pay a contractor
     ContractorProposal[] public ContractorProposals;
-    // Proposals for a private funding of the Dao
+    // Proposals for a funding of the Dao
     FundingProposal[] public FundingProposals;
    // Proposals to update the Dao Rules
     Rules[] public DaoRulesProposals;
@@ -173,7 +175,7 @@ contract DAO is DAOInterface
         uint _minutesExecuteProposalPeriod
     ) {
 
-        DaoAccountManager = new AccountManager(address(this), msg.sender, 0, "PASS DAO ACCOUNT MANAGER", 10);
+        DaoAccountManager = new AccountManager(address(this), address(this), 0, "PASS DAO ACCOUNT MANAGER", 10);
 
         DaoRules.minQuorumDivisor = _minQuorumDivisor;
         DaoRules.minMinutesDebatePeriod = _minMinutesDebatePeriod;
@@ -323,6 +325,7 @@ contract DAO is DAOInterface
         f.publicTokenCreation = _publicTokenCreation;
         f.fundingAmount = _fundingAmount;
         f.tokenPrice = _tokenPrice;
+        f.minTokensToCreate = _minTokensToCreate;
         f.inflationRate = _inflationRate;
         f.minutesFundingPeriod = _minutesFundingPeriod;
 
@@ -472,7 +475,7 @@ contract DAO is DAOInterface
         if (p.FundingProposalID != 0) {
 
             FundingProposal f = FundingProposals[p.FundingProposalID];
-            DaoAccountManager.extentFunding(f.mainPartner, f.publicTokenCreation, f.tokenPrice, 0, 
+            DaoAccountManager.extentFunding(f.mainPartner, f.publicTokenCreation, f.tokenPrice, f.minTokensToCreate, 
                 f.fundingAmount/f.tokenPrice, now, now + f.minutesFundingPeriod * 1 minutes, f.inflationRate);
             
         }
