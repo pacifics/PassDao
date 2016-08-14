@@ -175,7 +175,7 @@ contract AccountManagerInterface {
     uint weiGivenTotal;
 
     // Map to allow token holder to refund if the funding didn't succeed
-    mapping (address => uint) public weiGiven;
+    mapping (address => uint256) weiGiven;
     // Map of addresses blocked during a vote. The address points to the proposal ID
     mapping (address => uint) blocked; 
 
@@ -234,9 +234,11 @@ contract AccountManager is Token, AccountManagerInterface {
     function () returns (bool _success) {
         if (msg.sender == address(client) || msg.sender == FundingRules.mainPartner) {
             return true; }
-        else {
+        else 
+        if (FundingRules.publicTokenCreation) {
             return buyToken(msg.sender, msg.value);
         }
+        else throw;
     }
 
     /// @notice Create Token with `_tokenHolder` as the beneficiary
@@ -272,18 +274,15 @@ contract AccountManager is Token, AccountManagerInterface {
     }
     
     /// @notice Refund in case the funding id not fueled
-    /// @return Whether ethers are refund or not
-    function refund() noEther returns (bool) {
+    function refund() noEther {
         
         if (!isFueled && now > FundingRules.closingTime) {
         
-            uint _amount = weiGiven[msg.sender]*uint(this.balance)/weiGivenTotal;
-            if (msg.sender.call.value(_amount)()) {
+            if (msg.sender.send(weiGiven[msg.sender])) {
                 Refund(msg.sender, weiGiven[msg.sender]);
                 totalSupply -= balances[msg.sender];
                 balances[msg.sender] = 0; 
                 weiGiven[msg.sender] = 0;
-                return true;
             }
 
         }
@@ -490,6 +489,7 @@ contract AccountManager is Token, AccountManagerInterface {
 }    
   
 
+
 /*
 This file is part of the DAO.
 
@@ -511,6 +511,8 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 /*
  * Standard smart contract used for the funding of the Dao.
 */
+
+//import "AccountManager.sol";
 
 contract Funding {
 
@@ -639,6 +641,8 @@ contract Funding {
             uint _divisorBalanceLimit
     ) noEther onlyCreator {
         
+         if (allSet) throw;
+         
         amountLimit = _amountLimit;
         divisorBalanceLimit = _divisorBalanceLimit;
 
@@ -647,6 +651,8 @@ contract Funding {
     /// @dev Function used by the creator to close the set of partners
     function closeSet() noEther onlyCreator {
         
+        if (allSet) throw;
+
         allSet = true;
         closingTime = now;
         AllPartnersSet(totalWeight);
