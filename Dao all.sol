@@ -175,7 +175,7 @@ contract AccountManagerInterface {
     uint weiGivenTotal;
 
     // Map to allow token holder to refund if the funding didn't succeed
-    mapping (address => uint) public weiGiven;
+    mapping (address => uint256) weiGiven;
     // Map of addresses blocked during a vote. The address points to the proposal ID
     mapping (address => uint) blocked; 
 
@@ -234,9 +234,11 @@ contract AccountManager is Token, AccountManagerInterface {
     function () returns (bool _success) {
         if (msg.sender == address(client) || msg.sender == FundingRules.mainPartner) {
             return true; }
-        else {
+        else 
+        if (FundingRules.publicTokenCreation) {
             return buyToken(msg.sender, msg.value);
         }
+        else throw;
     }
 
     /// @notice Create Token with `_tokenHolder` as the beneficiary
@@ -272,18 +274,15 @@ contract AccountManager is Token, AccountManagerInterface {
     }
     
     /// @notice Refund in case the funding id not fueled
-    /// @return Whether ethers are refund or not
-    function refund() noEther returns (bool) {
+    function refund() noEther {
         
         if (!isFueled && now > FundingRules.closingTime) {
         
-            uint _amount = weiGiven[msg.sender]*uint(this.balance)/weiGivenTotal;
-            if (msg.sender.call.value(_amount)()) {
+            if (msg.sender.send(weiGiven[msg.sender])) {
                 Refund(msg.sender, weiGiven[msg.sender]);
                 totalSupply -= balances[msg.sender];
                 balances[msg.sender] = 0; 
                 weiGiven[msg.sender] = 0;
-                return true;
             }
 
         }
@@ -490,6 +489,7 @@ contract AccountManager is Token, AccountManagerInterface {
 }    
   
 
+
 /*
 This file is part of the DAO.
 
@@ -575,6 +575,8 @@ contract DAOInterface {
         uint fundingAmount; 
         // The price (in wei) for a token
         uint tokenPrice; 
+        // Minimum quantity of tokens to fuel the funding
+        uint minTokensToCreate;
         // Rate per year applied to the token price 
         uint inflationRate;
         // Period for the partners to fund after the execution of the decision
@@ -614,7 +616,7 @@ contract DAOInterface {
     BoardMeeting[] public BoardMeetings; 
     // Proposals to pay a contractor
     ContractorProposal[] public ContractorProposals;
-    // Proposals for a private funding of the Dao
+    // Proposals for a funding of the Dao
     FundingProposal[] public FundingProposals;
    // Proposals to update the Dao Rules
     Rules[] public DaoRulesProposals;
@@ -663,7 +665,7 @@ contract DAO is DAOInterface
         uint _minutesExecuteProposalPeriod
     ) {
 
-        DaoAccountManager = new AccountManager(address(this), msg.sender, 0, "PASS DAO ACCOUNT MANAGER", 10);
+        DaoAccountManager = new AccountManager(address(this), address(this), 0, "PASS DAO ACCOUNT MANAGER", 10);
 
         DaoRules.minQuorumDivisor = _minQuorumDivisor;
         DaoRules.minMinutesDebatePeriod = _minMinutesDebatePeriod;
@@ -813,6 +815,7 @@ contract DAO is DAOInterface
         f.publicTokenCreation = _publicTokenCreation;
         f.fundingAmount = _fundingAmount;
         f.tokenPrice = _tokenPrice;
+        f.minTokensToCreate = _minTokensToCreate;
         f.inflationRate = _inflationRate;
         f.minutesFundingPeriod = _minutesFundingPeriod;
 
@@ -962,7 +965,7 @@ contract DAO is DAOInterface
         if (p.FundingProposalID != 0) {
 
             FundingProposal f = FundingProposals[p.FundingProposalID];
-            DaoAccountManager.extentFunding(f.mainPartner, f.publicTokenCreation, f.tokenPrice, 0, 
+            DaoAccountManager.extentFunding(f.mainPartner, f.publicTokenCreation, f.tokenPrice, f.minTokensToCreate, 
                 f.fundingAmount/f.tokenPrice, now, now + f.minutesFundingPeriod * 1 minutes, f.inflationRate);
             
         }
