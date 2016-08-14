@@ -73,8 +73,8 @@ Smart contract used for the presale of Dao shares.
 
 ## See Beta version on Testnet
 
-For the presale, the Funding address : 
+For the presale, the Funding address : 0x7a7c5D2976D6621Ad1b0dcE768578F7a8eBB831e
 
-To make proposals, the Dao address : 
+To make proposals, the Dao address : 0x5D91CE13586d1368b52BC4ec17Bcfce25F5Bc9d0
 
-To see balances, the Dao Account Manager address : 
+To see balances, the Dao Account Manager address : 0x2ae51438477795918c6F0b25bC6c4403e86Be113
