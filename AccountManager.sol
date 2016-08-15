@@ -22,7 +22,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-import "Token.sol";
+//import "Token.sol";
 
 contract AccountManagerInterface {
 
@@ -212,6 +212,10 @@ contract AccountManager is Token, AccountManagerInterface {
         return isFueled;
     }
 
+    function setMinTokensToCreate(uint256 _minTokensToCreate) external returns (uint) {
+        FundingRules.minTokensToCreate = _minTokensToCreate; 
+    }
+        
     /// @dev Function used by the client
     /// @return The maximum tokens after the funding
     function MaxTokensToCreate() external returns (uint) {
@@ -227,7 +231,6 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Function to extent funding. Can be private or public
     /// @param _publicTokenCreation True if public
     /// @param _initialTokenPrice Price without considering any inflation rate
-    /// @param _minTokensToCreate Minimum quantity of tokens to fuel the funding
     /// @param _maxTokensToCreate If the maximum is reached, the funding is closed
     /// @param _startTime If 0, the start time is the creation date of this contract
     /// @param _closingTime After this date, the funding is closed
@@ -236,7 +239,6 @@ contract AccountManager is Token, AccountManagerInterface {
         address _mainPartner,
         bool _publicTokenCreation, 
         uint _initialTokenPrice, 
-        uint256 _minTokensToCreate, 
         uint256 _maxTokensToCreate, 
         uint _startTime, 
         uint _closingTime, 
@@ -247,7 +249,6 @@ contract AccountManager is Token, AccountManagerInterface {
         FundingRules.publicTokenCreation = _publicTokenCreation;
         FundingRules.startTime = _startTime;
         FundingRules.closingTime = _closingTime; 
-        FundingRules.minTokensToCreate = totalSupply + _minTokensToCreate; 
         FundingRules.maxTokensToCreate = totalSupply + _maxTokensToCreate;
         FundingRules.initialTokenPrice = _initialTokenPrice; 
         FundingRules.inflationRate = _inflationRate;  
@@ -381,4 +382,3 @@ contract AccountManager is Token, AccountManagerInterface {
     }
     
 }    
-  
