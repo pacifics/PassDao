@@ -85,8 +85,6 @@ contract DAOInterface {
         uint fundingAmount; 
         // The price (in wei) for a token
         uint tokenPrice; 
-        // Minimum quantity of tokens to fuel the funding
-        uint minTokensToCreate;
         // Rate per year applied to the token price 
         uint inflationRate;
         // Period for the partners to fund after the execution of the decision
@@ -172,10 +170,11 @@ contract DAO is DAOInterface
         uint _minMinutesDebatePeriod, 
         uint _maxMinutesDebatePeriod, 
         uint _minMinutesSetingPeriod,
-        uint _minutesExecuteProposalPeriod
+        uint _minutesExecuteProposalPeriod,
+        uint256 _minTokensToCreate 
     ) {
 
-        DaoAccountManager = new AccountManager(address(this), address(this), 0, "PASS DAO ACCOUNT MANAGER", 10);
+        DaoAccountManager = new AccountManager(address(this), msg.sender, 0, "PASS DAO ACCOUNT MANAGER", 10);
 
         DaoRules.minQuorumDivisor = _minQuorumDivisor;
         DaoRules.minMinutesDebatePeriod = _minMinutesDebatePeriod;
@@ -183,6 +182,8 @@ contract DAO is DAOInterface
         DaoRules.minBoardMeetingFees = _minBoardMeetingFees;
         DaoRules.minutesExecuteProposalPeriod = _minutesExecuteProposalPeriod;
         DaoRules.minMinutesSetPeriod = _minMinutesSetingPeriod;
+
+        DaoAccountManager.setMinTokensToCreate(_minTokensToCreate);
 
         BoardMeetings.length = 1; 
         ContractorProposals.length = 1;
@@ -295,7 +296,6 @@ contract DAO is DAOInterface
     /// @param _fundingAmount The maximum amount to fund
     /// @param _tokenPrice The quantity of created tokens will depend on this price
     /// @param _inflationRate If 0, the token price doesn't change 
-    /// @param _minTokensToCreate Minimum quantity of tokens to fuel the funding
     /// @param _minutesSetPeriod Period before the voting period 
     /// and for the main partner to set the partners
     /// @param _minutesFundingPeriod Period for the partners to fund the Dao after the board meeting decision
@@ -307,7 +307,6 @@ contract DAO is DAOInterface
         uint _fundingAmount, 
         uint _tokenPrice,    
         uint _inflationRate,
-        uint _minTokensToCreate,
         uint _minutesSetPeriod,
         uint _minutesFundingPeriod,
         uint _MinutesDebatingPeriod
@@ -325,7 +324,6 @@ contract DAO is DAOInterface
         f.publicTokenCreation = _publicTokenCreation;
         f.fundingAmount = _fundingAmount;
         f.tokenPrice = _tokenPrice;
-        f.minTokensToCreate = _minTokensToCreate;
         f.inflationRate = _inflationRate;
         f.minutesFundingPeriod = _minutesFundingPeriod;
 
@@ -475,7 +473,7 @@ contract DAO is DAOInterface
         if (p.FundingProposalID != 0) {
 
             FundingProposal f = FundingProposals[p.FundingProposalID];
-            DaoAccountManager.extentFunding(f.mainPartner, f.publicTokenCreation, f.tokenPrice, f.minTokensToCreate, 
+            DaoAccountManager.extentFunding(f.mainPartner, f.publicTokenCreation, f.tokenPrice, 
                 f.fundingAmount/f.tokenPrice, now, now + f.minutesFundingPeriod * 1 minutes, f.inflationRate);
             
         }
@@ -484,7 +482,7 @@ contract DAO is DAOInterface
 
             ContractorProposal c = ContractorProposals[p.ContractorProposalID];
             DaoAccountManager.sendTo(c.recipient, c.amount);
-            ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.tokenPrice, 0, 
+            ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.tokenPrice, 
                     c.amount/c.tokenPrice, now, 0, 0);
                     
         }
