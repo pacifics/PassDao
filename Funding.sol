@@ -1,3 +1,5 @@
+import "AccountManager.sol";
+
 /*
 This file is part of the DAO.
 
@@ -20,7 +22,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * Standard smart contract used for the funding of the Dao.
 */
 
-import "AccountManager.sol";
+//import "AccountManager.sol";
 
 contract Funding {
 
@@ -88,7 +90,16 @@ contract Funding {
         }
 
     /// @notice Function to fund the Dao
-    function () {fund();}
+    function () {
+
+        if (now <= closingTime) {
+            intentionToFund(msg.value);
+            if (!msg.sender.send(msg.value)) throw;
+        }        
+        else
+        fund();
+        
+    }
 
     /// @notice Function to give an intention to fund the Dao
     /// @param _amount The amount you wish to fund
