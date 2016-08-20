@@ -273,7 +273,7 @@ contract AccountManager is Token, AccountManagerInterface {
 
     }
     
-    /// @notice Refund in case the funding id not fueled
+    /// @notice Refund in case the funding is not fueled
     function refund() noEther {
         
         if (!isFueled && now > FundingRules.closingTime) {
@@ -331,7 +331,8 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Function used by the client
     /// @return the actual token price condidering the inflation rate
     function tokenPrice() constant returns (uint) {
-        return (1 + (FundingRules.inflationRate) * (now - FundingRules.startTime)/(100*365 days)) * FundingRules.initialTokenPrice;
+        return FundingRules.initialTokenPrice 
+            + FundingRules.initialTokenPrice*(FundingRules.inflationRate)*(now - FundingRules.startTime)/(100*365 days);
     }
 
     /// @dev Function to extent funding. Can be private or public
