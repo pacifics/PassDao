@@ -1,3 +1,5 @@
+import "Token.sol";
+
 /*
 This file is part of the DAO.
 
@@ -22,7 +24,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-//import "Token.sol";
+import "Token.sol";
 
 contract AccountManagerInterface {
 
@@ -167,7 +169,7 @@ contract AccountManager is Token, AccountManagerInterface {
 
     }
     
-    /// @notice Refund in case the funding id not fueled
+    /// @notice Refund in case the funding is not fueled
     function refund() noEther {
         
         if (!isFueled && now > FundingRules.closingTime) {
@@ -225,7 +227,8 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Function used by the client
     /// @return the actual token price condidering the inflation rate
     function tokenPrice() constant returns (uint) {
-        return (1 + (FundingRules.inflationRate) * (now - FundingRules.startTime)/(100*365 days)) * FundingRules.initialTokenPrice;
+        return FundingRules.initialTokenPrice 
+            + FundingRules.initialTokenPrice*(FundingRules.inflationRate)*(now - FundingRules.startTime)/(100*365 days);
     }
 
     /// @dev Function to extent funding. Can be private or public
@@ -382,3 +385,4 @@ contract AccountManager is Token, AccountManagerInterface {
     }
     
 }    
+  
