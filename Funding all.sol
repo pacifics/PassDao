@@ -130,8 +130,6 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-//import "Token.sol";
-
 contract AccountManagerInterface {
 
     // Rules for the funding
@@ -333,7 +331,8 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Function used by the client
     /// @return the actual token price condidering the inflation rate
     function tokenPrice() constant returns (uint) {
-        return (1 + (FundingRules.inflationRate) * (now - FundingRules.startTime)/(100*365 days)) * FundingRules.initialTokenPrice;
+        return FundingRules.initialTokenPrice 
+            + FundingRules.initialTokenPrice*(FundingRules.inflationRate)*(now - FundingRules.startTime)/(100*365 days);
     }
 
     /// @dev Function to extent funding. Can be private or public
@@ -513,8 +512,6 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 /*
  * Standard smart contract used for the funding of the Dao.
 */
-
-//import "AccountManager.sol";
 
 contract Funding {
 
