@@ -30,8 +30,6 @@ This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Et
 
 - A period to consider or set the proposal is foreseen before each board meeting. 
 
-- The shareholders should vote on contractor proposals as it's the only way to recieve board meeting fees and contractor tokens.
-
 - The Dao will decide when the shares and contractor tokens can be transfered.
 
 =
