@@ -229,16 +229,10 @@ contract AccountManager is Token, AccountManagerInterface {
    }
 
     /// @notice Create Token with `msg.sender` as the beneficiary in case of public funding
-    /// @dev Allow funding from partners if private funding
-    /// @return Whether successful or not
-    function () returns (bool _success) {
-        if (msg.sender == address(client) || msg.sender == FundingRules.mainPartner) {
-            return true; }
-        else 
+    function () {
         if (FundingRules.publicTokenCreation) {
-            return buyToken(msg.sender, msg.value);
+            buyToken(msg.sender, msg.value);
         }
-        else throw;
     }
 
     /// @notice Create Token with `_tokenHolder` as the beneficiary
