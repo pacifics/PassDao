@@ -1,5 +1,3 @@
-import "Token.sol";
-
 /*
 This file is part of the DAO.
 
@@ -167,13 +165,15 @@ contract AccountManager is Token, AccountManagerInterface {
     function refund() noEther {
         
         if (!isFueled && now > FundingRules.closingTime) {
-        
-            if (msg.sender.send(weiGiven[msg.sender])) {
-                Refund(msg.sender, weiGiven[msg.sender]);
+ 
+            uint amount = weiGiven[msg.sender];
+            weiGiven[msg.sender] = 0;
+            if (msg.sender.send(amount)) {
+                Refund(msg.sender, amount);
                 totalSupply -= balances[msg.sender];
                 balances[msg.sender] = 0; 
-                weiGiven[msg.sender] = 0;
             }
+            else weiGiven[msg.sender] = amount;
 
         }
     }
