@@ -576,9 +576,8 @@ contract Funding {
     /// @notice Function to fund the Dao
     function () {
 
-        if (now <= closingTime) {
+        if (now <= closingTime && msg.value ==0) {
             intentionToFund(msg.value);
-            if (!msg.sender.send(msg.value)) throw;
         }        
         else
         fund();
@@ -743,3 +742,4 @@ contract Funding {
     }
 
 }
+
