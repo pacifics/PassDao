@@ -407,10 +407,12 @@ contract DAO is DAOInterface
         throw;
         }
 
+        p.hasVoted[msg.sender] = true;
+
         if (p.fees > 0 && p.ContractorProposalID != 0) {
             uint _rewardedamount = p.fees*DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
-            if (!msg.sender.send(_rewardedamount)) throw;
             p.totalRewardedAmount += _rewardedamount;
+            if (!msg.sender.send(_rewardedamount)) throw;
         }
 
         if (_supportsProposal) {
@@ -426,8 +428,6 @@ contract DAO is DAOInterface
             c.weightToRecieve[msg.sender] += _weight; 
             c.totalWeight += _weight;
         }
-
-        p.hasVoted[msg.sender] = true;
 
         uint _deadline = DaoAccountManager.blockedAccountDeadLine(msg.sender);
         if (_deadline == 0) {
@@ -458,8 +458,9 @@ contract DAO is DAOInterface
             && now > p.votingDeadline) {
                 if (p.fees > 0 && quorum >= minQuorum()  
                 ) {
-                    if (!p.creator.send(p.fees)) throw;
+                    uint _amount = p.fees;
                     p.fees = 0;
+                    if (!p.creator.send(_amount)) throw;
                 }
         }        
 
@@ -469,6 +470,8 @@ contract DAO is DAOInterface
             p.open = false;
             return;
         }
+
+        p.open = false;
 
         if (p.FundingProposalID != 0) {
 
@@ -504,7 +507,6 @@ contract DAO is DAOInterface
         p.dateOfExecution = now;
 
         takeBoardingFees(_BoardMeetingID);
-        p.open = false;
 
         ProposalTallied(_BoardMeetingID);
     }
@@ -524,9 +526,10 @@ contract DAO is DAOInterface
         
         uint _amount = (c.amount*c.weightToRecieve[_Tokenholder])/c.totalWeight;
 
+        c.weightToRecieve[_Tokenholder] = 0;
+
         AccountManager m = ContractorAccountManager[c.recipient];
         m.rewardToken(_Tokenholder, _amount);
-        c.weightToRecieve[_Tokenholder] = 0;
 
         TokensBoughtFor(_contractorProposalID, _Tokenholder, _amount);
 
