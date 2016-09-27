@@ -105,6 +105,7 @@ contract Token is TokenInterface {
 
 }
 
+
 /*
 This file is part of the DAO.
 
@@ -139,9 +140,9 @@ contract AccountManagerInterface {
         // True if crowdfunding
         bool publicTokenCreation; 
         // Minimum quantity of tokens to create
-        uint256 minTokensToCreate; 
+        uint256 minTotalSupply; 
         // Maximum quantity of tokens to create
-        uint256 maxTokensToCreate; 
+        uint256 maxTotalSupply; 
         // Start time of the funding
         uint startTime; 
         // Closing time of the funding
@@ -313,14 +314,14 @@ contract AccountManager is Token, AccountManagerInterface {
         return isFueled;
     }
 
-    function setMinTokensToCreate(uint256 _minTokensToCreate) external returns (uint) {
-        FundingRules.minTokensToCreate = _minTokensToCreate; 
+    function setMinTotalSupply(uint256 _minTotalSupply) external returns (uint) {
+        FundingRules.minTotalSupply = _minTotalSupply; 
     }
         
     /// @dev Function used by the client
     /// @return The maximum tokens after the funding
-    function MaxTokensToCreate() external returns (uint) {
-        return (FundingRules.maxTokensToCreate);
+    function MaxTotalSupply() external returns (uint) {
+        return (FundingRules.maxTotalSupply);
     }
     
     /// @dev Function used by the client
@@ -351,7 +352,7 @@ contract AccountManager is Token, AccountManagerInterface {
         FundingRules.publicTokenCreation = _publicTokenCreation;
         FundingRules.startTime = _startTime;
         FundingRules.closingTime = _closingTime; 
-        FundingRules.maxTokensToCreate = totalSupply + _maxTokensToCreate;
+        FundingRules.maxTotalSupply = totalSupply + _maxTokensToCreate;
         FundingRules.initialTokenPrice = _initialTokenPrice; 
         FundingRules.inflationRate = _inflationRate;  
         
@@ -417,7 +418,7 @@ contract AccountManager is Token, AccountManagerInterface {
         uint _tokenholderID;
         uint _quantity = _amount/tokenPrice();
 
-        if ((totalSupply + _quantity > FundingRules.maxTokensToCreate)
+        if ((totalSupply + _quantity > FundingRules.maxTotalSupply)
             || (now > FundingRules.closingTime && FundingRules.closingTime !=0) 
             || _amount <= 0
             || (now < FundingRules.startTime) ) {
@@ -428,11 +429,11 @@ contract AccountManager is Token, AccountManagerInterface {
         totalSupply += _quantity;
         TokensCreated(_tokenHolder, _quantity);
         
-        if (totalSupply == FundingRules.maxTokensToCreate) {
+        if (totalSupply == FundingRules.maxTotalSupply) {
             FundingRules.closingTime = now;
         }
 
-        if (totalSupply >= FundingRules.minTokensToCreate 
+        if (totalSupply >= FundingRules.minTotalSupply 
         && !isFueled) {
             isFueled = true; 
             FuelingToDate(totalSupply);
@@ -517,8 +518,8 @@ contract Funding {
         uint256 intentionAmount;
         // The weight of a partner if private funding
         uint weight;
-        // True if the partner already funded
-        bool hasFunded;
+        // The amount already funded by the partner
+        uint amountFunded;
     }
 
     // Address of the creator of this contract
@@ -576,10 +577,6 @@ contract Funding {
     /// @notice Function to fund the Dao
     function () {
 
-        if (now <= closingTime && msg.value ==0) {
-            intentionToFund(msg.value);
-        }        
-        else
         fund();
         
     }
@@ -669,14 +666,13 @@ contract Funding {
         
         Partner t = partners[partnerID[msg.sender]];
 
-        uint _fundingAmount = amountToFund(msg.sender);
-        if (t.hasFunded 
-        || msg.value > _fundingAmount
-        || !OurAccountManager.send(msg.value)) throw;
+        uint _fundingAmount = amountToFund(msg.sender) - t.amountFunded;
+        if (msg.value > _fundingAmount) throw;
 
         if (OurAccountManager.buyTokenFor(msg.sender, msg.value)) {
-            t.hasFunded = true;
+            t.amountFunded += msg.value;
             Funded(msg.sender, msg.value);
+            if (!OurAccountManager.send(this.balance)) throw;
             return true;
         }
         else throw;
@@ -742,4 +738,3 @@ contract Funding {
     }
 
 }
-
