@@ -34,9 +34,9 @@ contract AccountManagerInterface {
         // True if crowdfunding
         bool publicTokenCreation; 
         // Minimum quantity of tokens to create
-        uint256 minTokensToCreate; 
+        uint256 minTotalSupply; 
         // Maximum quantity of tokens to create
-        uint256 maxTokensToCreate; 
+        uint256 maxTotalSupply; 
         // Start time of the funding
         uint startTime; 
         // Closing time of the funding
@@ -208,14 +208,14 @@ contract AccountManager is Token, AccountManagerInterface {
         return isFueled;
     }
 
-    function setMinTokensToCreate(uint256 _minTokensToCreate) external returns (uint) {
-        FundingRules.minTokensToCreate = _minTokensToCreate; 
+    function setMinTotalSupply(uint256 _minTotalSupply) external returns (uint) {
+        FundingRules.minTotalSupply = _minTotalSupply; 
     }
         
     /// @dev Function used by the client
     /// @return The maximum tokens after the funding
-    function MaxTokensToCreate() external returns (uint) {
-        return (FundingRules.maxTokensToCreate);
+    function MaxTotalSupply() external returns (uint) {
+        return (FundingRules.maxTotalSupply);
     }
     
     /// @dev Function used by the client
@@ -246,7 +246,7 @@ contract AccountManager is Token, AccountManagerInterface {
         FundingRules.publicTokenCreation = _publicTokenCreation;
         FundingRules.startTime = _startTime;
         FundingRules.closingTime = _closingTime; 
-        FundingRules.maxTokensToCreate = totalSupply + _maxTokensToCreate;
+        FundingRules.maxTotalSupply = totalSupply + _maxTokensToCreate;
         FundingRules.initialTokenPrice = _initialTokenPrice; 
         FundingRules.inflationRate = _inflationRate;  
         
@@ -312,7 +312,7 @@ contract AccountManager is Token, AccountManagerInterface {
         uint _tokenholderID;
         uint _quantity = _amount/tokenPrice();
 
-        if ((totalSupply + _quantity > FundingRules.maxTokensToCreate)
+        if ((totalSupply + _quantity > FundingRules.maxTotalSupply)
             || (now > FundingRules.closingTime && FundingRules.closingTime !=0) 
             || _amount <= 0
             || (now < FundingRules.startTime) ) {
@@ -323,11 +323,11 @@ contract AccountManager is Token, AccountManagerInterface {
         totalSupply += _quantity;
         TokensCreated(_tokenHolder, _quantity);
         
-        if (totalSupply == FundingRules.maxTokensToCreate) {
+        if (totalSupply == FundingRules.maxTotalSupply) {
             FundingRules.closingTime = now;
         }
 
-        if (totalSupply >= FundingRules.minTokensToCreate 
+        if (totalSupply >= FundingRules.minTotalSupply 
         && !isFueled) {
             isFueled = true; 
             FuelingToDate(totalSupply);
