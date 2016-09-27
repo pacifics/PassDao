@@ -105,6 +105,7 @@ contract Token is TokenInterface {
 
 }
 
+
 /*
 This file is part of the DAO.
 
@@ -139,9 +140,9 @@ contract AccountManagerInterface {
         // True if crowdfunding
         bool publicTokenCreation; 
         // Minimum quantity of tokens to create
-        uint256 minTokensToCreate; 
+        uint256 minTotalSupply; 
         // Maximum quantity of tokens to create
-        uint256 maxTokensToCreate; 
+        uint256 maxTotalSupply; 
         // Start time of the funding
         uint startTime; 
         // Closing time of the funding
@@ -313,14 +314,14 @@ contract AccountManager is Token, AccountManagerInterface {
         return isFueled;
     }
 
-    function setMinTokensToCreate(uint256 _minTokensToCreate) external returns (uint) {
-        FundingRules.minTokensToCreate = _minTokensToCreate; 
+    function setMinTotalSupply(uint256 _minTotalSupply) external returns (uint) {
+        FundingRules.minTotalSupply = _minTotalSupply; 
     }
         
     /// @dev Function used by the client
     /// @return The maximum tokens after the funding
-    function MaxTokensToCreate() external returns (uint) {
-        return (FundingRules.maxTokensToCreate);
+    function MaxTotalSupply() external returns (uint) {
+        return (FundingRules.maxTotalSupply);
     }
     
     /// @dev Function used by the client
@@ -351,7 +352,7 @@ contract AccountManager is Token, AccountManagerInterface {
         FundingRules.publicTokenCreation = _publicTokenCreation;
         FundingRules.startTime = _startTime;
         FundingRules.closingTime = _closingTime; 
-        FundingRules.maxTokensToCreate = totalSupply + _maxTokensToCreate;
+        FundingRules.maxTotalSupply = totalSupply + _maxTokensToCreate;
         FundingRules.initialTokenPrice = _initialTokenPrice; 
         FundingRules.inflationRate = _inflationRate;  
         
@@ -417,7 +418,7 @@ contract AccountManager is Token, AccountManagerInterface {
         uint _tokenholderID;
         uint _quantity = _amount/tokenPrice();
 
-        if ((totalSupply + _quantity > FundingRules.maxTokensToCreate)
+        if ((totalSupply + _quantity > FundingRules.maxTotalSupply)
             || (now > FundingRules.closingTime && FundingRules.closingTime !=0) 
             || _amount <= 0
             || (now < FundingRules.startTime) ) {
@@ -428,11 +429,11 @@ contract AccountManager is Token, AccountManagerInterface {
         totalSupply += _quantity;
         TokensCreated(_tokenHolder, _quantity);
         
-        if (totalSupply == FundingRules.maxTokensToCreate) {
+        if (totalSupply == FundingRules.maxTotalSupply) {
             FundingRules.closingTime = now;
         }
 
-        if (totalSupply >= FundingRules.minTokensToCreate 
+        if (totalSupply >= FundingRules.minTotalSupply 
         && !isFueled) {
             isFueled = true; 
             FuelingToDate(totalSupply);
@@ -593,8 +594,6 @@ contract DAOInterface {
         uint minMinutesSetPeriod; 
         // If true, the tokens can be transfered from a tokenholder to another
         bool tokenTransferAble;
-        // The address of a new revision of Dao contract
-        address newDao;
     } 
 
     // The Dao account manager contract
@@ -656,7 +655,7 @@ contract DAO is DAOInterface
         uint _maxMinutesDebatePeriod, 
         uint _minMinutesSetingPeriod,
         uint _minutesExecuteProposalPeriod,
-        uint256 _minTokensToCreate 
+        uint256 _minTotalSupply 
     ) {
 
         DaoAccountManager = new AccountManager(address(this), msg.sender, 0, "PASS DAO ACCOUNT MANAGER", 10);
@@ -668,7 +667,7 @@ contract DAO is DAOInterface
         DaoRules.minutesExecuteProposalPeriod = _minutesExecuteProposalPeriod;
         DaoRules.minMinutesSetPeriod = _minMinutesSetingPeriod;
 
-        DaoAccountManager.setMinTokensToCreate(_minTokensToCreate);
+        DaoAccountManager.setMinTotalSupply(_minTotalSupply);
 
         BoardMeetings.length = 1; 
         ContractorProposals.length = 1;
@@ -932,7 +931,7 @@ contract DAO is DAOInterface
         {
         BoardMeeting p = BoardMeetings[_BoardMeetingID];
 
-        if (now < p.votingDeadline
+        if (now <= p.votingDeadline
             || !p.open ) {
             throw;
         }
@@ -950,7 +949,8 @@ contract DAO is DAOInterface
         }        
 
         if (now > p.votingDeadline + DaoRules.minutesExecuteProposalPeriod * 1 minutes 
-                    || now > p.votingDeadline && ( quorum < minQuorum() || p.yea < p.nay ) ) {
+                || (now > p.votingDeadline && ( quorum < minQuorum() || p.yea <= p.nay ))
+            ) {
             takeBoardingFees(_BoardMeetingID);
             p.open = false;
             return;
@@ -1034,9 +1034,10 @@ contract DAO is DAOInterface
     /// @param _boardMeetingID THe index of the proposal
     function takeBoardingFees(uint _boardMeetingID) internal {
         BoardMeeting p = BoardMeetings[_boardMeetingID];
-        if (p.fees - p.totalRewardedAmount >0) {
-            if (!DaoAccountManager.send(p.fees - p.totalRewardedAmount)) throw;
+        if (p.fees - p.totalRewardedAmount > 0) {
+            uint _amount = p.fees - p.totalRewardedAmount;
             p.totalRewardedAmount = p.fees;
+            if (!DaoAccountManager.send(_amount)) throw;
         }
     }
         
