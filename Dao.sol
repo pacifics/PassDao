@@ -108,8 +108,6 @@ contract DAOInterface {
         uint minMinutesSetPeriod; 
         // If true, the tokens can be transfered from a tokenholder to another
         bool tokenTransferAble;
-        // The address of a new revision of Dao contract
-        address newDao;
     } 
 
     // The Dao account manager contract
@@ -171,7 +169,7 @@ contract DAO is DAOInterface
         uint _maxMinutesDebatePeriod, 
         uint _minMinutesSetingPeriod,
         uint _minutesExecuteProposalPeriod,
-        uint256 _minTokensToCreate 
+        uint256 _minTotalSupply 
     ) {
 
         DaoAccountManager = new AccountManager(address(this), msg.sender, 0, "PASS DAO ACCOUNT MANAGER", 10);
@@ -183,7 +181,7 @@ contract DAO is DAOInterface
         DaoRules.minutesExecuteProposalPeriod = _minutesExecuteProposalPeriod;
         DaoRules.minMinutesSetPeriod = _minMinutesSetingPeriod;
 
-        DaoAccountManager.setMinTokensToCreate(_minTokensToCreate);
+        DaoAccountManager.setMinTotalSupply(_minTotalSupply);
 
         BoardMeetings.length = 1; 
         ContractorProposals.length = 1;
@@ -447,7 +445,7 @@ contract DAO is DAOInterface
         {
         BoardMeeting p = BoardMeetings[_BoardMeetingID];
 
-        if (now < p.votingDeadline
+        if (now <= p.votingDeadline
             || !p.open ) {
             throw;
         }
@@ -465,7 +463,8 @@ contract DAO is DAOInterface
         }        
 
         if (now > p.votingDeadline + DaoRules.minutesExecuteProposalPeriod * 1 minutes 
-                    || now > p.votingDeadline && ( quorum < minQuorum() || p.yea < p.nay ) ) {
+                || (now > p.votingDeadline && ( quorum < minQuorum() || p.yea <= p.nay ))
+            ) {
             takeBoardingFees(_BoardMeetingID);
             p.open = false;
             return;
@@ -549,9 +548,10 @@ contract DAO is DAOInterface
     /// @param _boardMeetingID THe index of the proposal
     function takeBoardingFees(uint _boardMeetingID) internal {
         BoardMeeting p = BoardMeetings[_boardMeetingID];
-        if (p.fees - p.totalRewardedAmount >0) {
-            if (!DaoAccountManager.send(p.fees - p.totalRewardedAmount)) throw;
+        if (p.fees - p.totalRewardedAmount > 0) {
+            uint _amount = p.fees - p.totalRewardedAmount;
             p.totalRewardedAmount = p.fees;
+            if (!DaoAccountManager.send(_amount)) throw;
         }
     }
         
