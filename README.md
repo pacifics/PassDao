@@ -69,12 +69,3 @@ Basic, standardized Token contract. Defines the functions to check token balance
 - Funding.sol:
 Smart contract used for the presale of Dao shares. 
 
-=
-
-## See Beta version on Testnet
-
-For the presale, the Funding address : 0x515403bf0ED5deA085bb5cBA9C70ee68F4AE0c10
-
-To make proposals, the Dao address : 0xefB07C95c183e7C1DF5F65dE2d9C9Fb432A5deAA
-
-To see balances, the Dao Account Manager address : 0xA14454D50563CC860e2cfC0c352790C25E983330
