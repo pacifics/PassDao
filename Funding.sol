@@ -1,5 +1,3 @@
-import "AccountManager.sol";
-
 /*
 This file is part of the DAO.
 
@@ -22,7 +20,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * Standard smart contract used for the funding of the Dao.
 */
 
-//import "AccountManager.sol";
+import "AccountManager.sol";
 
 contract Funding {
 
@@ -33,8 +31,8 @@ contract Funding {
         uint256 intentionAmount;
         // The weight of a partner if private funding
         uint weight;
-        // True if the partner already funded
-        bool hasFunded;
+        // The amount already funded by the partner
+        uint amountFunded;
     }
 
     // Address of the creator of this contract
@@ -92,10 +90,6 @@ contract Funding {
     /// @notice Function to fund the Dao
     function () {
 
-        if (now <= closingTime && msg.value ==0) {
-            intentionToFund(msg.value);
-        }        
-        else
         fund();
         
     }
@@ -185,14 +179,13 @@ contract Funding {
         
         Partner t = partners[partnerID[msg.sender]];
 
-        uint _fundingAmount = amountToFund(msg.sender);
-        if (t.hasFunded 
-        || msg.value > _fundingAmount
-        || !OurAccountManager.send(msg.value)) throw;
+        uint _fundingAmount = amountToFund(msg.sender) - t.amountFunded;
+        if (msg.value > _fundingAmount) throw;
 
         if (OurAccountManager.buyTokenFor(msg.sender, msg.value)) {
-            t.hasFunded = true;
+            t.amountFunded += msg.value;
             Funded(msg.sender, msg.value);
+            if (!OurAccountManager.send(this.balance)) throw;
             return true;
         }
         else throw;
@@ -258,4 +251,3 @@ contract Funding {
     }
 
 }
-
