@@ -41,6 +41,8 @@ The smart contract has the next main functions:
 
 # About Security
 
+- It is necessary to ask to be included in the mailing list in order to fund. This is only to ensure decentralization. For the same reason, funding amount for each partner is limited depending on the balance in ether of the partner address.
+
 - There is no useless blocked ethers. The presale starts with only funding intentions and the minimum and maximum funding amounts are limited according to what is needed to start the project and to ensure decentralization. If the Dao shareholders want to refund a part of the Dao balance, they can vote to send it to a contractor smart contract which will reward shareholders according to their share in Dao.
 
 - There is no "calldata" function which could allow contractor smart contracts to run complex or recursive functions.
@@ -67,5 +69,5 @@ The Account Manager smart contract is associated with a recipient (the Dao for d
 Basic, standardized Token contract. Defines the functions to check token balances, send tokens, send tokens on behalf of a 3rd party and the corresponding approval process.
 
 - Funding.sol:
-Smart contract used for the presale of Dao shares. 
+Smart contract used for the funding of the Dao. Each ether address can send ethers in order to fund the Dao but partners have to be included in the mailing list to become a shareholder of the Dao. All ether addresses can refund for the amount sent and not funded. 
 
