@@ -29,10 +29,12 @@ contract Funding {
         address partnerAddress; 
         // The amount that the partner wish to fund
         uint256 intentionAmount;
-        // The weight of a partner if private funding
-        uint weight;
-        // The amount already funded by the partner
-        uint amountFunded;
+        // The limit a partner can fund
+        uint limit;
+        // the amount that the partner funded to the Dao
+        uint fundedAmount;
+        // True if the partner is in the mailing list
+        bool valid;
     }
 
     // Address of the creator of this contract
@@ -47,14 +49,16 @@ contract Funding {
     uint public amountLimit; 
     /// The partner can fund only under a defined percentage of their ether balance 
     uint public divisorBalanceLimit;
+    // True if the limits for funding are set
+    bool public limitSet;
     // True if all the partners are set and the funding can start
     bool public allSet;
     // Array of partners which wish to fund 
     Partner[] public partners;
     // The index of the partners
     mapping (address => uint) public partnerID; 
-    // The total weight of partners if private funding
-    uint public totalWeight;
+    // The total of amount limits of all partners
+    uint public sumOfLimits;
     // The total funded amount (in wei) if private funding
     uint public totalFunded; 
     
@@ -65,9 +69,6 @@ contract Funding {
     modifier onlyCreator {if (msg.sender != address(creator)) throw; _ }
 
     event IntentionToFund(address partner, uint amount);
-    event AllPartnersSet(uint totalWeight);
-    event PartnerSet(address partner, uint weight);
-    event Funded(address partner, uint amount);
 
     /// @dev Constructor function with setting
     /// @param _ourAccountManager The Dao account manager
@@ -87,40 +88,48 @@ contract Funding {
         
         }
 
-    /// @notice Function to fund the Dao
-    function () {
-
-        fund();
-        
-    }
-
     /// @notice Function to give an intention to fund the Dao
-    /// @param _amount The amount you wish to fund
-    function intentionToFund(uint256 _amount) noEther {
+    function () {
         
-        if (_amount <= 0
+        if (msg.value <= 0
             || now < startTime
             || (now > closingTime && closingTime != 0)
             || allSet
         ) throw;
         
-        if (_amount>0 && partnerID[msg.sender] == 0) {
+        if (partnerID[msg.sender] == 0) {
             uint _partnerID = partners.length++;
             Partner t = partners[_partnerID];
              
             partnerID[msg.sender] = _partnerID;
              
             t.partnerAddress = msg.sender;
-            t.intentionAmount = _amount;
+            t.intentionAmount += msg.value;
         }
         else {
-            partners[partnerID[msg.sender]].intentionAmount = _amount;
+            partners[partnerID[msg.sender]].intentionAmount += msg.value;
         }    
         
-        IntentionToFund(msg.sender, _amount);
+        IntentionToFund(msg.sender, msg.value);
     }
     
-    /// @dev Function used by the creator to set partner
+    /// @dev Function used by the creator to set the funding limits
+    /// @param _amountLimit Limit in amount a partner can fund
+    /// @param _divisorBalanceLimit  The partner can fund 
+    /// only under a defined percentage of their ether balance 
+    function setLimits(
+            uint _amountLimit, 
+            uint _divisorBalanceLimit
+    ) noEther onlyCreator {
+        
+        if (limitSet) throw;
+         
+        amountLimit = _amountLimit;
+        divisorBalanceLimit = _divisorBalanceLimit;
+    
+    }
+
+    /// @dev Function used by the creator to set partners
     /// @param _from The index of the first partner to set
     /// @param _to The index of the last partner to set
     function setPartners(
@@ -133,31 +142,14 @@ contract Funding {
                 throw;
         }
         
-        uint _amount;
-        for (uint i = _from; i < _to; i++) {
-            
+        limitSet = true;
+        for (uint i = _from; i <= _to; i++) {
             Partner t = partners[i];
-            if (t.weight > 0) totalWeight -= t.weight;
-            _amount = partnerFundLimit(i, amountLimit, divisorBalanceLimit);
-            t.weight = _amount; 
-            totalWeight += _amount;
+            t.valid = true;
+            t.limit = partnerFundingLimit(i, amountLimit, divisorBalanceLimit);
+            sumOfLimits += t.limit;
         }
-    }
-
-    /// @dev Function used by the creator to set the funding limits
-    /// @param _amountLimit Limit in amount a partner can fund
-    /// @param _divisorBalanceLimit  The partner can fund 
-    /// only under a defined percentage of their ether balance 
-    function setLimits(
-            uint _amountLimit, 
-            uint _divisorBalanceLimit
-    ) noEther onlyCreator {
         
-         if (allSet) throw;
-         
-        amountLimit = _amountLimit;
-        divisorBalanceLimit = _divisorBalanceLimit;
-
     }
 
     /// @dev Function used by the creator to close the set of partners
@@ -167,47 +159,70 @@ contract Funding {
 
         allSet = true;
         closingTime = now;
-        AllPartnersSet(totalWeight);
-        
+
     }
 
-    /// @dev Internal function to fund
-    /// @return Whether the funded is successful or not
-    function fund() internal returns (bool _success) {
-        
-        if (!allSet) throw;
-        
-        Partner t = partners[partnerID[msg.sender]];
+    /// @notice Function to fund the Dao
+    function fundDao() noEther {
 
-        uint _fundingAmount = amountToFund(msg.sender) - t.amountFunded;
-        if (msg.value > _fundingAmount) throw;
+        uint _index = partnerID[msg.sender];
+        Partner t = partners[_index];
+        
+        if (!t.valid || _index == 0) throw;
+        
+        uint _amountToFund = t.limit - t.fundedAmount;
 
-        if (OurAccountManager.buyTokenFor(msg.sender, msg.value)) {
-            t.amountFunded += msg.value;
-            Funded(msg.sender, msg.value);
-            if (!OurAccountManager.send(this.balance)) throw;
-            return true;
+        if (t.valid && _amountToFund > 0 && OurAccountManager.buyTokenFor(msg.sender, _amountToFund)) {
+            t.fundedAmount = t.limit;
+            if (!OurAccountManager.send(_amountToFund)) throw;
         }
-        else throw;
         
     }
 
-    /// @dev Allow to calculate the result of the intention procedure
+    /// @notice Function to allow the refund of wei above limit
+    function refund() {
+
+        uint _index = partnerID[msg.sender];
+        if (_index == 0) throw;
+        
+        Partner t = partners[_index];
+
+        uint _amountToRefund = msg.value + t.intentionAmount - t.fundedAmount;
+
+        t.intentionAmount = t.fundedAmount;
+        if (_amountToRefund == 0 || !msg.sender.send(_amountToRefund)) throw;
+
+        }
+
+    /// @dev Allow to calculate the result of the funding procedure at present time
     /// @param _amountLimit Limit in amount a partner can fund
     /// @param _divisorBalanceLimit  The partner can fund 
     /// only under a defined percentage of their ether balance 
     /// @return The maximum amount if all the partners fund
-    function MaxFundAmount(uint _amountLimit, uint _divisorBalanceLimit) constant returns (uint) {
+    function TotalFundingAmount(uint _amountLimit, uint _divisorBalanceLimit) constant returns (uint) {
 
-        uint _totalWeight;
+        uint _total;
+        uint _amount;
+        uint _balanceLimit;
 
         for (uint i = 1; i < partners.length; i++) {
 
-            _totalWeight += partnerFundLimit(i, _amountLimit, _divisorBalanceLimit);
+            Partner t = partners[i];
+
+            if (_divisorBalanceLimit > 0) {
+                _balanceLimit = t.partnerAddress.balance/_divisorBalanceLimit;
+                _amount = _balanceLimit;
+                }
+
+            if (_amount > _amountLimit) _amount = _amountLimit;
+
+            if (_amount > t.intentionAmount) _amount = t.intentionAmount;
+
+            _total += _amount;
 
         }
         
-        return _totalWeight;
+        return _total;
         
     }
 
@@ -215,8 +230,8 @@ contract Funding {
     /// @param _amountLimit Limit in amount a partner can fund
     /// @param _divisorBalanceLimit  The partner can fund 
     /// only under a defined percentage of their ether balance 
-    /// @return The maximum amount the partner could fund
-    function partnerFundLimit(uint _index, uint _amountLimit, uint _divisorBalanceLimit) constant returns (uint) {
+    /// @return The maximum amount the partner can fund
+    function partnerFundingLimit(uint _index, uint _amountLimit, uint _divisorBalanceLimit) internal returns (uint) {
 
         uint _amount;
         uint _balanceLimit;
@@ -225,12 +240,9 @@ contract Funding {
             
         if (_divisorBalanceLimit > 0) {
             _balanceLimit = t.partnerAddress.balance/_divisorBalanceLimit;
-            if (t.intentionAmount > _balanceLimit) {
-                _amount = _balanceLimit;
+            _amount = _balanceLimit;
             }
-            else _amount = t.intentionAmount;
-        }
-            
+
         if (_amount > _amountLimit) _amount = _amountLimit;
         
         return _amount;
@@ -246,7 +258,7 @@ contract Funding {
     /// @return the amount to fund
     function amountToFund(address _partner) constant returns (uint) {
 
-        return partners[partnerID[_partner]].weight;
+        return partners[partnerID[_partner]].limit;
 
     }
 
