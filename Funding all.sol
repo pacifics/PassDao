@@ -1,5 +1,6 @@
+//Compiler version 0.3.6
+
 /*
-Compiler version 0.4.2
 Basic, standardized Token contract with no "premine". Defines the functions to
 check token balances, send tokens, send tokens on behalf of a 3rd party and the
 corresponding approval process.
