@@ -1,5 +1,3 @@
-import "AccountManager.sol";
-
 /*
 This file is part of the DAO.
 
@@ -23,7 +21,7 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-//import "AccountManager.sol";
+import "AccountManager.sol";
 
 contract DAOInterface {
 
@@ -108,8 +106,8 @@ contract DAOInterface {
         uint minutesExecuteProposalPeriod;
         // Period needed for the curator to check the idendity of a contractor or private funding creator
         uint minMinutesSetPeriod; 
-        // If true, the tokens can be transfered from a tokenholder to another
-        bool tokenTransferAble;
+        // Address of the account manager of transferable tokens
+        address tokenTransferAble;
     } 
 
     // The Dao account manager contract
@@ -341,8 +339,7 @@ contract DAO is DAOInterface
     /// @param _minutesExecuteProposalPeriod The period in minutes to execute 
     /// a decision after a board meeting
     /// @param _MinutesDebatingPeriod Proposed period of the board meeting
-    /// @param _tokenTransferAble Trie if the proposal foresee 
-    /// to allow transfer of shares 
+    /// @param _tokenTransferAble Address of the account manager of transferable tokens
     function newDaoRulesProposal(
         uint _minMinutesSetPeriod,
         uint _minQuorumDivisor, 
@@ -351,7 +348,7 @@ contract DAO is DAOInterface
         uint _maxMinutesDebatePeriod,
         uint _minutesExecuteProposalPeriod,
         uint _MinutesDebatingPeriod,
-        bool _tokenTransferAble
+        address _tokenTransferAble
     ) returns (uint) {
     
         if (msg.value < DaoRules.minBoardMeetingFees ) throw; 
@@ -499,8 +496,13 @@ contract DAO is DAOInterface
             DaoRules.minBoardMeetingFees = r.minBoardMeetingFees;
             DaoRules.minutesExecuteProposalPeriod = r.minutesExecuteProposalPeriod;
             DaoRules.minMinutesSetPeriod = r.minMinutesSetPeriod;
-            DaoRules.tokenTransferAble = r.tokenTransferAble; DaoAccountManager.TransferAble(r.tokenTransferAble);
 
+            AccountManager m = AccountManager(r.tokenTransferAble);
+            m.TransferAble(true);
+            if (m == DaoAccountManager) {
+                DaoRules.tokenTransferAble = m;
+            }
+    
         }
         
         _success = true; 
@@ -533,16 +535,6 @@ contract DAO is DAOInterface
 
         TokensBoughtFor(_contractorProposalID, _Tokenholder, _amount);
 
-    }
-
-    /// @notice Function to able or disable transfer of contractor tokens
-    /// like the Dao account manager
-    /// @param _contractorAccountManager The address of the contractor account manager
-    function transferAble(address _contractorAccountManager) noEther {
-
-        AccountManager m = AccountManager(_contractorAccountManager);
-        m.TransferAble(DaoRules.tokenTransferAble);
-        
     }
 
     /// @dev internal function to put to the Dao balance the board meeting fees of non voters
