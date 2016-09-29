@@ -1,3 +1,5 @@
+//Compiler version 0.3.6
+
 /*
 Basic, standardized Token contract with no "premine". Defines the functions to
 check token balances, send tokens, send tokens on behalf of a 3rd party and the
@@ -485,6 +487,7 @@ contract AccountManager is Token, AccountManagerInterface {
     }
     
 }    
+  
 
 /*
 This file is part of the DAO.
@@ -638,9 +641,7 @@ contract DAO is DAOInterface
     
     // Modifier that allows only shareholders to vote and create new proposals
     modifier onlyTokenholders {
-        if (DaoAccountManager.balanceOf(msg.sender) == 0) throw;
-            _
-    }
+        if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _}
     
     /// @dev The constructor function
     /// @param _minBoardMeetingFees The amount in wei for the voters to vote during a board meeting
@@ -738,6 +739,7 @@ contract DAO is DAOInterface
     /// @param _MinutesDebatingPeriod Proposed period of the board meeting
     /// @return The index of the proposal
     function newContractorProposal(
+        address _recipient,
         uint _contractorID, 
         string _contractorname,  
         uint _amount, 
@@ -753,7 +755,7 @@ contract DAO is DAOInterface
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
 
-        c.recipient = msg.sender;       
+        c.recipient = _recipient;       
         c.initialSupply = _initialSupply;
         if (!hasAnAccountManager[c.recipient]) {
             AccountManager m = new AccountManager(address(this), c.recipient, _contractorID, _contractorname, c.initialSupply) ;
