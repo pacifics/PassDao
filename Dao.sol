@@ -1,3 +1,5 @@
+import "AccountManager.sol";
+
 /*
 This file is part of the DAO.
 
@@ -21,7 +23,7 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-import "AccountManager.sol";
+//import "AccountManager.sol";
 
 contract DAOInterface {
 
@@ -152,9 +154,7 @@ contract DAO is DAOInterface
     
     // Modifier that allows only shareholders to vote and create new proposals
     modifier onlyTokenholders {
-        if (DaoAccountManager.balanceOf(msg.sender) == 0) throw;
-            _
-    }
+        if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _}
     
     /// @dev The constructor function
     /// @param _minBoardMeetingFees The amount in wei for the voters to vote during a board meeting
@@ -252,6 +252,7 @@ contract DAO is DAOInterface
     /// @param _MinutesDebatingPeriod Proposed period of the board meeting
     /// @return The index of the proposal
     function newContractorProposal(
+        address _recipient,
         uint _contractorID, 
         string _contractorname,  
         uint _amount, 
@@ -267,7 +268,7 @@ contract DAO is DAOInterface
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
 
-        c.recipient = msg.sender;       
+        c.recipient = _recipient;       
         c.initialSupply = _initialSupply;
         if (!hasAnAccountManager[c.recipient]) {
             AccountManager m = new AccountManager(address(this), c.recipient, _contractorID, _contractorname, c.initialSupply) ;
