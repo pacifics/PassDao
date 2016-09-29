@@ -60,10 +60,10 @@ The smart contract has the next main functions:
 # Solidity Files
 
 - DAO.sol:
-Smart contract for a Decentralized Autonomous Organization (DAO) to automate organizational governance and decision-making.
+Smart contract for a Decentralized Autonomous Organization (DAO) to automate organizational governance and decision-making. Proposals can be to send Eth to a contrator, to fund the Dao or to change the Dao rules. 
 
 - AccountManager.sol:
-The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the contractor recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao).
+The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the contractor recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao). The Dao account manager contains the balance of the Dao.
 
 - Token.sol:
 Basic, standardized Token contract. Defines the functions to check token balances, send tokens, send tokens on behalf of a 3rd party and the corresponding approval process.
