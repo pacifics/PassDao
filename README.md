@@ -69,5 +69,5 @@ The Account Manager smart contract is associated with a recipient (the Dao for d
 Basic, standardized Token contract. Defines the functions to check token balances, send tokens, send tokens on behalf of a 3rd party and the corresponding approval process.
 
 - Funding.sol:
-Smart contract used for the funding of the Dao. Each ether address can send ethers in order to fund the Dao but partners have to be included in the mailing list to become a shareholder of the Dao. All ether addresses can refund for the amount sent and not funded. 
+Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. 
 
