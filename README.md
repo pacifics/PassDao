@@ -41,7 +41,7 @@ The smart contract has the next main functions:
 
 # About Security
 
-- It is necessary to ask to be included in the mailing list in order to participate in the first funding. This is only because we want to ensure decentralization and to avoid the possibility to fund using "hundreds" of addresses. For the same reason, funding amount for each partner is limited depending on the balance in ether of the partner address. 
+- It is necessary to ask to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders and avoiding the possibility to fund using "hundreds" of addresses. For the same reason, funding amount for each partner is limited depending on the balance in ether of the partner address. 
 
 - There is no useless blocked ethers. Each funding is limited according to the funding proposal. And if the Dao shareholders want to refund a part of the Dao balance, they can vote to send it to a contractor smart contract which will reward shareholders according to their share in Dao.
 
