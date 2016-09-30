@@ -194,7 +194,7 @@ contract Funding {
         
         Partner t = partners[_index];
 
-        uint _amountToRefund = msg.value + t.intentionAmount - t.fundedAmount;
+        uint _amountToRefund = t.intentionAmount - t.fundedAmount;
 
         t.intentionAmount = t.fundedAmount;
         if (_amountToRefund == 0 || !msg.sender.send(_amountToRefund)) throw;
