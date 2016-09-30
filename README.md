@@ -69,5 +69,5 @@ The Account Manager smart contract is associated with a recipient (the Dao for d
 Basic, standardized Token contract. Defines the functions to check token balances, send tokens, send tokens on behalf of a 3rd party and the corresponding approval process. External functions are : Approve (tokens allowance).
 
 - Funding.sol:
-Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. External functions are : IntentionToFund (default function to send Eth to the smart contract), FundDao (to send Eth to the Dao), Refund (to give back the balance to the shareholder).
+Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. External functions are : IntentionToFund (default function to send Eth to the Funding smart contract), FundDao (to send Eth from the Funding smart contract to the Dao), Refund (to give back Funding smart contract Eth balances to shareholders).
 
