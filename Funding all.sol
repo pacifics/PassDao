@@ -488,7 +488,6 @@ contract AccountManager is Token, AccountManagerInterface {
     
 }    
   
-
 /*
 This file is part of the DAO.
 
@@ -659,17 +658,24 @@ contract Funding {
         
         if (!t.valid || _index == 0) throw;
         
-        uint _amountToFund = t.limit - t.fundedAmount;
-
-        if (t.valid && _amountToFund > 0 && OurAccountManager.buyTokenFor(msg.sender, _amountToFund)) {
-            t.fundedAmount = t.limit;
+        uint _amountToFund;
+        
+        if (t.intentionAmount < t.limit) {
+            _amountToFund = t.intentionAmount - t.fundedAmount;
+        }
+        else {
+            _amountToFund = t.limit - t.fundedAmount;
+        }
+        
+        if (_amountToFund > 0 && OurAccountManager.buyTokenFor(msg.sender, _amountToFund)) {
+            t.fundedAmount += _amountToFund;
             if (!OurAccountManager.send(_amountToFund)) throw;
         }
         
     }
 
     /// @notice Function to allow the refund of wei above limit
-    function refund() {
+    function refund() noEther {
 
         uint _index = partnerID[msg.sender];
         if (_index == 0) throw;
@@ -687,8 +693,9 @@ contract Funding {
     /// @param _amountLimit Limit in amount a partner can fund
     /// @param _divisorBalanceLimit  The partner can fund 
     /// only under a defined percentage of their ether balance 
-    /// @return The maximum amount if all the partners fund
-    function TotalFundingAmount(uint _amountLimit, uint _divisorBalanceLimit) constant returns (uint) {
+    /// @return The maximum amount if all the addresses are valid partners 
+    /// and fund according to their limit
+    function maxTotalFundingAmount(uint _amountLimit, uint _divisorBalanceLimit) constant returns (uint) {
 
         uint _total;
         uint _amount;
@@ -704,8 +711,6 @@ contract Funding {
                 }
 
             if (_amount > _amountLimit) _amount = _amountLimit;
-
-            if (_amount > t.intentionAmount) _amount = t.intentionAmount;
 
             _total += _amount;
 
