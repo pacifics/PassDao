@@ -45,7 +45,7 @@ The smart contract has the next main functions:
 
 - There is no useless blocked ethers. Each funding is limited according according to the funding proposal. And if the Dao shareholders want to refund a part of the Dao balance, they can vote to send it to a contractor smart contract which will reward shareholders according to their share in Dao.
 
-- There is no "calldata" function which could allow contractor smart contracts to run complex or recursive functions.
+- There is no "calldata" function which could allow contractor smart contracts to run complex functions.
  
 - There is no split function. There is one Dao which works according to the democracy law.
 
@@ -53,7 +53,7 @@ The smart contract has the next main functions:
 
 - A period to consider or set the proposal is foreseen before each board meeting. 
 
-- The Dao will decide when the shares and contractor tokens can be transfered.
+- The Dao votes to decide when the shares and contractor tokens can be transfered.
 
 =
 
