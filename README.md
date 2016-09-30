@@ -41,9 +41,9 @@ The smart contract has the next main functions:
 
 # About Security
 
-- It is necessary to ask to be included in the mailing list in order to fund. This is only to ensure decentralization. For the same reason, funding amount for each partner is limited depending on the balance in ether of the partner address.
+- It is necessary to ask to be included in the mailing list in order to participate in the first funding. This is only to ensure decentralization. For the same reason, funding amount for each partner is limited depending on the balance in ether of the partner address. 
 
-- There is no useless blocked ethers. The presale starts with only funding intentions and the minimum and maximum funding amounts are limited according to what is needed to start the project and to ensure decentralization. If the Dao shareholders want to refund a part of the Dao balance, they can vote to send it to a contractor smart contract which will reward shareholders according to their share in Dao.
+- There is no useless blocked ethers. Each funding is limited according according to the funding proposal. And if the Dao shareholders want to refund a part of the Dao balance, they can vote to send it to a contractor smart contract which will reward shareholders according to their share in Dao.
 
 - There is no "calldata" function which could allow contractor smart contracts to run complex or recursive functions.
  
@@ -60,14 +60,14 @@ The smart contract has the next main functions:
 # Solidity Files
 
 - DAO.sol:
-Smart contract for a Decentralized Autonomous Organization (DAO) to automate organizational governance and decision-making. Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period. Approved proposal can be executed after a period predefined in the Dao rules.
+Smart contract for a Decentralized Autonomous Organization (DAO) to automate organizational governance and decision-making. Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period that can be extent by the creator of the proposal, and during a debate period. Approved proposal can be executed after a period predefined in the Dao rules. External functions are : NewContractorProposal, NewFundingProposal, NewDaoRulesProposal, ExtentSetPeriod, Vote, ExecuteDecision and RewardContractorTokens.
 
 - AccountManager.sol:
-The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the contractor recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao). The Dao Account Manager contains the balance of the Dao.
+The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the contractor recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao). The Dao Account Manager contains the balance of the Dao. External functions are : BuyToken (default function for public fundings), Refund (if the public funding is not fueled), UnblockAccount (account are blocked when voting and can be unblocked when the proposal is blocked), Transfer (Dao tokens), TransferFrom (Dao tokens).
 
 - Token.sol:
-Basic, standardized Token contract. Defines the functions to check token balances, send tokens, send tokens on behalf of a 3rd party and the corresponding approval process.
+Basic, standardized Token contract. Defines the functions to check token balances, send tokens, send tokens on behalf of a 3rd party and the corresponding approval process. External functions are : Approve (tokens allowance).
 
 - Funding.sol:
-Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. 
+Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. External functions are : IntentionToFund (default function), FundDao, Refund.
 
