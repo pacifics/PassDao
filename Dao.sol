@@ -128,6 +128,8 @@ contract DAOInterface {
     Rules[] public DaoRulesProposals;
     // The current Dao rules
     Rules public DaoRules; 
+    
+    bool mutex;
 
     event newBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
     event AccountManagerCreated(address recipient, address AccountManagerAddress);
@@ -283,7 +285,6 @@ contract DAO is DAOInterface
         c.hashOfTheDocument = _hashOfTheDocument; 
         c.tokenPrice = _TokenPrice;
 
-                
         return _ContractorProposalID;
     }
 
@@ -393,6 +394,9 @@ contract DAO is DAOInterface
         uint _BoardMeetingID, 
         bool _supportsProposal
     ) noEther onlyTokenholders returns (bool _success) {
+        
+        if (mutex) { throw; }
+        mutex = true;
             
         BoardMeeting p = BoardMeetings[_BoardMeetingID];
         if (p.hasVoted[msg.sender] 
@@ -434,6 +438,9 @@ contract DAO is DAOInterface
         }
 
         Voted(_BoardMeetingID, _supportsProposal, msg.sender, _rewardedamount);
+        
+        mutex = false;
+        
     }
 
     /// @notice Function to executes a board meeting decision
@@ -441,13 +448,17 @@ contract DAO is DAOInterface
     /// @return Whether the transfer was successful or not    
     function executeDecision(uint _BoardMeetingID) noEther returns (bool _success) 
         {
+
+        if (mutex) { throw; }
+        mutex = true;
+
         BoardMeeting p = BoardMeetings[_BoardMeetingID];
 
         if (now <= p.votingDeadline
             || !p.open ) {
             throw;
         }
-
+        
         uint quorum = p.yea + p.nay;
         
         if ((p.FundingProposalID != 0 || p.DaoRulesProposalID != 0)
@@ -511,6 +522,8 @@ contract DAO is DAOInterface
         takeBoardingFees(_BoardMeetingID);
 
         ProposalTallied(_BoardMeetingID);
+        
+        mutex = false;
     }
 
     /// @notice Function to reward contractor tokens for voters 
@@ -520,6 +533,9 @@ contract DAO is DAOInterface
     /// @return Whether the transfer was successful or not    
     function RewardContractorTokens(uint _contractorProposalID, address _Tokenholder) 
     noEther returns (bool) {
+
+        if (mutex) { throw; }
+        mutex = true;
 
         ContractorProposal c = ContractorProposals[_contractorProposalID];
         BoardMeeting p = BoardMeetings[c.BoardMeetingID];
@@ -535,17 +551,26 @@ contract DAO is DAOInterface
 
         TokensBoughtFor(_contractorProposalID, _Tokenholder, _amount);
 
+        mutex = false;
+        
     }
 
     /// @dev internal function to put to the Dao balance the board meeting fees of non voters
     /// @param _boardMeetingID THe index of the proposal
     function takeBoardingFees(uint _boardMeetingID) internal {
+
+        if (mutex) { throw; }
+        mutex = true;
+
         BoardMeeting p = BoardMeetings[_boardMeetingID];
         if (p.fees - p.totalRewardedAmount > 0) {
             uint _amount = p.fees - p.totalRewardedAmount;
             p.totalRewardedAmount = p.fees;
             if (!DaoAccountManager.send(_amount)) throw;
         }
+
+        mutex = false;
+        
     }
         
     /// @notice Interface function to get the number of meetings 
