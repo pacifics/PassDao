@@ -31,7 +31,7 @@ The smart contract has the next main functions:
 - Able transfer of Dao shares and tokens : the Dao can vote to decide the start date to let their members transfer their shares and contractor tokens.
 
 
-** The shareholders should vote on contractor proposals as it's the only way to recieve board meeting fees and contractor tokens. 
+** The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. 
 
 *** If the work of a contractor allows the development of our project, it should increase the value of reputation tokens which belong to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
 
