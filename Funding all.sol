@@ -488,6 +488,7 @@ contract AccountManager is Token, AccountManagerInterface {
     
 }    
   
+
 /*
 This file is part of the DAO.
 
@@ -549,6 +550,8 @@ contract Funding {
     uint public sumOfLimits;
     // The total funded amount (in wei) if private funding
     uint public totalFunded; 
+    
+    bool mutex;
     
     // Protects users by preventing the execution of method calls that
     // inadvertently also transferred ether
@@ -652,6 +655,9 @@ contract Funding {
 
     /// @notice Function to fund the Dao
     function fundDao() noEther {
+        
+        if (mutex) { throw; }
+        mutex = true;
 
         uint _index = partnerID[msg.sender];
         Partner t = partners[_index];
@@ -672,6 +678,8 @@ contract Funding {
             if (!OurAccountManager.send(_amountToFund)) throw;
         }
         
+        mutex = false;
+
     }
 
     /// @notice Function to allow the refund of wei above limit
