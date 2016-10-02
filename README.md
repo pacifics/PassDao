@@ -8,7 +8,7 @@ Website : http://pacifics.org/dao
 
 =
 
-# The primary Funding
+## The primary Funding
 
 See http://pacifics.org/primary_funding
 
