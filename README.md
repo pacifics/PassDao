@@ -8,12 +8,6 @@ Website : http://pacifics.org/dao
 
 =
 
-## The primary Funding
-
-See http://pacifics.org/primary_funding
-
-=
-
 ## Overview
 Our DAO is open source and used for our project to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. 
 
@@ -21,6 +15,12 @@ Our DAO is open source and used for our project to put together a transparent or
 
 ## Note
 This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
+
+=
+
+## About the primary Funding
+
+See http://pacifics.org/primary_funding
 
 =
 
