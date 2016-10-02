@@ -155,19 +155,10 @@ contract AccountManagerInterface {
         uint inflationRate; 
     } 
 
-    // Information about the recipient
-    recipientData public Recipient;
-    struct recipientData {
-        // Address of the recipient
-        address recipient;
-        // Identification number given by the recipient
-        uint RecipientID; 
-        // Name of the recipient
-        string RecipientName;  
-    }
- 
      // address of the Dao    
     address public client;
+    // Address of the recipient
+    address public recipient;
 
     // True if the funding is fueled
     bool isFueled;
@@ -184,7 +175,7 @@ contract AccountManagerInterface {
     // Modifier that allows only the cient to manage tokens
     modifier onlyClient {if (msg.sender != address(client)) throw; _ }
     // modifier to allow public to fund only in case of crowdfunding
-    modifier onlyRecipient {if (msg.sender != address(Recipient.recipient)) throw; _ }
+    modifier onlyRecipient {if (msg.sender != address(recipient)) throw; _ }
     // Modifier that allows public to buy tokens only in case of crowdfunding
     modifier onlyPublicTokenCreation {if (!FundingRules.publicTokenCreation) throw; _ }
     // Modifier that allows the main partner to buy tokens only in case of private funding
@@ -205,24 +196,18 @@ contract AccountManager is Token, AccountManagerInterface {
     // Modifier that allows only shareholders to vote and create new proposals
     modifier onlyTokenholders {if (balances[msg.sender] == 0) throw; _ }
 
-    /// @dev Constructor setting the Client, Curator and Recipient
+    /// @dev Constructor setting the Client, Recipient and initial Supply
     /// @param _client The Dao address
     /// @param _recipient The recipient address
-    /// @param _RecipientID Identification number given by the recipient
-    /// @param _RecipientName Name of the recipient
     /// @param _initialSupply The initial supply of tokens for the recipient
     function AccountManager(
         address _client,
         address _recipient,
-        uint _RecipientID,
-        string _RecipientName,
         uint256 _initialSupply
     ) {
         client = _client;
 
-        Recipient.recipient = _recipient;
-        Recipient.RecipientID = _RecipientID;
-        Recipient.RecipientName = _RecipientName;
+        recipient = _recipient;
 
         balances[_recipient] = _initialSupply; 
         totalSupply =_initialSupply;
@@ -274,14 +259,14 @@ contract AccountManager is Token, AccountManagerInterface {
         
         if (!isFueled && now > FundingRules.closingTime) {
  
-            uint amount = weiGiven[msg.sender];
+            uint _amount = weiGiven[msg.sender];
             weiGiven[msg.sender] = 0;
-            if (msg.sender.send(amount)) {
-                Refund(msg.sender, amount);
-                totalSupply -= balances[msg.sender];
-                balances[msg.sender] = 0; 
-            }
-            else weiGiven[msg.sender] = amount;
+            totalSupply -= balances[msg.sender];
+            balances[msg.sender] = 0; 
+
+            if (!msg.sender.send(_amount)) throw;
+
+            Refund(msg.sender, _amount);
 
         }
     }
@@ -329,6 +314,11 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Function used by the client
     /// @return the actual token price condidering the inflation rate
     function tokenPrice() constant returns (uint) {
+        if ((now > FundingRules.closingTime && FundingRules.closingTime !=0) 
+            || (now < FundingRules.startTime) ) {
+            return 0;
+            }
+        else
         return FundingRules.initialTokenPrice 
             + FundingRules.initialTokenPrice*(FundingRules.inflationRate)*(now - FundingRules.startTime)/(100*365 days);
     }
@@ -402,16 +392,15 @@ contract AccountManager is Token, AccountManagerInterface {
 
     }
     
-    /// @dev Function used by the client to able or disable the refund of tokens
-    /// @param _transferAble Whether the client want to able to refund or not
-    function TransferAble(bool _transferAble) external onlyClient {
-        transferAble = _transferAble;
+    /// @dev Function used by the client to able the transfer of tokens
+    function TransferAble() external onlyClient {
+        transferAble = true;
     }
 
     /// @dev Internal function for the creation of tokens
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
-    /// @return Whether the transfer was successful or not
+    /// @return Whether the token creation was successful or not
     function createToken(
         address _tokenHolder, 
         uint _amount
@@ -478,7 +467,7 @@ contract AccountManager is Token, AccountManagerInterface {
             && blocked[_to] == 0
             && _to != address(this)
             && now > FundingRules.closingTime 
-            && super.transfer(_to, _value)) {
+            && super.transferFrom(_from, _to, _value)) {
             return true;
         } else {
             throw;
@@ -655,9 +644,6 @@ contract Funding {
 
     /// @notice Function to fund the Dao
     function fundDao() noEther {
-        
-        if (mutex) { throw; }
-        mutex = true;
 
         uint _index = partnerID[msg.sender];
         Partner t = partners[_index];
@@ -678,13 +664,14 @@ contract Funding {
             if (!OurAccountManager.send(_amountToFund)) throw;
         }
         
-        mutex = false;
-
     }
 
     /// @notice Function to allow the refund of wei above limit
     function refund() noEther {
-
+        
+        if (mutex) { throw; }
+        mutex = true;
+        
         uint _index = partnerID[msg.sender];
         if (_index == 0) throw;
         
@@ -694,6 +681,8 @@ contract Funding {
 
         t.intentionAmount = t.fundedAmount;
         if (_amountToRefund == 0 || !msg.sender.send(_amountToRefund)) throw;
+
+        mutex = false;
 
         }
 
