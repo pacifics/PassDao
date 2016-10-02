@@ -107,7 +107,6 @@ contract Token is TokenInterface {
 
 }
 
-
 /*
 This file is part of the DAO.
 
@@ -155,19 +154,10 @@ contract AccountManagerInterface {
         uint inflationRate; 
     } 
 
-    // Information about the recipient
-    recipientData public Recipient;
-    struct recipientData {
-        // Address of the recipient
-        address recipient;
-        // Identification number given by the recipient
-        uint RecipientID; 
-        // Name of the recipient
-        string RecipientName;  
-    }
- 
      // address of the Dao    
     address public client;
+    // Address of the recipient
+    address public recipient;
 
     // True if the funding is fueled
     bool isFueled;
@@ -184,7 +174,7 @@ contract AccountManagerInterface {
     // Modifier that allows only the cient to manage tokens
     modifier onlyClient {if (msg.sender != address(client)) throw; _ }
     // modifier to allow public to fund only in case of crowdfunding
-    modifier onlyRecipient {if (msg.sender != address(Recipient.recipient)) throw; _ }
+    modifier onlyRecipient {if (msg.sender != address(recipient)) throw; _ }
     // Modifier that allows public to buy tokens only in case of crowdfunding
     modifier onlyPublicTokenCreation {if (!FundingRules.publicTokenCreation) throw; _ }
     // Modifier that allows the main partner to buy tokens only in case of private funding
@@ -205,24 +195,18 @@ contract AccountManager is Token, AccountManagerInterface {
     // Modifier that allows only shareholders to vote and create new proposals
     modifier onlyTokenholders {if (balances[msg.sender] == 0) throw; _ }
 
-    /// @dev Constructor setting the Client, Curator and Recipient
+    /// @dev Constructor setting the Client, Recipient and initial Supply
     /// @param _client The Dao address
     /// @param _recipient The recipient address
-    /// @param _RecipientID Identification number given by the recipient
-    /// @param _RecipientName Name of the recipient
     /// @param _initialSupply The initial supply of tokens for the recipient
     function AccountManager(
         address _client,
         address _recipient,
-        uint _RecipientID,
-        string _RecipientName,
         uint256 _initialSupply
     ) {
         client = _client;
 
-        Recipient.recipient = _recipient;
-        Recipient.RecipientID = _RecipientID;
-        Recipient.RecipientName = _RecipientName;
+        recipient = _recipient;
 
         balances[_recipient] = _initialSupply; 
         totalSupply =_initialSupply;
@@ -274,14 +258,14 @@ contract AccountManager is Token, AccountManagerInterface {
         
         if (!isFueled && now > FundingRules.closingTime) {
  
-            uint amount = weiGiven[msg.sender];
+            uint _amount = weiGiven[msg.sender];
             weiGiven[msg.sender] = 0;
-            if (msg.sender.send(amount)) {
-                Refund(msg.sender, amount);
-                totalSupply -= balances[msg.sender];
-                balances[msg.sender] = 0; 
-            }
-            else weiGiven[msg.sender] = amount;
+            totalSupply -= balances[msg.sender];
+            balances[msg.sender] = 0; 
+
+            if (!msg.sender.send(_amount)) throw;
+
+            Refund(msg.sender, _amount);
 
         }
     }
@@ -329,6 +313,11 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Function used by the client
     /// @return the actual token price condidering the inflation rate
     function tokenPrice() constant returns (uint) {
+        if ((now > FundingRules.closingTime && FundingRules.closingTime !=0) 
+            || (now < FundingRules.startTime) ) {
+            return 0;
+            }
+        else
         return FundingRules.initialTokenPrice 
             + FundingRules.initialTokenPrice*(FundingRules.inflationRate)*(now - FundingRules.startTime)/(100*365 days);
     }
@@ -402,16 +391,15 @@ contract AccountManager is Token, AccountManagerInterface {
 
     }
     
-    /// @dev Function used by the client to able or disable the refund of tokens
-    /// @param _transferAble Whether the client want to able to refund or not
-    function TransferAble(bool _transferAble) external onlyClient {
-        transferAble = _transferAble;
+    /// @dev Function used by the client to able the transfer of tokens
+    function TransferAble() external onlyClient {
+        transferAble = true;
     }
 
     /// @dev Internal function for the creation of tokens
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
-    /// @return Whether the transfer was successful or not
+    /// @return Whether the token creation was successful or not
     function createToken(
         address _tokenHolder, 
         uint _amount
@@ -478,7 +466,7 @@ contract AccountManager is Token, AccountManagerInterface {
             && blocked[_to] == 0
             && _to != address(this)
             && now > FundingRules.closingTime 
-            && super.transfer(_to, _value)) {
+            && super.transferFrom(_from, _to, _value)) {
             return true;
         } else {
             throw;
@@ -533,8 +521,10 @@ contract DAOInterface {
         uint votingDeadline;
         // True if the proposal's votes have yet to be counted, otherwise False
         bool open; 
-        // A unix timestamp, denoting the date of the execution of the voted procedure
+        // A unix timestamp, denoting the date of the execution of the voted proposal
         uint dateOfExecution;
+        // A unix timestamp, denoting the deadline to execution of the voted proposal 
+        uint executionDeadline;
         // Number of shares in favor of the proposal
         uint yea; 
         // Number of shares opposed to the proposal
@@ -661,7 +651,7 @@ contract DAO is DAOInterface
         uint256 _minTotalSupply 
     ) {
 
-        DaoAccountManager = new AccountManager(address(this), msg.sender, 0, "PASS DAO ACCOUNT MANAGER", 10);
+        DaoAccountManager = new AccountManager(address(this), msg.sender, 10);
 
         DaoRules.minQuorumDivisor = _minQuorumDivisor;
         DaoRules.minMinutesDebatePeriod = _minMinutesDebatePeriod;
@@ -720,6 +710,7 @@ contract DAO is DAOInterface
         else _DebatePeriod = _MinutesDebatingPeriod; 
 
         p.votingDeadline = _setdeadline + (_DebatePeriod * 1 minutes); 
+        p.executionDeadline = p.votingDeadline + DaoRules.minutesExecuteProposalPeriod * 1 minutes;
 
         p.open = true; 
 
@@ -730,8 +721,6 @@ contract DAO is DAOInterface
     }
 
     /// @notice Function to make a proposal to be a contractor of the Dao
-    /// @param _contractorID A number wich allows to identify the contractor
-    /// @param _contractorname The name of the contractor
     /// @param _amount The amount to be sent if the proposal is approved
     /// @param _description String describing the proposal
     /// @param _hashOfTheDocument The hash to identify the proposal document
@@ -742,8 +731,6 @@ contract DAO is DAOInterface
     /// @return The index of the proposal
     function newContractorProposal(
         address _recipient,
-        uint _contractorID, 
-        string _contractorname,  
         uint _amount, 
         string _description, 
         bytes32 _hashOfTheDocument,
@@ -760,7 +747,7 @@ contract DAO is DAOInterface
         c.recipient = _recipient;       
         c.initialSupply = _initialSupply;
         if (!hasAnAccountManager[c.recipient]) {
-            AccountManager m = new AccountManager(address(this), c.recipient, _contractorID, _contractorname, c.initialSupply) ;
+            AccountManager m = new AccountManager(address(this), c.recipient, c.initialSupply) ;
                 
             ContractorAccountManager[c.recipient] = m;
             AccountManagerCreated(c.recipient, address(m));
@@ -780,7 +767,7 @@ contract DAO is DAOInterface
     /// @notice Function to make a proposal for a funding of the Dao
     /// @param _publicTokenCreation True if crowdfunding
     /// @param _mainPartner The address of the funding contract if private
-    /// @param _fundingAmount The maximum amount to fund
+    /// @param _maxFundingAmount The maximum amount to fund
     /// @param _tokenPrice The quantity of created tokens will depend on this price
     /// @param _inflationRate If 0, the token price doesn't change 
     /// @param _minutesSetPeriod Period before the voting period 
@@ -791,7 +778,7 @@ contract DAO is DAOInterface
     function newFundingProposal(
         bool _publicTokenCreation,
         address _mainPartner,
-        uint _fundingAmount, 
+        uint _maxFundingAmount, 
         uint _tokenPrice,    
         uint _inflationRate,
         uint _minutesSetPeriod,
@@ -809,7 +796,7 @@ contract DAO is DAOInterface
         
         f.mainPartner = _mainPartner;
         f.publicTokenCreation = _publicTokenCreation;
-        f.fundingAmount = _fundingAmount;
+        f.fundingAmount = _maxFundingAmount;
         f.tokenPrice = _tokenPrice;
         f.inflationRate = _inflationRate;
         f.minutesFundingPeriod = _minutesFundingPeriod;
@@ -897,13 +884,7 @@ contract DAO is DAOInterface
         }
 
         p.hasVoted[msg.sender] = true;
-
-        if (p.fees > 0 && p.ContractorProposalID != 0) {
-            uint _rewardedamount = p.fees*DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
-            p.totalRewardedAmount += _rewardedamount;
-            if (!msg.sender.send(_rewardedamount)) throw;
-        }
-
+        
         if (_supportsProposal) {
             p.yea += DaoAccountManager.balanceOf(msg.sender);
         } 
@@ -924,6 +905,12 @@ contract DAO is DAOInterface
         }
         else if (p.votingDeadline > _deadline) {
             DaoAccountManager.blockAccount(msg.sender, p.votingDeadline);
+        }
+
+        if (p.fees > 0 && p.ContractorProposalID != 0) {
+            uint _rewardedamount = p.fees*DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
+            p.totalRewardedAmount += _rewardedamount;
+            if (!msg.sender.send(_rewardedamount)) throw;
         }
 
         Voted(_BoardMeetingID, _supportsProposal, msg.sender, _rewardedamount);
@@ -954,21 +941,27 @@ contract DAO is DAOInterface
             && now > p.votingDeadline) {
                 if (p.fees > 0 && quorum >= minQuorum()  
                 ) {
-                    uint _amount = p.fees;
+                    uint _amountToGiveBack = p.fees;
                     p.fees = 0;
-                    if (!p.creator.send(_amount)) throw;
                 }
         }        
 
-        if (now > p.votingDeadline + DaoRules.minutesExecuteProposalPeriod * 1 minutes 
+        if (now > p.executionDeadline 
                 || (now > p.votingDeadline && ( quorum < minQuorum() || p.yea <= p.nay ))
             ) {
             takeBoardingFees(_BoardMeetingID);
             p.open = false;
+            if (_amountToGiveBack > 0) {
+                if (!p.creator.send(_amountToGiveBack)) throw;
+                _amountToGiveBack = 0;
+            }
             return;
         }
 
         p.open = false;
+        _success = true; 
+        p.dateOfExecution = now;
+        takeBoardingFees(_BoardMeetingID);
 
         if (p.FundingProposalID != 0) {
 
@@ -978,16 +971,8 @@ contract DAO is DAOInterface
             
         }
         
-        if (p.ContractorProposalID != 0) {
-
-            ContractorProposal c = ContractorProposals[p.ContractorProposalID];
-            DaoAccountManager.sendTo(c.recipient, c.amount);
-            ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.tokenPrice, 
-                    c.amount/c.tokenPrice, now, 0, 0);
-                    
-        }
-        
         if (p.DaoRulesProposalID != 0) {
+
             Rules r = DaoRulesProposals[p.DaoRulesProposalID];
             DaoRules.BoardMeetingID = r.BoardMeetingID;
             DaoRules.minQuorumDivisor = r.minQuorumDivisor;
@@ -997,18 +982,28 @@ contract DAO is DAOInterface
             DaoRules.minutesExecuteProposalPeriod = r.minutesExecuteProposalPeriod;
             DaoRules.minMinutesSetPeriod = r.minMinutesSetPeriod;
 
-            AccountManager m = AccountManager(r.tokenTransferAble);
-            m.TransferAble(true);
-            if (m == DaoAccountManager) {
-                DaoRules.tokenTransferAble = m;
+            if (r.tokenTransferAble != 0) {
+                AccountManager m = AccountManager(r.tokenTransferAble);
+                m.TransferAble();
+                if (m == DaoAccountManager) {
+                    DaoRules.tokenTransferAble = m;
+                }
             }
-    
         }
-        
-        _success = true; 
-        p.dateOfExecution = now;
+            
+        if (p.ContractorProposalID != 0) {
 
-        takeBoardingFees(_BoardMeetingID);
+            ContractorProposal c = ContractorProposals[p.ContractorProposalID];
+            ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.tokenPrice, 
+                    c.amount/c.tokenPrice, now, 0, 0);
+            DaoAccountManager.sendTo(c.recipient, c.amount);
+                    
+        }
+
+        if (_amountToGiveBack > 0) {
+            if (!p.creator.send(_amountToGiveBack)) throw;
+            _amountToGiveBack = 0;
+        }
 
         ProposalTallied(_BoardMeetingID);
         
@@ -1022,9 +1017,6 @@ contract DAO is DAOInterface
     /// @return Whether the transfer was successful or not    
     function RewardContractorTokens(uint _contractorProposalID, address _Tokenholder) 
     noEther returns (bool) {
-
-        if (mutex) { throw; }
-        mutex = true;
 
         ContractorProposal c = ContractorProposals[_contractorProposalID];
         BoardMeeting p = BoardMeetings[c.BoardMeetingID];
@@ -1040,16 +1032,11 @@ contract DAO is DAOInterface
 
         TokensBoughtFor(_contractorProposalID, _Tokenholder, _amount);
 
-        mutex = false;
-        
     }
 
     /// @dev internal function to put to the Dao balance the board meeting fees of non voters
     /// @param _boardMeetingID THe index of the proposal
     function takeBoardingFees(uint _boardMeetingID) internal {
-
-        if (mutex) { throw; }
-        mutex = true;
 
         BoardMeeting p = BoardMeetings[_boardMeetingID];
         if (p.fees - p.totalRewardedAmount > 0) {
@@ -1057,8 +1044,6 @@ contract DAO is DAOInterface
             p.totalRewardedAmount = p.fees;
             if (!DaoAccountManager.send(_amount)) throw;
         }
-
-        mutex = false;
         
     }
         
