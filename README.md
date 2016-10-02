@@ -57,7 +57,7 @@ The smart contract has the next main functions:
 
 =
 
-# Solidity Files
+# Solidity Files 
 
 - DAO.sol:
 Smart contract for a Decentralized Autonomous Organization (DAO) to automate organizational governance and decision-making. Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period that can be extent by the creator of the proposal, and during a debate period. Approved proposal can be executed during a period predefined in the Dao rules. External functions are : NewContractorProposal, NewFundingProposal, NewDaoRulesProposal, ExtentSetPeriod, Vote, ExecuteDecision and RewardContractorTokens (for voters).
@@ -71,3 +71,4 @@ Basic, standardized Token contract. Defines the functions to check token balance
 - Funding.sol:
 Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. External functions for the shareholders are : IntentionToFund (default function to send Eth to the Funding smart contract), FundDao (to send Eth from the Funding smart contract to the Dao), Refund (to give back Funding smart contract Eth balances to the addresses which funded the Funding smart contract). External functions for the Project Manager are SetLimits, SetPartners (according to the mailing list) and closeSet.
 
+Note : The files Dao.sol, AccountManager.sol and Token.sol will stay after the primary funding. The file Funding.sol is only for the primary funding so one shot.
