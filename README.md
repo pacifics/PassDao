@@ -8,6 +8,12 @@ Website : http://pacifics.org/dao
 
 =
 
+# The primary Funding
+
+See http://pacifics.org/primary_funding
+
+=
+
 ## Overview
 Our DAO is open source and used for our project to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. 
 
@@ -22,7 +28,7 @@ This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Et
 
 The smart contract has the next main functions: 
 
-- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services and ask for a voting process called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). The fees go to the voters according to their share in Dao. This will influence the Community members to be active members. 
+- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services and ask for a voting process called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). The fees go to the voters according to their share in Dao. This will incentivize the Community members to be active members. 
 
 - Approve a contractor proposal: shareholders can vote** for or against a contractor proposal*** during a board meeting which can last from two to eight weeks (can be updated by voting). If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the contractor proposal is approved and the payment**** of proposal amount is completed. 
 
@@ -41,11 +47,9 @@ The smart contract has the next main functions:
 
 # About Security
 
-- It is necessary to ask to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders and avoid the possibility to fund using "hundreds" addresses. For the same reason, funding amount for each partner is limited depending on the balance in ether of the partner address. 
+- It is necessary to ask to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders and avoid the possibility to fund using "hundreds" addresses. Furthermore, funding amount for each partner is limited depending on the balance in ether of the partner address. 
 
-- There is no useless blocked ethers. Each funding is limited according to the funding proposal. And if the Dao shareholders want to refund a part of the Dao balance, they can vote to send it to a contractor smart contract which will reward shareholders according to their share in Dao.
-
-- There is no "calldata" function which could allow contractor smart contracts to run complex functions.
+- By allowing fundings (public or private) for each step of the project and by limiting the funding amoubts, we can avoid useless blocked ethers. And if the Dao shareholders want to refund a part of the Dao balance, they can vote to send it to a contractor smart contract which will reward shareholders according to their share in Dao.
  
 - There is no split function. There is one Dao which works according to the democracy law.
 
@@ -72,3 +76,4 @@ Basic, standardized Token contract. Defines the functions to check token balance
 Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. External functions for the shareholders are : IntentionToFund (default function to send Eth to the Funding smart contract), FundDao (to send Eth from the Funding smart contract to the Dao), Refund (to give back Funding smart contract Eth balances to the addresses which funded the Funding smart contract). External functions for the Project Manager are SetLimits, SetPartners (according to the mailing list) and closeSet.
 
 Note : The files Dao.sol, AccountManager.sol and Token.sol will stay after the primary funding. The file Funding.sol is only for the primary funding so one shot.
+
