@@ -166,9 +166,6 @@ contract Funding {
 
     /// @notice Function to fund the Dao
     function fundDao() noEther {
-        
-        if (mutex) { throw; }
-        mutex = true;
 
         uint _index = partnerID[msg.sender];
         Partner t = partners[_index];
@@ -189,13 +186,14 @@ contract Funding {
             if (!OurAccountManager.send(_amountToFund)) throw;
         }
         
-        mutex = false;
-
     }
 
     /// @notice Function to allow the refund of wei above limit
     function refund() noEther {
-
+        
+        if (mutex) { throw; }
+        mutex = true;
+        
         uint _index = partnerID[msg.sender];
         if (_index == 0) throw;
         
@@ -205,6 +203,8 @@ contract Funding {
 
         t.intentionAmount = t.fundedAmount;
         if (_amountToRefund == 0 || !msg.sender.send(_amountToRefund)) throw;
+
+        mutex = false;
 
         }
 
