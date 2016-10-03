@@ -482,7 +482,6 @@ contract AccountManager is Token, AccountManagerInterface {
     
 }    
   
-
 /*
 This file is part of the DAO.
 
@@ -646,9 +645,8 @@ contract Funding {
 
     /// @notice Function to fund the Dao
     /// @param _partner Address of the partner
-    function fundDao(address _partner) internal {
+    function fundDao(uint _index) internal {
 
-        uint _index = partnerID[_partner];
         Partner t = partners[_index];
  
         uint _amountToFund;
@@ -685,17 +683,14 @@ contract Funding {
 
         for (uint i = _from; i <= _to; i++) {
             Partner t = partners[i];
-            if (t.valid) fundDao(t.partnerAddress);
+            if (t.valid) fundDao(i);
         }
         
     }
 
     /// @notice Function to allow the refund of wei above limit
-    /// @param _partner Address of the partner
-    function refund(address _partner) internal {
-        
-        uint _index = partnerID[_partner];
-        if (_index == 0) throw;
+    /// @param _index index of the partner
+    function refund(uint _index) internal {
         
         Partner t = partners[_index];
 
@@ -728,7 +723,7 @@ contract Funding {
         if (now < closingTime) {
             for (i = _from; i <= _to; i++) {
                 t = partners[i];
-                if (t.fundedAmount > 0 || !t.valid) refund(t.partnerAddress);
+                if (t.fundedAmount > 0 || !t.valid) refund(i);
             }
         }
         else {
