@@ -162,11 +162,12 @@ contract Funding {
     }
 
     /// @notice Function to fund the Dao
-    /// @param _partner Address of the partner
+    /// @param _index index of the partner
     function fundDao(uint _index) internal {
 
         Partner t = partners[_index];
- 
+        address _partner = t.partnerAddress;
+        
         uint _amountToFund;
         t.limit = partnerFundingLimit(_index, amountLimit, divisorBalanceLimit);
         sumOfLimits += t.limit;
@@ -211,7 +212,8 @@ contract Funding {
     function refund(uint _index) internal {
         
         Partner t = partners[_index];
-
+        address _partner = t.partnerAddress;
+        
         uint _amountToRefund = t.intentionAmount - t.fundedAmount;
 
         t.intentionAmount = t.fundedAmount;
@@ -236,7 +238,7 @@ contract Funding {
         mutex = true;
         
         uint i;
-        Partner t;
+        Partner memory t;
         
         if (now < closingTime) {
             for (i = _from; i <= _to; i++) {
@@ -247,7 +249,7 @@ contract Funding {
         else {
             for (i = _from; i <= _to; i++) {
                 t = partners[i];
-                refund(t.partnerAddress);
+                refund(i);
             }
         }
 
