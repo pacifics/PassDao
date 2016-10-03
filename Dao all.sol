@@ -132,6 +132,8 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
+// import "Token.sol";
+
 contract AccountManagerInterface {
 
     // Rules for the funding
@@ -367,8 +369,11 @@ contract AccountManager is Token, AccountManagerInterface {
     function rewardToken(
         address _tokenHolder, 
         uint _amount
-        ) external  onlyClient returns (bool _success) {
+        ) external returns (bool _success) {
         
+        if (msg.sender != address(client) && msg.sender != FundingRules.mainPartner) {
+            throw;
+        }
         if (createToken(_tokenHolder, _amount)) return true;
         else throw;
 
@@ -546,7 +551,9 @@ contract DAOInterface {
         // The price (in wei) of a contractor token
         uint tokenPrice;  
         // The initial supply of contractor tokens for the recipient
-        uint256 initialSupply; 
+        uint256 initialSupply;
+        // True if the proposal foreseen to reward tokens to voters
+        bool rewardTokensToVoters;
         // The number of shares of the voters allow them to recieve contractor tokens
         mapping (address => uint) weightToRecieve;
         // The total number of shares of the voters of the contractor proposal
@@ -737,6 +744,7 @@ contract DAO is DAOInterface
         bytes32 _hashOfTheDocument,
         uint _TokenPrice, 
         uint256 _initialSupply,
+        bool _rewardTokensToVoters,
         uint _MinutesDebatingPeriod
     ) returns (uint) {
 
@@ -761,6 +769,7 @@ contract DAO is DAOInterface
         c.amount = _amount;
         c.hashOfTheDocument = _hashOfTheDocument; 
         c.tokenPrice = _TokenPrice;
+        c.rewardTokensToVoters = _rewardTokensToVoters;
 
         return _ContractorProposalID;
     }
@@ -895,9 +904,11 @@ contract DAO is DAOInterface
 
         if (p.ContractorProposalID != 0) {
             ContractorProposal c = ContractorProposals[p.ContractorProposalID];
-            uint _weight = DaoAccountManager.balanceOf(msg.sender);
-            c.weightToRecieve[msg.sender] += _weight; 
-            c.totalWeight += _weight;
+            if (c.rewardTokensToVoters) {
+                uint _weight = DaoAccountManager.balanceOf(msg.sender);
+                c.weightToRecieve[msg.sender] += _weight; 
+                c.totalWeight += _weight;
+            }
         }
 
         uint _deadline = DaoAccountManager.blockedAccountDeadLine(msg.sender);
@@ -946,8 +957,8 @@ contract DAO is DAOInterface
                 }
         }        
 
-        if (now > p.executionDeadline 
-                || (quorum < minQuorum() || p.yea <= p.nay)
+        if (p.ContractorProposalID != 1 &&
+                (now > p.executionDeadline || (quorum < minQuorum() || p.yea <= p.nay))
             ) {
             takeBoardingFees(_BoardMeetingID);
             p.open = false;
@@ -1021,7 +1032,7 @@ contract DAO is DAOInterface
         ContractorProposal c = ContractorProposals[_contractorProposalID];
         BoardMeeting p = BoardMeetings[c.BoardMeetingID];
 
-        if (p.dateOfExecution == 0 || c.weightToRecieve[_Tokenholder]==0) {throw; }
+        if (p.dateOfExecution == 0 || c.weightToRecieve[_Tokenholder]==0 || !c.rewardTokensToVoters) {throw; }
         
         uint _amount = (c.amount*c.weightToRecieve[_Tokenholder])/c.totalWeight;
 
@@ -1052,7 +1063,20 @@ contract DAO is DAOInterface
     function numberOfMeetings() constant returns (uint) {
         return BoardMeetings.length - 1;
     }
- 
+
+    /// @notice Interface function to get the right of a tokenholder to receive contractor tokens 
+    /// @param _contractorProposalID The index of the proposal
+    /// @param _Tokenholder The address of the tokenholder
+    /// @return the weight of the tokenholder
+    function weightToReceive(
+            uint _contractorProposalID, 
+            address _Tokenholder) constant returns (uint) {
+                
+        ContractorProposal c = ContractorProposals[_contractorProposalID];
+        return c.weightToRecieve[_Tokenholder];
+        
+    }
+        
     /// @dev internal function to get the minimum quorum needed for a proposal    
     /// @return The minimum quorum for the proposal to pass 
     function minQuorum() constant returns (uint) {
