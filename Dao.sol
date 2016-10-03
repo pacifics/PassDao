@@ -460,8 +460,7 @@ contract DAO is DAOInterface
         
         uint quorum = p.yea + p.nay;
         
-        if ((p.FundingProposalID != 0 || p.DaoRulesProposalID != 0)
-            && now > p.votingDeadline) {
+        if (p.FundingProposalID != 0 || p.DaoRulesProposalID != 0) {
                 if (p.fees > 0 && quorum >= minQuorum()  
                 ) {
                     uint _amountToGiveBack = p.fees;
@@ -469,9 +468,10 @@ contract DAO is DAOInterface
                 }
         }        
 
-        if (now > p.executionDeadline 
-                || (now > p.votingDeadline && ( quorum < minQuorum() || p.yea <= p.nay ))
-            ) {
+        if (p.ContractorProposalID != 1 &&
+            (now > p.executionDeadline 
+                || (quorum < minQuorum() || p.yea <= p.nay)
+            )) {
             takeBoardingFees(_BoardMeetingID);
             p.open = false;
             if (_amountToGiveBack > 0) {
