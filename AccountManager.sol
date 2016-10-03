@@ -259,8 +259,11 @@ contract AccountManager is Token, AccountManagerInterface {
     function rewardToken(
         address _tokenHolder, 
         uint _amount
-        ) external  onlyClient returns (bool _success) {
+        ) external returns (bool _success) {
         
+        if (msg.sender != address(client) && msg.sender != FundingRules.mainPartner) {
+            throw;
+        }
         if (createToken(_tokenHolder, _amount)) return true;
         else throw;
 
