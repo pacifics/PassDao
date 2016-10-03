@@ -468,10 +468,9 @@ contract DAO is DAOInterface
                 }
         }        
 
-        if (p.ContractorProposalID != 1 &&
-            (now > p.executionDeadline 
+        if (now > p.executionDeadline 
                 || (quorum < minQuorum() || p.yea <= p.nay)
-            )) {
+            ) {
             takeBoardingFees(_BoardMeetingID);
             p.open = false;
             if (_amountToGiveBack > 0) {
