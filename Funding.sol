@@ -163,7 +163,7 @@ contract Funding {
 
     /// @notice Function to fund the Dao
     /// @param _partner Address of the partner
-    function fundDao(address _partner) noEther internal {
+    function fundDao(address _partner) internal {
 
         uint _index = partnerID[_partner];
         Partner t = partners[_index];
@@ -209,7 +209,7 @@ contract Funding {
 
     /// @notice Function to allow the refund of wei above limit
     /// @param _partner Address of the partner
-    function refund(address _partner) noEther internal {
+    function refund(address _partner) internal {
         
         uint _index = partnerID[_partner];
         if (_index == 0) throw;
