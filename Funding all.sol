@@ -107,7 +107,6 @@ contract Token is TokenInterface {
 
 }
 
-
 /*
 This file is part of the DAO.
 
@@ -131,6 +130,8 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * (the Dao for dao shares and the recipient for contractor tokens) 
  * and used for the management of tokens by a client smart contract (the Dao)
 */
+
+// import "Token.sol";
 
 contract AccountManagerInterface {
 
@@ -649,16 +650,10 @@ contract Funding {
         Partner t = partners[_index];
         address _partner = t.partnerAddress;
         
-        uint _amountToFund;
         t.limit = partnerFundingLimit(_index, amountLimit, divisorBalanceLimit);
         sumOfLimits += t.limit;
         
-        if (t.intentionAmount < t.limit) {
-            _amountToFund = t.intentionAmount - t.fundedAmount;
-        }
-        else {
-            _amountToFund = t.limit - t.fundedAmount;
-        }
+        uint _amountToFund = t.limit - t.fundedAmount;
         
         if (_amountToFund > 0 && DaoAccountManager.buyTokenFor(_partner, _amountToFund)) {
             t.fundedAmount += _amountToFund;
@@ -744,31 +739,12 @@ contract Funding {
     /// only under a defined percentage of their ether balance 
     /// @return The maximum amount if all the addresses are valid partners 
     /// and fund according to their limit
-    function fundingAmount(uint _amountLimit, uint _divisorBalanceLimit) constant returns (uint) {
-
-        uint _total;
-        uint _amount;
-        uint _balanceLimit;
+    function fundingAmount(uint _amountLimit, uint _divisorBalanceLimit) constant returns (uint _total) {
 
         for (uint i = 1; i < partners.length; i++) {
-
-            Partner t = partners[i];
-
-            if (_divisorBalanceLimit > 0) {
-                _balanceLimit = t.partnerAddress.balance/_divisorBalanceLimit;
-                _amount = _balanceLimit;
-                }
-
-            if (_amount > _amountLimit) _amount = _amountLimit;
-            
-            if (t.valid) {
-                _total += _amount;
+            _total += partnerFundingLimit(i, _amountLimit, _divisorBalanceLimit);
             }
 
-        }
-        
-        return _total;
-        
     }
 
     /// @param _index The index of the partner
@@ -778,17 +754,23 @@ contract Funding {
     /// @return The maximum amount the partner can fund
     function partnerFundingLimit(uint _index, uint _amountLimit, uint _divisorBalanceLimit) internal returns (uint) {
 
-        uint _amount;
+        uint _amount = 0;
         uint _balanceLimit;
         
         Partner t = partners[_index];
             
-        if (_divisorBalanceLimit > 0) {
-            _balanceLimit = t.partnerAddress.balance/_divisorBalanceLimit;
-            _amount = _balanceLimit;
-            }
+        if (t.valid) {
 
-        if (_amount > _amountLimit) _amount = _amountLimit;
+            if (_divisorBalanceLimit > 0) {
+                _balanceLimit = t.partnerAddress.balance/_divisorBalanceLimit;
+                _amount = _balanceLimit;
+                }
+
+            if (_amount > _amountLimit) _amount = _amountLimit;
+            
+            if (_amount > t.intentionAmount) _amount = t.intentionAmount;
+            
+        }
         
         return _amount;
         
@@ -800,4 +782,3 @@ contract Funding {
     }
 
 }
-
