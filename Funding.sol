@@ -102,7 +102,7 @@ contract Funding {
         if (msg.value <= 0
             || now < startTime
             || (now > closingTime && closingTime != 0)
-            || allSet
+            || limitSet
         ) throw;
         
         if (partnerID[msg.sender] == 0) {
