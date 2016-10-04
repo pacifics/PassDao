@@ -724,7 +724,6 @@ contract Funding {
         }
         else {
             for (i = _from; i <= _to; i++) {
-                t = partners[i];
                 refund(i);
             }
         }
