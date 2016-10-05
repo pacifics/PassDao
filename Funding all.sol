@@ -570,7 +570,7 @@ contract Funding {
             
         creator = msg.sender;
         DaoAccountManager = AccountManager(_DaoAccountManager);
-        ContractorAccountManager = _contractorAccountManager;
+        ContractorAccountManager = AccountManager(_contractorAccountManager);
         if (_startTime == 0) {startTime = now;} else {startTime = startTime;}
         closingTime = _closingTime;
         partners.length = 1; 
