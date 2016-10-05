@@ -636,15 +636,6 @@ contract Funding {
         
     }
 
-    /// @dev Function used by the creator to close the set of partners
-    function closeSet() noEther onlyCreator {
-        
-        if (allSet) throw;
-
-        allSet = true;
-
-    }
-
     /// @notice Function to fund the Dao
     /// @param _index index of the partner
     function fundDao(uint _index) internal {
@@ -682,6 +673,15 @@ contract Funding {
             if (t.valid) fundDao(i);
         }
         
+    }
+
+    /// @dev Function used by the creator to close the set of partners
+    function closeSet() noEther onlyCreator {
+        
+        if (allSet) throw;
+
+        allSet = true;
+
     }
 
     /// @notice Function to allow the refund of wei above limit
