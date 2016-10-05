@@ -301,9 +301,6 @@ contract AccountManager is Token, AccountManagerInterface {
         uint _amount
     ) internal returns (bool _success) {
 
-        uint _tokenholderID;
-        uint _quantity = _amount/tokenPrice();
-
         if ((totalSupply + _quantity > FundingRules.maxTotalSupply)
             || (now > FundingRules.closingTime && FundingRules.closingTime !=0) 
             || _amount <= 0
@@ -311,6 +308,8 @@ contract AccountManager is Token, AccountManagerInterface {
             throw;
             }
 
+        uint _quantity = _amount/tokenPrice();
+        
         balances[_tokenHolder] += _quantity; 
         totalSupply += _quantity;
         TokensCreated(_tokenHolder, _quantity);
