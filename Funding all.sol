@@ -541,8 +541,6 @@ contract Funding {
     Partner[] public partners;
     // The index of the partners
     mapping (address => uint) public partnerID; 
-    // The total of amount limits of all partners
-    uint public sumOfLimits;
     // The total funded amount (in wei) if private funding
     uint public totalFunded; 
     
@@ -655,7 +653,6 @@ contract Funding {
         address _partner = t.partnerAddress;
         
         t.limit = partnerFundingLimit(_index, amountLimit, divisorBalanceLimit);
-        sumOfLimits += t.limit;
         
         uint _amountToFund = t.limit - t.fundedAmount;
         
