@@ -665,8 +665,6 @@ contract Funding {
             uint _to
         ) noEther {
 
-        if (!allSet) throw;
-
         limitSet = true;
 
         for (uint i = _from; i <= _to; i++) {
