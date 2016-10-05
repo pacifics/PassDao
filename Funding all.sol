@@ -378,7 +378,7 @@ contract AccountManager is Token, AccountManagerInterface {
 
     }
 
-    /// @dev Function used by the client to block tokens transfer of from a tokenholder
+    /// @notice Function to know when a tokenholder account can be unblocked
     /// @param _account The address of the tokenHolder
     /// @return When the account can be unblocked
     function blockedAccountDeadLine(address _account) external constant returns (uint) {
@@ -665,7 +665,7 @@ contract Funding {
         
     }
 
-    /// @dev Function used to fund the Dao
+    /// @notice Function used to fund the Dao
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
     function fundDaoFor(
@@ -701,7 +701,7 @@ contract Funding {
         }
 
 
-    /// @dev Function used to refund the amounts above limit
+    /// @notice Function used to refund the amounts above limit
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
     function refundFor(
