@@ -183,7 +183,7 @@ contract Funding {
         
     }
 
-    /// @dev Function used to fund the Dao
+    /// @notice Function used to fund the Dao
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
     function fundDaoFor(
@@ -219,7 +219,7 @@ contract Funding {
         }
 
 
-    /// @dev Function used to refund the amounts above limit
+    /// @notice Function used to refund the amounts above limit
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
     function refundFor(
