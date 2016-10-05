@@ -708,8 +708,6 @@ contract Funding {
             uint _to
         ) noEther {
 
-        if (!allSet && now < closingTime) throw;
-        
         if (mutex) { throw; }
         mutex = true;
         
