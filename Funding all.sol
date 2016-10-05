@@ -620,16 +620,20 @@ contract Funding {
     }
 
     /// @dev Function used by the creator to set partners
+    /// @param _valid True if the address can fund the Dao
     /// @param _from The index of the first partner to set
     /// @param _to The index of the last partner to set
     function setPartners(
+            bool _valid,
             uint _from,
             uint _to
         ) noEther onlyCreator {
 
+        if (allSet) throw;
+        
         for (uint i = _from; i <= _to; i++) {
             Partner t = partners[i];
-            t.valid = true;
+            t.valid = _valid;
         }
         
     }
