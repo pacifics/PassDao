@@ -132,8 +132,6 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-// import "Token.sol";
-
 contract AccountManagerInterface {
 
     // Rules for the funding
@@ -379,7 +377,7 @@ contract AccountManager is Token, AccountManagerInterface {
 
     }
 
-    /// @dev Function used by the client to block tokens transfer of from a tokenholder
+    /// @notice Function to know when a tokenholder account can be unblocked
     /// @param _account The address of the tokenHolder
     /// @return When the account can be unblocked
     function blockedAccountDeadLine(address _account) external constant returns (uint) {
