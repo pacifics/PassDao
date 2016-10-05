@@ -482,7 +482,7 @@ contract AccountManager is Token, AccountManagerInterface {
     
 }    
   
-
+  
 /*
 This file is part of the DAO.
 
@@ -1013,7 +1013,6 @@ contract DAO is DAOInterface
 
         if (_amountToGiveBack > 0) {
             if (!p.creator.send(_amountToGiveBack)) throw;
-            _amountToGiveBack = 0;
         }
 
         ProposalTallied(_BoardMeetingID);
@@ -1073,7 +1072,7 @@ contract DAO is DAOInterface
             address _Tokenholder) constant returns (uint) {
                 
         ContractorProposal c = ContractorProposals[_contractorProposalID];
-        return c.weightToRecieve[_Tokenholder];
+        return (c.amount*c.weightToRecieve[_Tokenholder])/c.totalWeight;
         
     }
         
