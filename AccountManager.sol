@@ -56,11 +56,7 @@ contract AccountManagerInterface {
     bool isFueled;
    // If true, the tokens can be transfered
     bool public transferAble;
-    // Total amount funded
-    uint weiGivenTotal;
 
-    // Map to allow token holder to refund if the funding didn't succeed
-    mapping (address => uint256) weiGiven;
     // Map of addresses blocked during a vote. The address points to the proposal ID
     mapping (address => uint) blocked; 
 
@@ -73,12 +69,7 @@ contract AccountManagerInterface {
     // Modifier that allows the main partner to buy tokens only in case of private funding
     modifier onlyPrivateTokenCreation {if (FundingRules.publicTokenCreation) throw; _ }
 
-    event RecipientChecked(address curator);
     event TokensCreated(address indexed tokenHolder, uint quantity);
-    event FuelingToDate(uint value);
-    event CreatedToken(address indexed to, uint amount);
-    event Refund(address indexed to, uint value);
-    event Clientupdated(address newClient);
 
 }
 
@@ -138,31 +129,12 @@ contract AccountManager is Token, AccountManagerInterface {
         uint _amount) internal returns (bool _succes) {
         
         if (createToken(_tokenHolder, _amount)) {
-            weiGiven[_tokenHolder] += _amount;
-            weiGivenTotal += _amount;
             return true;
         }
         else throw;
 
     }
     
-    /// @notice Refund in case the funding is not fueled
-    function refund() noEther {
-        
-        if (!isFueled && now > FundingRules.closingTime) {
- 
-            uint _amount = weiGiven[msg.sender];
-            weiGiven[msg.sender] = 0;
-            totalSupply -= balances[msg.sender];
-            balances[msg.sender] = 0; 
-
-            if (!msg.sender.send(_amount)) throw;
-
-            Refund(msg.sender, _amount);
-
-        }
-    }
-
     /// @notice If the tokenholder account is blocked by a proposal whose voting deadline
     /// has exprired then unblock him.
     /// @param _account The address of the tokenHolder
@@ -187,7 +159,16 @@ contract AccountManager is Token, AccountManagerInterface {
         return totalSupply;
     }
     
-    /// @dev Function used by the client
+    /// @dev Function used by the main partner to set the funding fueled
+    /// @param _isFueled Whether the funding is fueled or not
+    function Fueled(bool _isFueled) external {
+        if (msg.sender != address(client) && msg.sender != FundingRules.mainPartner) {
+            throw;
+        }
+        isFueled = _isFueled;
+    }
+    
+    /// @notice Function to know if the funding is fueled
     /// @return Whether the funding is fueled or not
     function IsFueled() external constant returns (bool) {
         return isFueled;
@@ -216,6 +197,7 @@ contract AccountManager is Token, AccountManagerInterface {
     }
 
     /// @dev Function to extent funding. Can be private or public
+    /// @param _mainPartner The address for the managing of the funding
     /// @param _publicTokenCreation True if public
     /// @param _initialTokenPrice Price without considering any inflation rate
     /// @param _maxTokensToCreate If the maximum is reached, the funding is closed
@@ -241,6 +223,18 @@ contract AccountManager is Token, AccountManagerInterface {
         FundingRules.inflationRate = _inflationRate;  
         
     } 
+    
+    /// @dev Function allow the main partner to create tokens until a closing time
+    /// @param _mainPartner The address for the managing of the funding
+    /// @param _closingTime After this date, the funding is closed
+    function setMainPartner(
+        address _mainPartner,
+        uint _closingTime) external onlyClient {
+
+        FundingRules.mainPartner = _mainPartner;
+        FundingRules.closingTime = _closingTime;
+
+    }
         
     /// @dev Function used by the client to send ethers
     /// @param _recipient The address to send to
@@ -264,6 +258,7 @@ contract AccountManager is Token, AccountManagerInterface {
         if (msg.sender != address(client) && msg.sender != FundingRules.mainPartner) {
             throw;
         }
+        
         if (createToken(_tokenHolder, _amount)) return true;
         else throw;
 
@@ -301,15 +296,17 @@ contract AccountManager is Token, AccountManagerInterface {
         uint _amount
     ) internal returns (bool _success) {
 
-        if ((now > FundingRules.closingTime && FundingRules.closingTime !=0) 
+        if ((totalSupply + _quantity > FundingRules.maxTotalSupply)
+            || (now > FundingRules.closingTime && FundingRules.closingTime !=0) 
             || _amount <= 0
             || (now < FundingRules.startTime) ) {
             throw;
             }
 
         uint _quantity = _amount/tokenPrice();
+
         if (totalSupply + _quantity > FundingRules.maxTotalSupply) throw;
-        
+
         balances[_tokenHolder] += _quantity; 
         totalSupply += _quantity;
         TokensCreated(_tokenHolder, _quantity);
@@ -318,12 +315,6 @@ contract AccountManager is Token, AccountManagerInterface {
             FundingRules.closingTime = now;
         }
 
-        if (totalSupply >= FundingRules.minTotalSupply 
-        && !isFueled) {
-            isFueled = true; 
-            FuelingToDate(totalSupply);
-        }
-        
         return true;
         
     }
