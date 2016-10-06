@@ -229,6 +229,8 @@ contract Funding {
         if (mutex) { throw; }
         mutex = true;
         
+        if (!allSet) throw;
+        
         uint i;
         Partner memory t;
         
