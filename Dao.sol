@@ -338,7 +338,6 @@ contract DAO is DAOInterface
         f.minutesFundingPeriod = _minutesFundingPeriod;
         
         f.contractorAccountManager = _contractorAccountManager;
-        _contractorAccountManager.Fueled(false); 
 
         return _FundingProposalID;
     }
@@ -517,6 +516,8 @@ contract DAO is DAOInterface
 
             if (f.contractorAccountManager != 0) {
                 AccountManager(f.contractorAccountManager).setMainPartner(f.mainPartner, now + f.minutesFundingPeriod * 1 minutes);   
+                AccountManager(f.contractorAccountManager).Fueled(false); 
+
             }
             
         }
