@@ -43,6 +43,10 @@ contract Funding {
     AccountManager public DaoAccountManager;
     // The account manager for the reward of contractor tokens
     AccountManager public ContractorAccountManager;
+    // Minimal amount to fund
+    uint minAmount;
+    // Maximal amount to fund
+    uint maxAmount;
     // The start time to intend to fund
     uint public startTime;
     // The closing time to intend to fund
@@ -77,11 +81,15 @@ contract Funding {
     /// @dev Constructor function with setting
     /// @param _DaoAccountManager The Dao account manager
     /// @param _contractorAccountManager The contractor account manager for the reward of tokens
+    /// @param _minAmount Minimal amount to fund
+    /// @param _maxAmount Maximal amount to fund
     /// @param _startTime The start time to intend to fund
     /// @param _closingTime The closing time to intend to fund
     function Funding (
         address _DaoAccountManager,
         address _contractorAccountManager,
+        uint _minAmount,
+        uint _maxAmount,
         uint _startTime,
         uint _closingTime
         ) {
@@ -89,6 +97,8 @@ contract Funding {
         creator = msg.sender;
         DaoAccountManager = AccountManager(_DaoAccountManager);
         ContractorAccountManager = AccountManager(_contractorAccountManager);
+        minAmount = _minAmount;
+        maxAmount = _maxAmount;
         if (_startTime == 0) {startTime = now;} else {startTime = startTime;}
         closingTime = _closingTime;
         partners.length = 1; 
@@ -155,24 +165,17 @@ contract Funding {
         
     }
 
-    /// @notice Function to fund the Dao
-    /// @param _index index of the partner
-    function fundDao(uint _index) internal {
+    /// @dev Function used by the creator to close the set of partners
+    function closeSet() noEther onlyCreator {
+        
+        if (allSet) throw;
+        
+        uint _fundingAmount = fundingAmount(amountLimit, divisorBalanceLimit);
+        if (_fundingAmount < minAmount || _fundingAmount > maxAmount) throw;
+        
+        limitSet = true;
+        allSet = true;
 
-        Partner t = partners[_index];
-        address _partner = t.partnerAddress;
-        
-        t.limit = partnerFundingLimit(_index, amountLimit, divisorBalanceLimit);
-        
-        uint _amountToFund = t.limit - t.fundedAmount;
-        
-        if (_amountToFund > 0 && DaoAccountManager.buyTokenFor(_partner, _amountToFund)) {
-            t.fundedAmount += _amountToFund;
-            ContractorAccountManager.rewardToken(_partner, _amountToFund);
-            if (!DaoAccountManager.send(_amountToFund)) throw;
-            Fund(_partner, _amountToFund);
-        }
-        
     }
 
     /// @notice Function used to fund the Dao
@@ -183,40 +186,32 @@ contract Funding {
             uint _to
         ) noEther {
 
-        limitSet = true;
-
+        if (!allSet) throw;
+        
+        address _partner;
+        uint _amountToFund;
+        uint _fundingAmount = fundingAmount(amountLimit, divisorBalanceLimit);
+        
         for (uint i = _from; i <= _to; i++) {
-            Partner t = partners[i];
-            if (t.valid) fundDao(i);
-        }
+            partners[i].limit = partnerFundingLimit(i, amountLimit, divisorBalanceLimit);
+            _partner = partners[i].partnerAddress;
         
-    }
-
-    /// @dev Function used by the creator to close the set of partners
-    function closeSet() noEther onlyCreator {
+            _amountToFund = partners[i].limit - partners[i].fundedAmount;
         
-        if (allSet) throw;
-
-        allSet = true;
-
-    }
-
-    /// @notice Function to allow the refund of wei above limit
-    /// @param _index index of the partner
-    function refund(uint _index) internal {
-        
-        Partner t = partners[_index];
-        address _partner = t.partnerAddress;
-        
-        uint _amountToRefund = t.intentionAmount - t.fundedAmount;
-
-        t.intentionAmount = t.fundedAmount;
-        if (_amountToRefund == 0 || !_partner.send(_amountToRefund)) throw;
-        
-        Refund(_partner, _amountToRefund);
-
+            if (_amountToFund > 0 && DaoAccountManager.buyTokenFor(_partner, _amountToFund)) {
+                partners[i].fundedAmount += _amountToFund;
+                ContractorAccountManager.rewardToken(_partner, minAmount*_amountToFund/_fundingAmount);
+                if (!DaoAccountManager.send(_amountToFund)) throw;
+                totalFunded += _amountToFund;
+                if (totalFunded >= minAmount && !ContractorAccountManager.IsFueled()) {
+                    DaoAccountManager.Fueled(true);
+                    ContractorAccountManager.Fueled(true); 
+                }
+            }
         }
 
+        
+    }
 
     /// @notice Function used to refund the amounts above limit
     /// @param _from The index of the first partner
@@ -232,17 +227,15 @@ contract Funding {
         if (!allSet) throw;
         
         uint i;
-        Partner memory t;
-        
-        if (now < closingTime) {
-            for (i = _from; i <= _to; i++) {
-                t = partners[i];
-                if (t.fundedAmount > 0 || !t.valid) refund(i);
-            }
-        }
-        else {
-            for (i = _from; i <= _to; i++) {
-                refund(i);
+        uint _amountToRefund;
+
+        for (i = _from; i <= _to; i++) {
+            if (partners[i].fundedAmount > 0 || !partners[i].valid || now > closingTime) {
+                _amountToRefund = partners[i].intentionAmount - partners[i].fundedAmount;
+                partners[i].intentionAmount = partners[i].fundedAmount;
+                if (_amountToRefund != 0) {
+                    if (!partners[i].partnerAddress.send(_amountToRefund)) throw;
+                }
             }
         }
 
@@ -260,7 +253,7 @@ contract Funding {
 
         for (uint i = 1; i < partners.length; i++) {
             _total += partnerFundingLimit(i, _amountLimit, _divisorBalanceLimit);
-            }
+        }
 
     }
 
@@ -269,7 +262,7 @@ contract Funding {
     /// @param _divisorBalanceLimit  The partner can fund 
     /// only under a defined percentage of their ether balance 
     /// @return The maximum amount the partner can fund
-    function partnerFundingLimit(uint _index, uint _amountLimit, uint _divisorBalanceLimit) internal returns (uint) {
+    function partnerFundingLimit(uint _index, uint _amountLimit, uint _divisorBalanceLimit) constant returns (uint) {
 
         uint _amount = 0;
         uint _balanceLimit;
