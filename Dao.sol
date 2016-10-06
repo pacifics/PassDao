@@ -1,3 +1,5 @@
+import "AccountManager.sol";
+
 /*
 This file is part of the DAO.
 
@@ -21,7 +23,7 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-import "AccountManager.sol";
+// import "AccountManager.sol";
 
 contract DAOInterface {
 
@@ -293,7 +295,6 @@ contract DAO is DAOInterface
 
         ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.tokenPrice, 
                     c.amount/c.tokenPrice, now, 0, 0);
-        ContractorAccountManager[c.recipient].Fueled(false); 
 
         return _ContractorProposalID;
     }
@@ -337,6 +338,7 @@ contract DAO is DAOInterface
         f.minutesFundingPeriod = _minutesFundingPeriod;
         
         f.contractorAccountManager = _contractorAccountManager;
+        _contractorAccountManager.Fueled(false); 
 
         return _FundingProposalID;
     }
