@@ -226,12 +226,15 @@ contract AccountManager is Token, AccountManagerInterface {
     
     /// @dev Function allow the main partner to create tokens until a closing time
     /// @param _mainPartner The address for the managing of the funding
+    /// @param _quantity Maximum quantity of tokens to create 
     /// @param _closingTime After this date, the funding is closed
     function setMainPartner(
         address _mainPartner,
+        uint _quantity,
         uint _closingTime) external onlyClient {
 
         FundingRules.mainPartner = _mainPartner;
+        FundingRules.maxTotalSupply += _quantity;
         FundingRules.closingTime = _closingTime;
 
     }
