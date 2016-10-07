@@ -130,22 +130,6 @@ contract Funding {
         IntentionToFund(msg.sender, msg.value);
     }
     
-    /// @dev Function used by the creator to set the funding limits
-    /// @param _amountLimit Limit in amount a partner can fund
-    /// @param _divisorBalanceLimit  The partner can fund 
-    /// only under a defined percentage of their ether balance 
-    function setLimits(
-            uint _amountLimit, 
-            uint _divisorBalanceLimit
-    ) noEther onlyCreator {
-        
-        if (limitSet) throw;
-         
-        amountLimit = _amountLimit;
-        divisorBalanceLimit = _divisorBalanceLimit;
-        
-    }
-
     /// @dev Function used by the creator to set partners
     /// @param _valid True if the address can fund the Dao
     /// @param _from The index of the first partner to set
@@ -165,14 +149,23 @@ contract Funding {
         
     }
 
-    /// @dev Function used by the creator to close the set of partners
-    function closeSet() noEther onlyCreator {
+    /// @dev Function used by the creator to close the set of limits and partners
+    /// @param _amountLimit Limit in amount a partner can fund
+    /// @param _divisorBalanceLimit  The partner can fund 
+    /// only under a defined percentage of their ether balance 
+    function closeSet(
+            uint _amountLimit, 
+            uint _divisorBalanceLimit
+        ) noEther onlyCreator {
         
         if (allSet) throw;
-        
-        uint _fundingAmount = fundingAmount(amountLimit, divisorBalanceLimit);
+
+        uint _fundingAmount = fundingAmount(_amountLimit, _divisorBalanceLimit);
         if (_fundingAmount < minAmount || _fundingAmount > maxAmount) throw;
-        
+
+        amountLimit = _amountLimit;
+        divisorBalanceLimit = _divisorBalanceLimit;
+
         limitSet = true;
         allSet = true;
 
