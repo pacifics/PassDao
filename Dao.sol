@@ -1,3 +1,5 @@
+import "AccountManager.sol";
+
 /*
 This file is part of the DAO.
 
@@ -21,7 +23,7 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-import "AccountManager.sol";
+// import "AccountManager.sol";
 
 contract DAOInterface {
 
@@ -487,16 +489,16 @@ contract DAO is DAOInterface
         if (now > p.executionDeadline 
             || ((quorum < minQuorum() || p.yea <= p.nay) && !_contractorProposalFueled)
             ) {
-            takeBoardingFees(_BoardMeetingID);
+            takeBoardMeetingFees(_BoardMeetingID);
             if (_amountToGiveBack > 0) {
-                if (!p.creator.send(_amountToGiveBack)) throw;
+                if (!address(p.creator).send(_amountToGiveBack)) throw;
                 _amountToGiveBack = 0;
             }
             return;
         }
 
         p.dateOfExecution = now;
-        takeBoardingFees(_BoardMeetingID);
+        takeBoardMeetingFees(_BoardMeetingID);
 
         if (p.FundingProposalID != 0) {
 
@@ -539,7 +541,7 @@ contract DAO is DAOInterface
         }
 
         if (_amountToGiveBack > 0) {
-            if (!p.creator.send(_amountToGiveBack)) throw;
+            if (!address(p.creator).send(_amountToGiveBack)) throw;
         }
 
         ProposalTallied(_BoardMeetingID);
@@ -572,7 +574,7 @@ contract DAO is DAOInterface
 
     /// @dev internal function to put to the Dao balance the board meeting fees of non voters
     /// @param _boardMeetingID THe index of the proposal
-    function takeBoardingFees(uint _boardMeetingID) internal {
+    function takeBoardMeetingFees(uint _boardMeetingID) internal {
 
         BoardMeeting p = BoardMeetings[_boardMeetingID];
         if (p.fees - p.totalRewardedAmount > 0) {
