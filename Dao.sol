@@ -1,5 +1,3 @@
-import "AccountManager.sol";
-
 /*
 This file is part of the DAO.
 
@@ -23,7 +21,7 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-// import "AccountManager.sol";
+import "AccountManager.sol";
 
 contract DAOInterface {
 
@@ -508,7 +506,8 @@ contract DAO is DAOInterface
                 f.fundingAmount/f.tokenPrice, now, now + f.minutesFundingPeriod * 1 minutes, f.inflationRate);
 
             if (f.contractorAccountManager != 0) {
-                AccountManager(f.contractorAccountManager).setMainPartner(f.mainPartner, now + f.minutesFundingPeriod * 1 minutes);   
+                AccountManager(f.contractorAccountManager).setMainPartner(f.mainPartner, 
+                    f.fundingAmount/f.tokenPrice, now + f.minutesFundingPeriod * 1 minutes);   
 
             }
             
