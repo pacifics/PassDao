@@ -1,3 +1,5 @@
+import "Token.sol";
+
 /*
 This file is part of the DAO.
 
@@ -22,7 +24,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-import "Token.sol";
+// import "Token.sol";
 
 contract AccountManagerInterface {
 
@@ -155,7 +157,7 @@ contract AccountManager is Token, AccountManagerInterface {
 
     /// @dev Function used by the client
     /// @return The total supply of tokens 
-    function TotalSupply() external returns (uint256) {
+    function TotalSupply() constant external returns (uint256) {
         return totalSupply;
     }
     
@@ -170,7 +172,7 @@ contract AccountManager is Token, AccountManagerInterface {
     
     /// @notice Function to know if the funding is fueled
     /// @return Whether the funding is fueled or not
-    function IsFueled() external constant returns (bool) {
+    function IsFueled() constant external returns (bool) {
         return isFueled;
     }
 
