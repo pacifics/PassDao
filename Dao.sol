@@ -295,6 +295,7 @@ contract DAO is DAOInterface
 
         ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.tokenPrice, 
                     c.amount/c.tokenPrice, now, 0, 0);
+        ContractorAccountManager[c.recipient].Fueled(false); 
 
         return _ContractorProposalID;
     }
@@ -516,8 +517,7 @@ contract DAO is DAOInterface
 
             if (f.contractorAccountManager != 0) {
                 AccountManager(f.contractorAccountManager).setMainPartner(f.mainPartner, now + f.minutesFundingPeriod * 1 minutes);   
-                AccountManager(f.contractorAccountManager).Fueled(false); 
-
+            
             }
             
         }
