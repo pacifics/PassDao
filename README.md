@@ -47,9 +47,9 @@ The smart contract has the next main functions:
 
 # About Security
 
-- It is necessary to ask to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders and avoid the possibility to fund using "hundreds" addresses. Furthermore, funding amount for each partner is limited depending on the balance in ether of the partner address. 
+- It is necessary to ask to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders and avoid the possibility to fund using "hundreds" addresses.
 
-- By allowing fundings (public or private) for each step of the project and by limiting the funding amoubts, we can avoid useless blocked ethers. And if the Dao shareholders want to refund a part of the Dao balance, they can vote to send it to a contractor smart contract which will reward shareholders according to their share in Dao.
+- By allowing fundings (public or private) for each step of the project and by limiting the funding amounts, we avoid useless blocked ethers in the Dao. It is possible to link a funding proposal with a contractor proposal and which will be completed only if the funding is fueled during a predefined period, unless the Dao is not funded. We use this method for the first Project Manager proposal and the primary funding.
  
 - There is no split function. There is one Dao which works according to the democracy law.
 
@@ -67,13 +67,13 @@ The smart contract has the next main functions:
 Smart contract for a Decentralized Autonomous Organization (DAO) to automate organizational governance and decision-making. Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period that can be extent by the creator of the proposal, and during a debate period. Approved proposal can be executed during a period predefined in the Dao rules. External functions are : NewContractorProposal, NewFundingProposal, NewDaoRulesProposal, ExtentSetPeriod, Vote, ExecuteDecision and RewardContractorTokens (for voters).
 
 - AccountManager.sol:
-The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the contractor recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao). The Dao Account Manager contains the balance of the Dao. External functions are : SendEth (default function), BuyToken (for public fundings), BuyTokenFor (for private fundings), Refund (for the first funding if not fueled), UnblockAccount (tokenholder's accounts are blocked when voting and can be unblocked when the proposal is closed), Transfer (to transfer tokens), TransferFrom (to transfer tokens).
+The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the contractor recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao). The Dao Account Manager contains the balance of the Dao. External functions are : SendEth (default function), BuyToken (for public fundings), BuyTokenFor (for private fundings), UnblockAccount (tokenholder's accounts are blocked when voting and can be unblocked when the proposal is closed), Transfer (to transfer tokens), TransferFrom (to transfer tokens).
 
 - Token.sol:
 Basic, standardized Token contract. Defines the functions to check token balances, send tokens, send tokens on behalf of a 3rd party and the corresponding approval process. External functions are : Approve (tokens allowance).
 
 - Funding.sol:
-Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. External functions for the shareholders are : IntentionToFund (default function to send Eth to the Funding smart contract), FundDao (to send Eth from the Funding smart contract to the Dao), Refund (to give back Funding smart contract Eth balances to the addresses which funded the Funding smart contract). External functions for the Project Manager are SetLimits, SetPartners (according to the mailing list) and closeSet.
+Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. External functions for the shareholders are : IntentionToFund (default function to send Eth to the Funding smart contract), FundDaoFor (to send Eth from the Funding smart contract to the Dao), Refund (to give back Funding smart contract Eth balances to the addresses which funded the Funding smart contract). External functions for the Project Manager are SetLimits, SetPartners (according to the mailing list) and closeSet.
 
 Note : The files Dao.sol, AccountManager.sol and Token.sol will stay after the primary funding. The file Funding.sol is only for the primary funding.
 
