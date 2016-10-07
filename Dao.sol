@@ -1,3 +1,5 @@
+import "AccountManager.sol";
+
 /*
 This file is part of the DAO.
 
@@ -21,7 +23,7 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-import "AccountManager.sol";
+// import "AccountManager.sol";
 
 contract DAOInterface {
 
@@ -70,7 +72,7 @@ contract DAOInterface {
         // The initial supply of contractor tokens for the recipient
         uint256 initialSupply;
         // Total amount if the proposal foreseen to reward tokens to voters
-        uint totalTokenReward;
+        uint totalAmountForTokenReward;
         // The number of shares of the voters allow them to recieve contractor tokens
         mapping (address => uint) weightToRecieve;
         // The total number of shares of the voters of the contractor proposal
@@ -254,7 +256,7 @@ contract DAO is DAOInterface
     /// @param _TokenPrice The quantity of contractor tokens will depend on this price
     /// @param _initialSupply If the recipient ask for an initial supply of contractor tokens
     /// Default and minimum value is the period for curator to check the identity of the recipient
-    /// @param _totalTokenReward Total amount if the proposal foreseen to reward tokens to voters
+    /// @param _totalAmountForTokenReward Total amount if the proposal foreseen to reward tokens to voters
     /// @param _MinutesDebatingPeriod Proposed period of the board meeting
     /// @return The index of the proposal
     function newContractorProposal(
@@ -264,7 +266,7 @@ contract DAO is DAOInterface
         bytes32 _hashOfTheDocument,
         uint _TokenPrice, 
         uint256 _initialSupply,
-        uint _totalTokenReward,
+        uint _totalAmountForTokenReward,
         uint _MinutesDebatingPeriod
     ) returns (uint) {
 
@@ -289,7 +291,7 @@ contract DAO is DAOInterface
         c.amount = _amount;
         c.hashOfTheDocument = _hashOfTheDocument; 
         c.tokenPrice = _TokenPrice;
-        c.totalTokenReward = _totalTokenReward;
+        c.totalAmountForTokenReward = _totalAmountForTokenReward;
 
         ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.tokenPrice, 
                     c.amount/c.tokenPrice, now, 0, 0);
@@ -431,7 +433,7 @@ contract DAO is DAOInterface
 
         if (p.ContractorProposalID != 0) {
             ContractorProposal c = ContractorProposals[p.ContractorProposalID];
-            if (c.totalTokenReward != 0) {
+            if (c.totalAmountForTokenReward != 0) {
                 uint _weight = DaoAccountManager.balanceOf(msg.sender);
                 c.weightToRecieve[msg.sender] += _weight; 
                 c.totalWeight += _weight;
@@ -568,9 +570,9 @@ contract DAO is DAOInterface
         ContractorProposal c = ContractorProposals[_contractorProposalID];
         BoardMeeting p = BoardMeetings[c.BoardMeetingID];
 
-        if (p.dateOfExecution == 0 || c.weightToRecieve[_Tokenholder]==0 || c.totalTokenReward == 0) {throw; }
+        if (p.dateOfExecution == 0 || c.weightToRecieve[_Tokenholder]==0 || c.totalAmountForTokenReward == 0) {throw; }
         
-        uint _amount = (c.totalTokenReward*c.weightToRecieve[_Tokenholder])/c.totalWeight;
+        uint _amount = (c.totalAmountForTokenReward*c.weightToRecieve[_Tokenholder])/c.totalWeight;
 
         c.weightToRecieve[_Tokenholder] = 0;
 
