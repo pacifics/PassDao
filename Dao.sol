@@ -304,9 +304,10 @@ contract DAO is DAOInterface
     /// @param _maxFundingAmount The maximum amount to fund
     /// @param _tokenPrice The quantity of created tokens will depend on this price
     /// @param _inflationRate If 0, the token price doesn't change 
+    /// @param _contractorAccountManager Address of the contractor account manager (not mandatory)
+    /// @param _minutesFundingPeriod Period for the partners to fund the Dao after the board meeting decision
     /// @param _minutesSetPeriod Period before the voting period 
     /// and for the main partner to set the partners
-    /// @param _minutesFundingPeriod Period for the partners to fund the Dao after the board meeting decision
     /// @param _MinutesDebatingPeriod Proposed period of the board meeting
     /// @return The index of the proposal
     function newFundingProposal(
@@ -315,9 +316,9 @@ contract DAO is DAOInterface
         uint _maxFundingAmount, 
         uint _tokenPrice,    
         uint _inflationRate,
-        AccountManager _contractorAccountManager,
-        uint _minutesSetPeriod,
+        address _contractorAccountManager,
         uint _minutesFundingPeriod,
+        uint _minutesSetPeriod,
         uint _MinutesDebatingPeriod
     ) returns (uint) {
 
@@ -334,10 +335,9 @@ contract DAO is DAOInterface
         f.fundingAmount = _maxFundingAmount;
         f.tokenPrice = _tokenPrice;
         f.inflationRate = _inflationRate;
+        f.contractorAccountManager = _contractorAccountManager;
         f.minutesFundingPeriod = _minutesFundingPeriod;
         
-        f.contractorAccountManager = _contractorAccountManager;
-
         return _FundingProposalID;
     }
 
@@ -515,7 +515,7 @@ contract DAO is DAOInterface
 
             if (f.contractorAccountManager != 0) {
                 AccountManager(f.contractorAccountManager).setMainPartner(f.mainPartner, now + f.minutesFundingPeriod * 1 minutes);   
-            
+
             }
             
         }
