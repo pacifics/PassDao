@@ -1,5 +1,3 @@
-import "AccountManager.sol";
-
 /*
 This file is part of the DAO.
 
@@ -23,7 +21,7 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-// import "AccountManager.sol";
+import "AccountManager.sol";
 
 contract DAOInterface {
 
@@ -137,8 +135,6 @@ contract DAOInterface {
     // The current Dao rules
     Rules public DaoRules; 
     
-    bool mutex;
-
     event newBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
     event AccountManagerCreated(address recipient, address AccountManagerAddress);
     event BoardMeetingDelayed(uint _BoardMeetingID, uint _MinutesProposalPeriod);
@@ -410,9 +406,6 @@ contract DAO is DAOInterface
         bool _supportsProposal
     ) noEther onlyTokenholders returns (bool _success) {
         
-        if (mutex) { throw; }
-        mutex = true;
-            
         BoardMeeting p = BoardMeetings[_BoardMeetingID];
         if (p.hasVoted[msg.sender] 
             || now < p.setDeadline
@@ -456,8 +449,6 @@ contract DAO is DAOInterface
 
         Voted(_BoardMeetingID, _supportsProposal, msg.sender, _rewardedamount);
         
-        mutex = false;
-        
     }
 
     /// @notice Function to executes a board meeting decision
@@ -466,15 +457,14 @@ contract DAO is DAOInterface
     function executeDecision(uint _BoardMeetingID) noEther returns (bool _success) 
         {
 
-        if (mutex) { throw; }
-        mutex = true;
-
         BoardMeeting p = BoardMeetings[_BoardMeetingID];
 
         if (now <= p.votingDeadline
             || !p.open ) {
             throw;
         }
+
+        p.open = false;
         
         uint quorum = p.yea + p.nay;
         
@@ -486,25 +476,22 @@ contract DAO is DAOInterface
                 }
         }        
 
-        if (p.ContractorProposalID != 0 
-            && ContractorAccountManager[ContractorProposals[p.ContractorProposalID].recipient].IsFueled() ) {
-                bool _contractorProposalFueled = true;
+        bool _contractorProposalFueled = false;
+        if (p.ContractorProposalID != 0) {
+            _contractorProposalFueled = ContractorAccountManager[ContractorProposals[p.ContractorProposalID].recipient].IsFueled();
         }
 
         if (now > p.executionDeadline 
             || ((quorum < minQuorum() || p.yea <= p.nay) && !_contractorProposalFueled)
             ) {
             takeBoardingFees(_BoardMeetingID);
-            p.open = false;
             if (_amountToGiveBack > 0) {
                 if (!p.creator.send(_amountToGiveBack)) throw;
                 _amountToGiveBack = 0;
             }
-            mutex = false;
             return;
         }
 
-        p.open = false;
         _success = true; 
         p.dateOfExecution = now;
         takeBoardingFees(_BoardMeetingID);
@@ -556,7 +543,6 @@ contract DAO is DAOInterface
 
         ProposalTallied(_BoardMeetingID);
         
-        mutex = false;
     }
 
     /// @notice Function to reward contractor tokens for voters 
