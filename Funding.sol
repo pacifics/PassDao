@@ -202,7 +202,7 @@ contract Funding {
                 }
             }
         }
-       
+
     }
 
     /// @notice Function used to refund the amounts above limit
