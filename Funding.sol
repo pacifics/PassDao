@@ -31,6 +31,8 @@ contract Funding {
         uint256 intentionAmount;
         // The date of the intentionamount
         uint presaleDate;
+        // The funding amount according to set limits
+        uint fundingAmountLimit;
         // the amount that the partner funded to the Dao
         uint fundedAmount;
         // True if the partner is in the mailing list
@@ -65,7 +67,12 @@ contract Funding {
     mapping (address => uint) public partnerID; 
     // The total funded amount (in wei) if private funding
     uint public totalFunded; 
+    // The callculated sum of funding amout limits
+    uint public sumOfFundingAmountLimits;
     
+    // To allow the set of partners in several times
+    uint fromPartner;
+    // Mutex
     bool mutex;
     
     // Protects users by preventing the execution of method calls that
@@ -151,25 +158,49 @@ contract Funding {
         
     }
 
-    /// @dev Function used by the creator to close the set of limits and partners
+    /// @dev Function used by the creator to set the funding limits
     /// @param _amountLimit Limit in amount a partner can fund
     /// @param _divisorBalanceLimit  The partner can fund 
     /// only under a defined percentage of their ether balance 
-    function closeSet(
+    function setLimits(
             uint _amountLimit, 
             uint _divisorBalanceLimit
-        ) noEther onlyCreator {
+    ) noEther onlyCreator {
         
-        if (allSet) throw;
-
-        uint _fundingAmount = fundingAmount(_amountLimit, _divisorBalanceLimit);
-        if (_fundingAmount < minAmount || _fundingAmount > maxAmount) throw;
-
+        if (limitSet) throw;
+         
         amountLimit = _amountLimit;
         divisorBalanceLimit = _divisorBalanceLimit;
 
         limitSet = true;
-        allSet = true;
+    
+    }
+
+    /// @dev Function used by the creator to close the set of limits and partners
+    /// @param _to The index of the last partner
+    function setFundingLimits(uint _to) noEther onlyCreator {
+        
+        if (!limitSet) throw;
+
+        if (fromPartner > _to || _to > partners.length-1) throw;
+        
+        for (uint i = fromPartner; i <= _to; i++) {
+            sumOfFundingAmountLimits -= partners[i].fundingAmountLimit;
+            partners[i].fundingAmountLimit = partnerFundingLimit(i, amountLimit, divisorBalanceLimit);
+            sumOfFundingAmountLimits += partners[i].fundingAmountLimit;
+        }
+        
+        fromPartner = _to + 1;
+        
+        if (fromPartner >= partners.length) {
+            if (sumOfFundingAmountLimits < minAmount || sumOfFundingAmountLimits > maxAmount) {
+                fromPartner = 1;
+                limitSet = false;
+            }
+            else {
+                allSet = true;
+            }
+        }
 
     }
 
@@ -183,16 +214,15 @@ contract Funding {
 
         if (!allSet) throw;
         
+        if (_from < 1 || _to > partners.length-1) throw;
+        
         address _partner;
-        uint _limit;
         uint _amountToFund;
-        uint _fundingAmount = fundingAmount(amountLimit, divisorBalanceLimit);
-        
+
         for (uint i = _from; i <= _to; i++) {
-            _limit = partnerFundingLimit(i, amountLimit, divisorBalanceLimit);
+            
             _partner = partners[i].partnerAddress;
-        
-            _amountToFund = _limit - partners[i].fundedAmount;
+            _amountToFund = partners[i].fundingAmountLimit - partners[i].fundedAmount;
         
             if (_amountToFund > 0 && DaoAccountManager.buyTokenFor(_partner, _amountToFund, partners[i].presaleDate)) {
                 partners[i].fundedAmount += _amountToFund;
@@ -204,6 +234,7 @@ contract Funding {
                     ContractorAccountManager.Fueled(true); 
                 }
             }
+
         }
 
     }
@@ -218,8 +249,8 @@ contract Funding {
 
         if (mutex) { throw; }
         mutex = true;
-        
-        if (!allSet) throw;
+
+        if (_from < 1 || _to > partners.length-1) throw;
         
         uint i;
         uint _amountToRefund;
@@ -242,11 +273,20 @@ contract Funding {
     /// @param _amountLimit Limit in amount a partner can fund
     /// @param _divisorBalanceLimit  The partner can fund 
     /// only under a defined percentage of their ether balance 
+    /// @param _from The index of the first partner
+    /// @param _to The index of the last partner
     /// @return The maximum amount if all the addresses are valid partners 
     /// and fund according to their limit
-    function fundingAmount(uint _amountLimit, uint _divisorBalanceLimit) constant returns (uint _total) {
+    function fundingAmount(
+        uint _amountLimit, 
+        uint _divisorBalanceLimit,
+        uint _from,
+        uint _to
+        ) constant returns (uint _total) {
 
-        for (uint i = 1; i < partners.length; i++) {
+        if (_from < 1 || _to > partners.length-1) throw;
+
+        for (uint i = _from; i <= _to; i++) {
             _total += partnerFundingLimit(i, _amountLimit, _divisorBalanceLimit);
         }
 
@@ -257,7 +297,11 @@ contract Funding {
     /// @param _divisorBalanceLimit  The partner can fund 
     /// only under a defined percentage of their ether balance 
     /// @return The maximum amount the partner can fund
-    function partnerFundingLimit(uint _index, uint _amountLimit, uint _divisorBalanceLimit) constant returns (uint) {
+    function partnerFundingLimit(
+        uint _index, 
+        uint _amountLimit, 
+        uint _divisorBalanceLimit
+        ) internal returns (uint) {
 
         uint _amount = 0;
         uint _balanceLimit;
