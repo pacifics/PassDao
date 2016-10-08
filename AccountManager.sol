@@ -1,5 +1,3 @@
-import "Token.sol";
-
 /*
 This file is part of the DAO.
 
@@ -24,7 +22,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-// import "Token.sol";
+import "Token.sol";
 
 contract AccountManagerInterface {
 
