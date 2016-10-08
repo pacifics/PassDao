@@ -1,3 +1,5 @@
+import "Token.sol";
+
 /*
 This file is part of the DAO.
 
@@ -22,7 +24,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-import "Token.sol";
+// import "Token.sol";
 
 contract AccountManagerInterface {
 
@@ -192,21 +194,28 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @param _saleDate in case of presale, the date of the presale
     /// @return the token price condidering the sale date and the inflation rate
     function tokenPrice(uint _saleDate) internal returns (uint) {
+
+        uint _date;
+        
+        if (_saleDate > FundingRules.closingTime && FundingRules.closingTime != 0) {
+            _date = FundingRules.closingTime;
+        }
+        
+        if (_saleDate < FundingRules.startTime) {
+            _date = FundingRules.startTime;
+            }
+        else {
+            _date = _saleDate;
+        }
+        
         return FundingRules.initialTokenPrice 
-            + FundingRules.initialTokenPrice*FundingRules.inflationRate*(_saleDate - FundingRules.startTime)/(100*365 days);
+            + FundingRules.initialTokenPrice*FundingRules.inflationRate*(_date - FundingRules.startTime)/(100*365 days);
+
     }
     
     /// @return the actual token price
     function actualTokenPrice() constant returns (uint) {
         
-        if (now > FundingRules.closingTime && FundingRules.closingTime != 0) {
-            return tokenPrice(FundingRules.closingTime);
-        }
-        
-        if (now < FundingRules.startTime) {
-            return tokenPrice(FundingRules.startTime);
-            }
-        else
         return tokenPrice(now);
 
     }
