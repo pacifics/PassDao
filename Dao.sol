@@ -1,3 +1,5 @@
+import "AccountManager.sol";
+
 /*
 This file is part of the DAO.
 
@@ -21,7 +23,7 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-import "AccountManager.sol";
+// import "AccountManager.sol";
 
 contract DAOInterface {
 
@@ -65,10 +67,14 @@ contract DAOInterface {
         uint amount; 
         // The hash of the proposal's document
         bytes32 hashOfTheDocument;
-        // The price (in wei) of a contractor token
-        uint tokenPrice;  
+        // The initial price (in wei) of a contractor token
+        uint initialTokenPrice;
+        // The inflation rate to calculate the actual token price.
+        uint inflationRate;
         // The initial supply of contractor tokens for the recipient
         uint256 initialSupply;
+        // The index of the fundink proposal if linked to the contractor proposal
+        uint fundingProposalID;
         // Total amount if the proposal foreseen to reward tokens to voters
         uint totalAmountForTokenReward;
         // The number of shares of the voters allow them to recieve contractor tokens
@@ -93,8 +99,8 @@ contract DAOInterface {
         uint inflationRate;
         // Period for the partners to fund after the execution of the decision
         uint minutesFundingPeriod;
-        // Address of the contractor account manager (not mandatory)
-        address contractorAccountManager;
+        // Index of the contractor proposal (not mandatory)
+        uint contractorProposalID;
     }
 
     struct Rules {
@@ -249,7 +255,8 @@ contract DAO is DAOInterface
     /// @param _amount The amount to be sent if the proposal is approved
     /// @param _description String describing the proposal
     /// @param _hashOfTheDocument The hash to identify the proposal document
-    /// @param _TokenPrice The quantity of contractor tokens will depend on this price
+    /// @param _initialTokenPrice The quantity of contractor tokens will depend on this price    
+    /// @param _inflationRate If 0, the token price doesn't change during the funding
     /// @param _initialSupply If the recipient ask for an initial supply of contractor tokens
     /// Default and minimum value is the period for curator to check the identity of the recipient
     /// @param _totalAmountForTokenReward Total amount if the proposal foreseen to reward tokens to voters
@@ -260,7 +267,8 @@ contract DAO is DAOInterface
         uint _amount, 
         string _description, 
         bytes32 _hashOfTheDocument,
-        uint _TokenPrice, 
+        uint _initialTokenPrice, 
+        uint _inflationRate,
         uint256 _initialSupply,
         uint _totalAmountForTokenReward,
         uint _MinutesDebatingPeriod
@@ -286,11 +294,12 @@ contract DAO is DAOInterface
 
         c.amount = _amount;
         c.hashOfTheDocument = _hashOfTheDocument; 
-        c.tokenPrice = _TokenPrice;
+        c.initialTokenPrice = _initialTokenPrice;
+        c.inflationRate = _inflationRate;
 
         c.totalAmountForTokenReward = _totalAmountForTokenReward;
-        ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.tokenPrice, 
-                    c.totalAmountForTokenReward/c.tokenPrice, now, 0, 0);
+        ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.initialTokenPrice, 
+                    c.totalAmountForTokenReward, now, 0, c.inflationRate);
 
         ContractorAccountManager[c.recipient].Fueled(false); 
 
@@ -303,7 +312,7 @@ contract DAO is DAOInterface
     /// @param _maxFundingAmount The maximum amount to fund
     /// @param _tokenPrice The quantity of created tokens will depend on this price
     /// @param _inflationRate If 0, the token price doesn't change 
-    /// @param _contractorAccountManager Address of the contractor account manager (not mandatory)
+    /// @param _contractorProposalID Index of the contractor proposal (not mandatory)
     /// @param _minutesFundingPeriod Period for the partners to fund the Dao after the board meeting decision
     /// @param _minutesSetPeriod Period before the voting period 
     /// and for the main partner to set the partners
@@ -315,7 +324,7 @@ contract DAO is DAOInterface
         uint _maxFundingAmount, 
         uint _tokenPrice,    
         uint _inflationRate,
-        address _contractorAccountManager,
+        uint _contractorProposalID,
         uint _minutesFundingPeriod,
         uint _minutesSetPeriod,
         uint _MinutesDebatingPeriod
@@ -334,8 +343,20 @@ contract DAO is DAOInterface
         f.fundingAmount = _maxFundingAmount;
         f.tokenPrice = _tokenPrice;
         f.inflationRate = _inflationRate;
-        f.contractorAccountManager = _contractorAccountManager;
+        f.contractorProposalID = _contractorProposalID;
         f.minutesFundingPeriod = _minutesFundingPeriod;
+
+        if (_contractorProposalID != 0) {
+            ContractorProposal cf = ContractorProposals[_contractorProposalID];
+            BoardMeeting p = BoardMeetings[cf.BoardMeetingID];
+            if (!p.open || now > p.executionDeadline || p.creator != msg.sender || cf.amount > f.fundingAmount) throw;
+
+            cf.fundingProposalID = _FundingProposalID;
+            cf.totalAmountForTokenReward = 0;
+            uint _amountToGiveBack = p.fees;
+            p.fees = 0;
+            if (!address(p.creator).send(_amountToGiveBack)) throw;
+        }
         
         return _FundingProposalID;
     }
@@ -427,7 +448,8 @@ contract DAO is DAOInterface
 
         if (p.ContractorProposalID != 0) {
             ContractorProposal c = ContractorProposals[p.ContractorProposalID];
-            if (c.totalAmountForTokenReward != 0) {
+            if (c.fundingProposalID == 0) throw;
+            if (c.totalAmountForTokenReward > 0) {
                 uint _weight = DaoAccountManager.balanceOf(msg.sender);
                 c.weightToRecieve[msg.sender] += _weight; 
                 c.totalWeight += _weight;
@@ -503,12 +525,12 @@ contract DAO is DAOInterface
             FundingProposal f = FundingProposals[p.FundingProposalID];
 
             DaoAccountManager.extentFunding(f.mainPartner, f.publicTokenCreation, f.tokenPrice, 
-                f.fundingAmount/f.tokenPrice, now, now + f.minutesFundingPeriod * 1 minutes, f.inflationRate);
+                f.fundingAmount, now, now + f.minutesFundingPeriod * 1 minutes, f.inflationRate);
 
-            if (f.contractorAccountManager != 0) {
-                AccountManager(f.contractorAccountManager).setMainPartner(f.mainPartner, 
-                    f.fundingAmount/f.tokenPrice, now + f.minutesFundingPeriod * 1 minutes);   
-
+            if (f.contractorProposalID != 0) {
+                ContractorProposal cf = ContractorProposals[f.contractorProposalID];
+                ContractorAccountManager[cf.recipient].extentFunding(f.mainPartner, false, cf.initialTokenPrice, 
+                    f.fundingAmount, now, now + f.minutesFundingPeriod * 1 minutes, cf.inflationRate);
             }
             
         }
@@ -565,7 +587,7 @@ contract DAO is DAOInterface
         c.weightToRecieve[_Tokenholder] = 0;
 
         AccountManager m = ContractorAccountManager[c.recipient];
-        m.rewardToken(_Tokenholder, _amount);
+        m.rewardToken(_Tokenholder, _amount, now);
 
         TokensBoughtFor(_contractorProposalID, _Tokenholder, _amount);
 
