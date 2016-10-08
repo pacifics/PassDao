@@ -29,8 +29,8 @@ contract Funding {
         address partnerAddress; 
         // The amount that the partner wish to fund
         uint256 intentionAmount;
-        // The limit a partner can fund
-        uint limit;
+        // The date of the intentionamount
+        uint presaleDate;
         // the amount that the partner funded to the Dao
         uint fundedAmount;
         // True if the partner is in the mailing list
@@ -122,9 +122,11 @@ contract Funding {
              
             t.partnerAddress = msg.sender;
             t.intentionAmount += msg.value;
+            t.presaleDate = now;
         }
         else {
             partners[partnerID[msg.sender]].intentionAmount += msg.value;
+            t.presaleDate = now;
         }    
         
         IntentionToFund(msg.sender, msg.value);
@@ -182,18 +184,19 @@ contract Funding {
         if (!allSet) throw;
         
         address _partner;
+        uint _limit;
         uint _amountToFund;
         uint _fundingAmount = fundingAmount(amountLimit, divisorBalanceLimit);
         
         for (uint i = _from; i <= _to; i++) {
-            partners[i].limit = partnerFundingLimit(i, amountLimit, divisorBalanceLimit);
+            _limit = partnerFundingLimit(i, amountLimit, divisorBalanceLimit);
             _partner = partners[i].partnerAddress;
         
-            _amountToFund = partners[i].limit - partners[i].fundedAmount;
+            _amountToFund = _limit - partners[i].fundedAmount;
         
-            if (_amountToFund > 0 && DaoAccountManager.buyTokenFor(_partner, _amountToFund)) {
+            if (_amountToFund > 0 && DaoAccountManager.buyTokenFor(_partner, _amountToFund, partners[i].presaleDate)) {
                 partners[i].fundedAmount += _amountToFund;
-                ContractorAccountManager.rewardToken(_partner, _amountToFund);
+                ContractorAccountManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
                 if (!DaoAccountManager.send(_amountToFund)) throw;
                 totalFunded += _amountToFund;
                 if (totalFunded >= minAmount && !ContractorAccountManager.IsFueled()) {
