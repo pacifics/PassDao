@@ -37,7 +37,7 @@ Notes :
 
 - If the work of a contractor allows the development of our project, it should increase the value of reputation tokens which belong to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
 
-- Rewards to the contractors are done with ethers and step by step for each contractor. Each new step starts with a new contractor proposal which includes a report about the result of the last proposal. All the voting weights of shareholders for all approved proposals of the contractor are stored as tokens in the account manager of the contractor. 
+- Rewards to the contractors are done with ethers and step by step for each contractor. Each new step starts with a new contractor proposal which includes a report about the result of the last proposal.  
 
 =
 
