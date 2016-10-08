@@ -21,7 +21,7 @@ This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Et
 
 # Short description
 
-The smart contract has the next main functions: 
+The Dao smart contract has the next main functions: 
 
 - Set a contractor proposal: every contractor can offer the DAO to sell products or execute services and ask for a voting process called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). The fees go to the voters according to their share in Dao. This will incentivize the Community members to be active members. 
 
