@@ -1,3 +1,5 @@
+import "Token.sol";
+
 /*
 This file is part of the DAO.
 
@@ -22,7 +24,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-import "Token.sol";
+// import "Token.sol";
 
 contract AccountManagerInterface {
 
@@ -101,34 +103,38 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @notice Create Token with `msg.sender` as the beneficiary in case of public funding
     function () {
         if (FundingRules.publicTokenCreation) {
-            buyToken(msg.sender, msg.value);
+            buyToken(msg.sender, msg.value, now);
         }
     }
 
     /// @notice Create Token with `_tokenHolder` as the beneficiary
     /// @param _tokenHolder the beneficiary of the created tokens
     /// @param _amount the amount funded
+    /// @param _saleDate in case of presale, the date of the presale
     /// @return Whether the transfer was successful or not
     function buyTokenFor(
         address _tokenHolder,
-        uint _amount
+        uint _amount,
+        uint _saleDate
         ) onlyPrivateTokenCreation returns (bool _succes) {
         
         if (msg.sender != FundingRules.mainPartner) throw;
 
-        return buyToken(_tokenHolder, _amount);
+        return buyToken(_tokenHolder, _amount, _saleDate);
 
     }
      
     /// @notice Create Token with `_tokenHolder` as the beneficiary
     /// @param _tokenHolder the beneficiary of the created tokens
     /// @param _amount the amount funded
+    /// @param _saleDate in case of presale, the date of the presale
     /// @return Whether the transfer was successful or not
     function buyToken(
         address _tokenHolder,
-        uint _amount) internal returns (bool _succes) {
+        uint _amount,
+        uint _saleDate) internal returns (bool _succes) {
         
-        if (createToken(_tokenHolder, _amount)) {
+        if (createToken(_tokenHolder, _amount, _saleDate)) {
             return true;
         }
         else throw;
@@ -183,24 +189,35 @@ contract AccountManager is Token, AccountManagerInterface {
     function MaxTotalSupply() external returns (uint) {
         return (FundingRules.maxTotalSupply);
     }
-    
+
     /// @dev Function used by the client
-    /// @return the actual token price condidering the inflation rate
-    function tokenPrice() constant returns (uint) {
-        if ((now > FundingRules.closingTime && FundingRules.closingTime !=0) 
-            || (now < FundingRules.startTime) ) {
-            return 0;
+    /// @param _saleDate in case of presale, the date of the presale
+    /// @return the token price condidering the sale date and the inflation rate
+    function tokenPrice(uint _saleDate) internal returns (uint) {
+        return FundingRules.initialTokenPrice 
+            + FundingRules.initialTokenPrice*FundingRules.inflationRate*(_saleDate - FundingRules.startTime)/(100*365 days);
+    }
+    
+    /// @return the actual token price
+    function actualTokenPrice() constant returns (uint) {
+        
+        if (now > FundingRules.closingTime && FundingRules.closingTime != 0) {
+            return tokenPrice(FundingRules.closingTime);
+        }
+        
+        if (now < FundingRules.startTime) {
+            return tokenPrice(FundingRules.startTime);
             }
         else
-        return FundingRules.initialTokenPrice 
-            + FundingRules.initialTokenPrice*(FundingRules.inflationRate)*(now - FundingRules.startTime)/(100*365 days);
-    }
+        return tokenPrice(now);
 
+    }
+    
     /// @dev Function to extent funding. Can be private or public
     /// @param _mainPartner The address for the managing of the funding
     /// @param _publicTokenCreation True if public
     /// @param _initialTokenPrice Price without considering any inflation rate
-    /// @param _maxTokensToCreate If the maximum is reached, the funding is closed
+    /// @param _maxAmountToFund If the maximum is reached, the funding is closed
     /// @param _startTime If 0, the start time is the creation date of this contract
     /// @param _closingTime After this date, the funding is closed
     /// @param _inflationRate If 0, the token price doesn't change during the funding
@@ -208,7 +225,7 @@ contract AccountManager is Token, AccountManagerInterface {
         address _mainPartner,
         bool _publicTokenCreation, 
         uint _initialTokenPrice, 
-        uint256 _maxTokensToCreate, 
+        uint256 _maxAmountToFund, 
         uint _startTime, 
         uint _closingTime, 
         uint _inflationRate
@@ -218,27 +235,12 @@ contract AccountManager is Token, AccountManagerInterface {
         FundingRules.publicTokenCreation = _publicTokenCreation;
         FundingRules.startTime = _startTime;
         FundingRules.closingTime = _closingTime; 
-        FundingRules.maxTotalSupply = totalSupply + _maxTokensToCreate;
-        FundingRules.initialTokenPrice = _initialTokenPrice; 
+        FundingRules.initialTokenPrice = _initialTokenPrice;
+        FundingRules.maxTotalSupply = totalSupply + _maxAmountToFund/FundingRules.initialTokenPrice;
         FundingRules.inflationRate = _inflationRate;  
-        
+
     } 
     
-    /// @dev Function allow the main partner to create tokens until a closing time
-    /// @param _mainPartner The address for the managing of the funding
-    /// @param _quantity Maximum quantity of tokens to create 
-    /// @param _closingTime After this date, the funding is closed
-    function setMainPartner(
-        address _mainPartner,
-        uint _quantity,
-        uint _closingTime) external onlyClient {
-
-        FundingRules.mainPartner = _mainPartner;
-        FundingRules.maxTotalSupply += _quantity;
-        FundingRules.closingTime = _closingTime;
-
-    }
-        
     /// @dev Function used by the client to send ethers
     /// @param _recipient The address to send to
     /// @param _amount The amount to send
@@ -252,17 +254,19 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Function used by the Dao to reward of tokens
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The amount in Wei
+    /// @param _date The date to consider for the token price calculation
     /// @return Whether the transfer was successful or not
     function rewardToken(
         address _tokenHolder, 
-        uint _amount
+        uint _amount,
+        uint _date
         ) external returns (bool _success) {
         
         if (msg.sender != address(client) && msg.sender != FundingRules.mainPartner) {
             throw;
         }
         
-        if (createToken(_tokenHolder, _amount)) return true;
+        if (createToken(_tokenHolder, _amount, _date)) return true;
         else throw;
 
     }
@@ -293,10 +297,12 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Internal function for the creation of tokens
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
+    /// @param _saleDate in case of presale, the date of the presale
     /// @return Whether the token creation was successful or not
     function createToken(
         address _tokenHolder, 
-        uint _amount
+        uint _amount,
+        uint _saleDate
     ) internal returns (bool _success) {
 
         if ((totalSupply + _quantity > FundingRules.maxTotalSupply)
@@ -306,7 +312,7 @@ contract AccountManager is Token, AccountManagerInterface {
             throw;
             }
 
-        uint _quantity = _amount/tokenPrice();
+        uint _quantity = _amount/tokenPrice(_saleDate);
 
         if (totalSupply + _quantity > FundingRules.maxTotalSupply) throw;
 
