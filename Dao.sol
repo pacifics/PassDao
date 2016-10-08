@@ -347,7 +347,7 @@ contract DAO is DAOInterface
         if (_contractorProposalID != 0) {
             ContractorProposal cf = ContractorProposals[_contractorProposalID];
             BoardMeeting p = BoardMeetings[cf.BoardMeetingID];
-            if (!p.open || now > p.executionDeadline || p.creator != msg.sender || cf.amount > f.fundingAmount) throw;
+            if (!p.open || now > p.executionDeadline || p.creator != msg.sender) throw;
 
             cf.fundingProposalID = _FundingProposalID;
             cf.totalAmountForTokenReward = 0;
