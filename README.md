@@ -61,8 +61,6 @@ Main functions:
 
 ## The Account Manager Smart Contract
 
-=
-
 The smart contract is linked to the basic, standardized Token contract Token.sol. The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the contractor recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao). The Dao Account Manager contains the balance of the Dao. 
 
 Main functions are : 
