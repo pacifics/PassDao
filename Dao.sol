@@ -300,6 +300,7 @@ contract DAO is DAOInterface
         ContractorAccountManager[c.recipient].Fueled(false); 
 
         return _ContractorProposalID;
+        
     }
 
     /// @notice Function to make a proposal for a funding of the Dao
@@ -355,6 +356,7 @@ contract DAO is DAOInterface
         }
         
         return _FundingProposalID;
+        
     }
 
     /// @notice Function to make a proposal to change the Dao rules 
@@ -396,6 +398,7 @@ contract DAO is DAOInterface
         r.tokenTransferAble = _tokenTransferAble;
 
         return _DaoRulesProposalID;
+        
     }
  
     /// @notice Function to extent the set period before a board meeting
@@ -413,6 +416,7 @@ contract DAO is DAOInterface
         p.votingDeadline += _MinutesPeriod * 1 minutes;
         
         BoardMeetingDelayed(_BoardMeetingID, _MinutesPeriod);
+        
     }
     
     /// @notice Function to vote during a board meeting
