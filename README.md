@@ -41,24 +41,6 @@ Notes :
 
 =
 
-## The Funding Smart Contract
-
-Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. 
-
-Main functions: 
-
-- IntentionToFund: default function to send Eth to the Funding smart contract.
-
-- SetPartners: allows the smart contract creator to validate Eth addresses according to the mailing list.
-
-- SetLimits and SetFundingLimits: allows the smart contract creator to set the funding limits (amount and percentage of ether balance share) for all partners.
-
-- FundDaoFor: to send Eth from the Funding smart contract to the Dao if the funding is fueled.
-
-- Refund: to refund the not funded amount.
-
-=
-
 ## The Account Manager Smart Contract
 
 The smart contract is linked to the basic, standardized Token contract Token.sol. The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the contractor recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao). The Dao Account Manager contains the balance of the Dao. 
@@ -74,6 +56,24 @@ Main functions are :
 - Transfer (to transfer tokens) and TransferFrom (to transfer tokens)
 
 - Approve (tokens allowance). 
+
+=
+
+## The Funding Smart Contract
+
+Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. 
+
+Main functions: 
+
+- IntentionToFund: default function to send Eth to the Funding smart contract.
+
+- SetPartners: allows the smart contract creator to validate Eth addresses according to the mailing list.
+
+- SetLimits and SetFundingLimits: allows the smart contract creator to set the funding limits (amount and percentage of ether balance share) for all partners.
+
+- FundDaoFor: to send Eth from the Funding smart contract to the Dao if the funding is fueled.
+
+- Refund: to refund the not funded amount.
 
 =
 
