@@ -90,8 +90,8 @@ contract AccountManager is Token, AccountManagerInterface {
         address _recipient,
         uint256 _initialSupply
     ) {
+    
         client = _client;
-
         recipient = _recipient;
 
         balances[_recipient] = _initialSupply; 
