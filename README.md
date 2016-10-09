@@ -21,7 +21,9 @@ This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Et
 
 ## The Dao Smart Contract
 
-The Dao smart contract (files Dao.sol + AccountManager.sol + Token.sol) has the next main functions: 
+Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period that can be extent by the creator of the proposal, and during a debate period. Approved proposal can be executed during a period predefined in the Dao rules.
+
+Main functions: 
 
 - Set a contractor proposal: every contractor can offer the DAO to sell products or execute services and ask for a voting process called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). The fees go to the voters according to their share in Dao. This will incentivize the Community members to be active members. 
 
@@ -41,7 +43,9 @@ Notes :
 
 ## The Funding Smart Contract
 
-The Funding smart contract (files Funding.sol + AccountManager.sol + Token.sol) is used only for the primary funfing and has the next main functions: 
+Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. 
+
+Main functions: 
 
 - IntentionToFund: default function to send Eth to the Funding smart contract.
 
@@ -52,6 +56,26 @@ The Funding smart contract (files Funding.sol + AccountManager.sol + Token.sol) 
 - FundDaoFor: to send Eth from the Funding smart contract to the Dao if the funding is fueled.
 
 - Refund: to refund the not funded amount.
+
+=
+
+## The Account Manager Smart Contract
+
+=
+
+The smart contract is linked to the basic, standardized Token contract Token.sol. The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the contractor recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao). The Dao Account Manager contains the balance of the Dao. 
+
+Main functions are : 
+
+- SendEth (default function). 
+
+- BuyToken (for public fundings) and BuyTokenFor (for private fundings)
+
+- UnblockAccount (tokenholder's accounts are blocked when voting and can be unblocked when the proposal is closed)
+
+- Transfer (to transfer tokens) and TransferFrom (to transfer tokens)
+
+- Approve (tokens allowance). 
 
 =
 
@@ -72,18 +96,5 @@ The Funding smart contract (files Funding.sol + AccountManager.sol + Token.sol) 
 - The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. The contractor proposal can foresee an inflation rate for the reward of tokens which will incentivize voters to vote early.
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares or contractor tokens.
-
-=
-
-# Solidity Files 
-
-- DAO.sol:
-Smart contract for a Decentralized Autonomous Organization (DAO) to automate organizational governance and decision-making. Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period that can be extent by the creator of the proposal, and during a debate period. Approved proposal can be executed during a period predefined in the Dao rules. 
-
-- AccountManager.sol :
-This file is linked to the basic, standardized Token contract Token.sol. The Account Manager smart contract is associated with a recipient (the Dao for dao shares and the contractor recipient for contractor tokens) and used for the management of tokens by a client smart contract (the dao). The Dao Account Manager contains the balance of the Dao. External functions are : SendEth (default function), BuyToken (for public fundings), BuyTokenFor (for private fundings), UnblockAccount (tokenholder's accounts are blocked when voting and can be unblocked when the proposal is closed), Transfer (to transfer tokens), TransferFrom (to transfer tokens), Approve (tokens allowance).  
-
-- Funding.sol:
-Smart contract used for the preliminary funding of the Dao. Each Eth address has to be associated with a partner included in the mailing list to become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. 
 
 
