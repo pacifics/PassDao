@@ -405,16 +405,16 @@ contract DAO is DAOInterface
     /// @param _MinutesProposalPeriod The period to extent
     function extentSetPeriod(
         uint _BoardMeetingID,
-        uint  _MinutesProposalPeriod) {
+        uint  _MinutesPeriod) {
         
         BoardMeeting p = BoardMeetings[_BoardMeetingID];
         if (now > p.setDeadline 
             || msg.sender != address(p.creator)) throw;
         
-        p.setDeadline += _MinutesProposalPeriod * 1 minutes;
-        p.votingDeadline += _MinutesProposalPeriod * 1 minutes;
+        p.setDeadline += _MinutesPeriod * 1 minutes;
+        p.votingDeadline += _MinutesPeriod * 1 minutes;
         
-        BoardMeetingDelayed(_BoardMeetingID, _MinutesProposalPeriod);
+        BoardMeetingDelayed(_BoardMeetingID, _MinutesPeriod);
     }
     
     /// @notice Function to vote during a board meeting
