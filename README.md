@@ -39,6 +39,22 @@ Notes :
 
 =
 
+# The Funding Smart Contract
+
+The Funding smart contract (files Funding.sol + AccountManager.sol + Token.sol) is used only for the primary funfing and has the next main functions: 
+
+- IntentionToFund: default function to send Eth to the Funding smart contract.
+
+- SetPartners: allows the smart contract creator to validate Eth addresses according to the mailing list.
+
+- SetLimits and SetFundingLimits: allows the smart contract creator to set the funding limits (amount and percentage of ether balance share) for all partners.
+
+- FundDaoFor: to send Eth from the Funding smart contract to the Dao if the funding is fueled.
+
+- Refund: to refund the not funded amount.
+
+=
+
 # About Security
 
 - It is necessary to ask to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders and avoid the possibility to fund using "hundreds" addresses.
@@ -56,22 +72,6 @@ Notes :
 - The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. The contractor proposal can foresee an inflation rate for the reward of tokens which will incentivize voters to vote early.
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares or contractor tokens.
-
-=
-
-# The Funding Smart Contract
-
-The Funding smart contract (files Funding.sol + AccountManager.sol + Token.sol) is used only for the primary funfing and has the next main functions: 
-
-- IntentionToFund: default function to send Eth to the Funding smart contract.
-
-- SetPartners: allows the smart contract creator to validate Eth addresses according to the mailing list.
-
-- SetLimits and SetFundingLimits: allows the smart contract creator to set the funding limits (amount and percentage of ether balance share) for all partners.
-
-- FundDaoFor: to send Eth from the Funding smart contract to the Dao if the funding is fueled.
-
-- Refund: to refund the not funded amount.
 
 =
 
