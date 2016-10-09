@@ -19,7 +19,7 @@ This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Et
 
 =
 
-# Short description
+# The Dao Smart Contract
 
 The Dao smart contract (files Dao.sol + AccountManager.sol + Token.sol) has the next main functions: 
 
@@ -59,7 +59,7 @@ Notes :
 
 =
 
-# Funding Smart Contract
+# The Funding Smart Contract
 
 The Funding smart contract (files Funding.sol + AccountManager.sol + Token.sol) is used only for the primary funfing and has the next main functions: 
 
