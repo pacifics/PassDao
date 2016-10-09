@@ -332,3 +332,24 @@ contract Funding {
     }
 
 }
+
+contract Funding_Creator {
+    function createFunding(
+        address _DaoAccountManager,
+        address _contractorAccountManager,
+        uint _minAmount,
+        uint _maxAmount,
+        uint _startTime,
+        uint _closingTime
+        ) returns (Funding _newFunding) {
+            
+        return new Funding(
+            _DaoAccountManager,
+            _contractorAccountManager,
+            _minAmount,
+            _maxAmount,
+            _startTime,
+            _closingTime
+        );
+    }
+}
