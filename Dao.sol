@@ -402,7 +402,7 @@ contract DAO is DAOInterface
  
     /// @notice Function to extent the set period before a board meeting
     /// @param _BoardMeetingID The index of the board meeting
-    /// @param _MinutesProposalPeriod The period to extent
+    /// @param _MinutesPeriod The period to extent
     function extentSetPeriod(
         uint _BoardMeetingID,
         uint  _MinutesPeriod) {
