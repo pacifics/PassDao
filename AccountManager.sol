@@ -33,16 +33,14 @@ contract AccountManagerInterface {
         address mainPartner;
         // True if crowdfunding
         bool publicTokenCreation; 
-        // Minimum quantity of tokens to create
-        uint256 minTotalSupply; 
         // Maximum quantity of tokens to create
         uint256 maxTotalSupply; 
         // Start time of the funding
         uint startTime; 
         // Closing time of the funding
         uint closingTime;  
-        // The price (in wei) for a token without considering the inflation rate
-        uint initialTokenPrice;
+        // The price multiplier for a token without considering the inflation rate
+        uint initialTokenPriceMultiplier;
         // Rate per year applied to the token price 
         uint inflationRate; 
     } 
@@ -162,7 +160,7 @@ contract AccountManager is Token, AccountManagerInterface {
 
     /// @dev Function used by the client
     /// @return The total supply of tokens 
-    function TotalSupply() constant external returns (uint256) {
+    function TotalSupply() external returns (uint256) {
         return totalSupply;
     }
     
@@ -184,10 +182,6 @@ contract AccountManager is Token, AccountManagerInterface {
         return isFueled;
     }
 
-    function setMinTotalSupply(uint256 _minTotalSupply) external returns (uint) {
-        FundingRules.minTotalSupply = _minTotalSupply; 
-    }
-        
     /// @dev Function used by the client
     /// @return The maximum tokens after the funding
     function MaxTotalSupply() external returns (uint) {
@@ -196,8 +190,8 @@ contract AccountManager is Token, AccountManagerInterface {
 
     /// @dev Function used by the client
     /// @param _saleDate in case of presale, the date of the presale
-    /// @return the token price condidering the sale date and the inflation rate
-    function tokenPrice(uint _saleDate) internal returns (uint) {
+    /// @return the token price divisor condidering the sale date and the inflation rate
+    function tokenPriceDivisor(uint _saleDate) internal returns (uint) {
 
         uint _date;
         
@@ -212,22 +206,21 @@ contract AccountManager is Token, AccountManagerInterface {
             _date = _saleDate;
         }
         
-        return FundingRules.initialTokenPrice 
-            + FundingRules.initialTokenPrice*FundingRules.inflationRate*(_date - FundingRules.startTime)/(100*365 days);
+        return 100 + 100*FundingRules.inflationRate*(_date - FundingRules.startTime)/(100*365 days);
 
     }
     
     /// @return the actual token price
-    function actualTokenPrice() constant returns (uint) {
+    function actualTokenPriceDivisor() constant returns (uint) {
         
-        return tokenPrice(now);
+        return tokenPriceDivisor(now);
 
     }
     
     /// @dev Function to extent funding. Can be private or public
     /// @param _mainPartner The address for the managing of the funding
     /// @param _publicTokenCreation True if public
-    /// @param _initialTokenPrice Price without considering any inflation rate
+    /// @param _initialTokenPriceMultiplier Price multiplier without considering any inflation rate
     /// @param _maxAmountToFund If the maximum is reached, the funding is closed
     /// @param _startTime If 0, the start time is the creation date of this contract
     /// @param _closingTime After this date, the funding is closed
@@ -235,7 +228,7 @@ contract AccountManager is Token, AccountManagerInterface {
     function extentFunding(
         address _mainPartner,
         bool _publicTokenCreation, 
-        uint _initialTokenPrice, 
+        uint _initialTokenPriceMultiplier, 
         uint256 _maxAmountToFund, 
         uint _startTime, 
         uint _closingTime, 
@@ -246,8 +239,8 @@ contract AccountManager is Token, AccountManagerInterface {
         FundingRules.publicTokenCreation = _publicTokenCreation;
         FundingRules.startTime = _startTime;
         FundingRules.closingTime = _closingTime; 
-        FundingRules.initialTokenPrice = _initialTokenPrice;
-        FundingRules.maxTotalSupply = totalSupply + _maxAmountToFund/FundingRules.initialTokenPrice;
+        FundingRules.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
+        FundingRules.maxTotalSupply = totalSupply + _maxAmountToFund*FundingRules.initialTokenPriceMultiplier;
         FundingRules.inflationRate = _inflationRate;  
         
         FundingRulesSet(_mainPartner, _startTime);
@@ -326,7 +319,7 @@ contract AccountManager is Token, AccountManagerInterface {
             throw;
             }
 
-        uint _quantity = _amount/tokenPrice(_saleDate);
+        uint _quantity = 100*_amount*FundingRules.initialTokenPriceMultiplier/tokenPriceDivisor(_saleDate);
 
         if (totalSupply + _quantity > FundingRules.maxTotalSupply) throw;
 
