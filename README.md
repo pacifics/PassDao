@@ -95,4 +95,9 @@ Main functions:
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares or contractor tokens.
 
+=
 
+# On Testnet
+
+To create a DAO smart contract (DAO Creator Json Interface): 0x288D4283A72693A9Ba21732F56Fdc4234f79fFcb
+To create a Funding smart contract (Funding Creator Json Interface): 0x7412C8E8251A6De87C8500dec086Ff695965BcC4
