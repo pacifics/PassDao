@@ -55,7 +55,7 @@ Notes :
 
 - The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. The contractor proposal can foresee an inflation rate for the reward of tokens which will incentivize voters to vote early.
 
-- The Dao votes to decide when the shares and contractor tokens can be transfered.
+- Only the Dao shareholders can decide by vote to allow the transfer of shares or contractor tokens.
 
 =
 
