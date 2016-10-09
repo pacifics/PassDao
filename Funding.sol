@@ -108,6 +108,7 @@ contract Funding {
         maxAmount = _maxAmount;
         if (_startTime == 0) {startTime = now;} else {startTime = startTime;}
         closingTime = _closingTime;
+        fromPartner = 1;
         partners.length = 1; 
         
         }
