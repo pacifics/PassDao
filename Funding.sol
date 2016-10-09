@@ -1,3 +1,5 @@
+import "AccountManager.sol";
+
 /*
 This file is part of the DAO.
 
@@ -20,7 +22,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * Standard smart contract used for the funding of the Dao.
 */
 
-import "AccountManager.sol";
+// import "AccountManager.sol";
 
 contract Funding {
 
@@ -333,7 +335,8 @@ contract Funding {
 
 }
 
-contract Funding_Creator {
+contract FundingCreator {
+    event NewFunding(address newFunding);
     function createFunding(
         address _DaoAccountManager,
         address _contractorAccountManager,
@@ -341,9 +344,8 @@ contract Funding_Creator {
         uint _maxAmount,
         uint _startTime,
         uint _closingTime
-        ) returns (Funding _newFunding) {
-            
-        return new Funding(
+        ) returns (Funding) {
+        Funding _newFunding = new Funding(
             _DaoAccountManager,
             _contractorAccountManager,
             _minAmount,
@@ -351,5 +353,7 @@ contract Funding_Creator {
             _startTime,
             _closingTime
         );
+        NewFunding(address(_newFunding));
+        return _newFunding;
     }
 }
