@@ -69,7 +69,9 @@ contract AccountManagerInterface {
     // Modifier that allows the main partner to buy tokens only in case of private funding
     modifier onlyPrivateTokenCreation {if (FundingRules.publicTokenCreation) throw; _ }
 
-    event TokensCreated(address indexed tokenHolder, uint quantity);
+    event TokensCreated(address indexed sender, address indexed tokenHolder, uint quantity);
+    event FundingRulesSet(address indexed mainPartner, uint startTime);
+    event AmountSent(address indexed recipient, uint amount);
 
 }
 
@@ -94,7 +96,7 @@ contract AccountManager is Token, AccountManagerInterface {
 
         balances[_recipient] = _initialSupply; 
         totalSupply =_initialSupply;
-        TokensCreated(_recipient, _initialSupply);
+        TokensCreated(msg.sender, _recipient, _initialSupply);
         
    }
 
@@ -243,6 +245,8 @@ contract AccountManager is Token, AccountManagerInterface {
         FundingRules.initialTokenPrice = _initialTokenPrice;
         FundingRules.maxTotalSupply = totalSupply + _maxAmountToFund/FundingRules.initialTokenPrice;
         FundingRules.inflationRate = _inflationRate;  
+        
+        FundingRulesSet(_mainPartner, _startTime);
 
     } 
     
@@ -254,6 +258,7 @@ contract AccountManager is Token, AccountManagerInterface {
         uint _amount
     ) external onlyClient {
         if (!_recipient.send(_amount)) throw;    
+        AmountSent(_recipient, _amount);
     }
     
     /// @dev Function used by the Dao to reward of tokens
@@ -323,7 +328,7 @@ contract AccountManager is Token, AccountManagerInterface {
 
         balances[_tokenHolder] += _quantity; 
         totalSupply += _quantity;
-        TokensCreated(_tokenHolder, _quantity);
+        TokensCreated(msg.sender, _tokenHolder, _quantity);
         
         if (totalSupply == FundingRules.maxTotalSupply) {
             FundingRules.closingTime = now;
