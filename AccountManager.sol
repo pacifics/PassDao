@@ -168,10 +168,13 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Function used by the main partner to set the funding fueled
     /// @param _isFueled Whether the funding is fueled or not
     function Fueled(bool _isFueled) external {
+    
         if (msg.sender != address(client) && msg.sender != FundingRules.mainPartner) {
             throw;
         }
+
         isFueled = _isFueled;
+        
     }
     
     /// @notice Function to know if the funding is fueled
@@ -257,9 +260,11 @@ contract AccountManager is Token, AccountManagerInterface {
         address _recipient, 
         uint _amount
     ) external onlyClient {
+    
         if (!_recipient.send(_amount)) throw;    
         AmountSent(_recipient, _amount);
-    }
+
+}
     
     /// @dev Function used by the Dao to reward of tokens
     /// @param _tokenHolder The address of the token holder
@@ -294,9 +299,7 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @param _account The address of the tokenHolder
     /// @param _deadLine When the account can be unblocked
     function blockAccount(address _account, uint _deadLine) external onlyClient {
-        
         blocked[_account] = _deadLine;
-
     }
     
     /// @dev Function used by the client to able the transfer of tokens
