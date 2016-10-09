@@ -141,13 +141,11 @@ contract DAOInterface {
     
     event newBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
     event AccountManagerCreated(address recipient, address AccountManagerAddress);
-    event BoardMeetingDelayed(uint _BoardMeetingID, uint _MinutesProposalPeriod);
-    event Voted(uint indexed proposalID, bool position, address voter, uint rewardedAmount);
-    event ProposalTallied(uint indexed proposalID);
-    event NewTokenManagerAccount(address TokenManagerAddress);
-    event BoardMeetingCanceled(uint indexed BoardMeetingID);
-    event CuratorUpdated(address _from, address _to);
-    event BoardMeetingClosed(uint indexed BoardMeetingID);
+    event BoardMeetingDelayed(uint indexed _BoardMeetingID, uint indexed _MinutesProposalPeriod);
+    event Voted(uint indexed proposalID, bool position, address indexed voter, uint rewardedAmount);
+    event BoardMeetingFeesGivenBack(uint indexed boardMeetingID);
+    event BoardMeetingClosed(uint indexed boardMeetingID);
+    event ProposalTallied(uint indexed boardMeetingID);
     event TokensBoughtFor(uint indexed contractorProposalID, address Tokenholder, uint amount);
 
 }
@@ -512,6 +510,7 @@ contract DAO is DAOInterface
                 if (!address(p.creator).send(_amountToGiveBack)) throw;
                 _amountToGiveBack = 0;
             }
+            BoardMeetingClosed(_BoardMeetingID);
             return;
         }
 
@@ -561,6 +560,7 @@ contract DAO is DAOInterface
 
         if (_amountToGiveBack > 0) {
             if (!address(p.creator).send(_amountToGiveBack)) throw;
+            BoardMeetingFeesGivenBack(_BoardMeetingID);
         }
 
         ProposalTallied(_BoardMeetingID);
