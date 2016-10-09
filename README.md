@@ -33,8 +33,6 @@ The Dao smart contract has the next main functions:
 
 Notes :
 
-- The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. The contractor proposal can foresee an inflation rate for the reward of tokens which will incentivize voters to vote early.
-
 - If the work of a contractor allows the development of our project, it should increase the value of reputation tokens which belong to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
 
 - Rewards to the contractors are done with ethers and step by step for each contractor. Each new step starts with a new contractor proposal which includes a report about the result of the last proposal.  
@@ -47,11 +45,15 @@ Notes :
 
 - By allowing fundings (public or private) for each step of the project and by limiting the funding amounts, we avoid useless blocked ethers in the Dao. It is possible to link a funding proposal with a contractor proposal and that will be completed only if the funding is fueled during a predefined period, unless the Dao is not funded and the contractor proposal not completed. We use this method for the first Project Manager proposal and the primary funding.
  
+- There is no calldata function. The send functions are at the end of methods or with a mutex.
+
 - There is no split function.
 
 - Make a proposal will cost board meeting fees. In case of funding or Dao rules proposals, the fees return to the creator if the quorum is reached.
 
 - A period to consider or set the proposal is foreseen before each board meeting. 
+
+- The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. The contractor proposal can foresee an inflation rate for the reward of tokens which will incentivize voters to vote early.
 
 - The Dao votes to decide when the shares and contractor tokens can be transfered.
 
