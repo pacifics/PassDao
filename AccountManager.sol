@@ -157,6 +157,7 @@ contract AccountManager is Token, AccountManagerInterface {
         } else {
             return true;
         }
+        
     }
 
     /// @dev Function used by the client
