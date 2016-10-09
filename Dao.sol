@@ -145,7 +145,7 @@ contract DAOInterface {
     
     event newBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
     event AccountManagerCreated(address recipient, address AccountManagerAddress);
-    event BoardMeetingDelayed(uint indexed _BoardMeetingID, uint indexed _MinutesProposalPeriod);
+    event BoardMeetingDelayed(uint indexed BoardMeetingID, uint MinutesProposalPeriod);
     event Voted(uint indexed proposalID, bool position, address indexed voter, uint rewardedAmount);
     event BoardMeetingFeesGivenBack(uint indexed boardMeetingID);
     event BoardMeetingClosed(uint indexed boardMeetingID);
@@ -636,8 +636,11 @@ contract DAO is DAOInterface
 
 }
 
-contract DAO_Creator {
-    function createDAO() returns (DAO _newDAO) {
-        return new DAO();
+contract DAOCreator {
+    event NewDao(address newDao);
+    function createDAO() returns (DAO) {
+        DAO _newDao = new DAO();
+        NewDao(address(_newDao));
+        return _newDao;
     }
 }
