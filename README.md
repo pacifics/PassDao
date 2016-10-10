@@ -71,7 +71,7 @@ Main functions:
 
 - SetLimits and SetFundingLimits: allows the smart contract creator to set the funding limits (amount and percentage of ether balance share) for all partners.
 
-- FundDaoFor: to send Eth from the Funding smart contract to the Dao if the funding is fueled.
+- FundDaoFor: to send Eth from the Funding smart contract to the Dao and according to the set limits if the funding is fueled.
 
 - Refund: to refund the not funded amount.
 
