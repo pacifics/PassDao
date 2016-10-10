@@ -21,8 +21,6 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-import "AccountManager.sol";
-
 contract DAOInterface {
 
     struct BoardMeeting {        
@@ -167,9 +165,9 @@ contract DAO is DAOInterface
         if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _}
     
     /// @dev The constructor function
-    function DAO() {
+    function DAO(address _creator) {
 
-        DaoAccountManager = new AccountManager(address(this), msg.sender, 10);
+        DaoAccountManager = new AccountManager(address(this), _creator, 10);
 
         DaoRules.maxMinutesDebatePeriod = 57600;
         DaoRules.minutesExecuteProposalPeriod = 57600;
@@ -637,10 +635,10 @@ contract DAO is DAOInterface
 }
 
 contract DAOCreator {
-    event NewDao(address newDao);
+    event NewDao(address creator, address newDao);
     function createDAO() returns (DAO) {
-        DAO _newDao = new DAO();
-        NewDao(address(_newDao));
+        DAO _newDao = new DAO(msg.sender);
+        NewDao(msg.sender, address(_newDao));
         return _newDao;
     }
 }
