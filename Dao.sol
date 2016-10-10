@@ -201,8 +201,7 @@ contract DAO is DAOInterface
         uint _boardMeetingFees
     ) internal returns (uint) {
 
-        if (DaoAccountManager.TotalSupply() > 1 finney
-            || _MinutesDebatingPeriod > DaoRules.maxMinutesDebatePeriod 
+        if (_MinutesDebatingPeriod > DaoRules.maxMinutesDebatePeriod 
             || _MinutesDebatingPeriod < DaoRules.minMinutesDebatePeriod) {
             throw;
         }
