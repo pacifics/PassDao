@@ -97,7 +97,7 @@ Main functions:
 
 =
 
-# Test the settings on Testnet
+# Test the settings on Mist Testnet
 
 - Create a DAO smart contract (DAO Creator Json Interface, address 0xAF2445c260fb30ae2865a5f32167D911AC35dd17).
 
