@@ -99,7 +99,7 @@ Main functions:
 
 # Test on Testnet
 
-- Create a DAO smart contract (DAO Creator Json Interface, address 0x288D4283A72693A9Ba21732F56Fdc4234f79fFcb).
+- Create a DAO smart contract (DAO Creator Json Interface, address 0x8A019D13d71429d7d490eF69655cFf77D275767a).
 
 - Watch the Account Manager contract (Account Manager Json Interface, address in the DAO smart contract interface).
 
