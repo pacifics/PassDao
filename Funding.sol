@@ -46,9 +46,9 @@ contract Funding {
     // The account manager for the reward of contractor tokens
     AccountManager public ContractorAccountManager;
     // Minimal amount to fund
-    uint minAmount;
+    uint public minAmount;
     // Maximal amount to fund
-    uint maxAmount;
+    uint public maxAmount;
     // The start time to intend to fund
     uint public startTime;
     // The closing time to intend to fund
@@ -84,6 +84,9 @@ contract Funding {
     event IntentionToFund(address partner, uint amount);
     event Fund(address partner, uint amount);
     event Refund(address partner, uint amount);
+    event LimitSet();
+    event AllSet();
+    event Fueled();
 
     /// @dev Constructor function with setting
     /// @param _DaoAccountManager The Dao account manager
@@ -175,12 +178,14 @@ contract Funding {
         divisorBalanceLimit = _divisorBalanceLimit;
 
         limitSet = true;
+        
+        LimitSet();
     
     }
 
     /// @dev Function used by the creator to close the set of limits and partners
     /// @param _to The index of the last partner
-    function setFundingLimits(uint _to) noEther onlyCreator {
+    function setFundingLimits(uint _to) noEther onlyCreator returns (bool _success) {
         
         if (!limitSet) throw;
 
@@ -198,9 +203,12 @@ contract Funding {
             if (sumOfFundingAmountLimits < minAmount || sumOfFundingAmountLimits > maxAmount) {
                 fromPartner = 1;
                 limitSet = false;
+                return;
             }
             else {
                 allSet = true;
+                return true;
+                AllSet();
             }
         }
 
@@ -231,12 +239,14 @@ contract Funding {
                 ContractorAccountManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
                 if (!DaoAccountManager.send(_amountToFund)) throw;
                 totalFunded += _amountToFund;
-                if (totalFunded >= minAmount && !ContractorAccountManager.IsFueled()) {
-                    DaoAccountManager.Fueled(true);
-                    ContractorAccountManager.Fueled(true); 
-                }
             }
 
+        }
+
+        if (totalFunded >= minAmount && !ContractorAccountManager.IsFueled()) {
+            DaoAccountManager.Fueled(true);
+            ContractorAccountManager.Fueled(true); 
+            Fueled();
         }
 
     }
