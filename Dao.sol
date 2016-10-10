@@ -52,8 +52,8 @@ contract DAOInterface {
         uint yea; 
         // Number of shares opposed to the proposal
         uint nay; 
-        // mapping to check if a shareholder has voted
-        mapping (address => bool) hasVoted;  
+        // mapping to indicate the vote date
+        mapping (address => uint) voteDate;  
     }
 
     struct ContractorProposal {
@@ -427,7 +427,7 @@ contract DAO is DAOInterface
     ) noEther onlyTokenholders returns (bool _success) {
         
         BoardMeeting p = BoardMeetings[_BoardMeetingID];
-        if (p.hasVoted[msg.sender] 
+        if (p.voteDate[msg.sender] != 0 
             || now < p.setDeadline
             || now > p.votingDeadline 
             ||!p.open
@@ -435,7 +435,7 @@ contract DAO is DAOInterface
         throw;
         }
 
-        p.hasVoted[msg.sender] = true;
+        p.voteDate[msg.sender] = now;
         
         if (_supportsProposal) {
             p.yea += DaoAccountManager.balanceOf(msg.sender);
@@ -589,7 +589,7 @@ contract DAO is DAOInterface
         c.weightToRecieve[_Tokenholder] = 0;
 
         AccountManager m = ContractorAccountManager[c.recipient];
-        m.rewardToken(_Tokenholder, _amount, now);
+        m.rewardToken(_Tokenholder, _amount, p.voteDate[msg.sender]);
 
         TokensBoughtFor(_contractorProposalID, _Tokenholder, _amount);
 
