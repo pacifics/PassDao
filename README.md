@@ -103,4 +103,4 @@ Main functions:
 
 - Watch the Account Manager contract (Account Manager Json Interface, address in the DAO smart contract interface).
 
-- Create a Funding smart contract (Funding Creator Json Interface, address 0x7412C8E8251A6De87C8500dec086Ff695965BcC4).
+- Create a Funding smart contract (Funding Creator Json Interface, address 0x2280a7A8962ef3dd19ca8785Ee1248Ca0f72ec5d).
