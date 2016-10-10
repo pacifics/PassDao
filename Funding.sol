@@ -95,6 +95,7 @@ contract Funding {
     /// @param _startTime The start time to intend to fund
     /// @param _closingTime The closing time to intend to fund
     function Funding (
+        address _creator,
         address _DaoAccountManager,
         address _contractorAccountManager,
         uint _minAmount,
@@ -103,7 +104,7 @@ contract Funding {
         uint _closingTime
         ) {
             
-        creator = msg.sender;
+        creator = _creator;
         DaoAccountManager = AccountManager(_DaoAccountManager);
         ContractorAccountManager = AccountManager(_contractorAccountManager);
         minAmount = _minAmount;
@@ -336,7 +337,7 @@ contract Funding {
 }
 
 contract FundingCreator {
-    event NewFunding(address newFunding);
+    event NewFunding(address creator, address newFunding);
     function createFunding(
         address _DaoAccountManager,
         address _contractorAccountManager,
@@ -346,6 +347,7 @@ contract FundingCreator {
         uint _closingTime
         ) returns (Funding) {
         Funding _newFunding = new Funding(
+            msg.sender,
             _DaoAccountManager,
             _contractorAccountManager,
             _minAmount,
@@ -353,7 +355,7 @@ contract FundingCreator {
             _startTime,
             _closingTime
         );
-        NewFunding(address(_newFunding));
+        NewFunding(msg.sender, address(_newFunding));
         return _newFunding;
     }
 }
