@@ -50,9 +50,9 @@ contract AccountManagerInterface {
     // Address of the recipient
     address public recipient;
 
-    // True if the funding is fueled
-    bool isFueled;
-   // If true, the tokens can be transfered
+    // True if the funding of the Dao contractor proposal is fueled
+    mapping (uint => bool) isFueled;
+    // If true, the tokens can be transfered
     bool public transferAble;
 
     // Map of addresses blocked during a vote. The address points to the proposal ID
@@ -165,21 +165,23 @@ contract AccountManager is Token, AccountManagerInterface {
     }
     
     /// @dev Function used by the main partner to set the funding fueled
+    /// @param _contractorProposalID The index of the Dao proposal
     /// @param _isFueled Whether the funding is fueled or not
-    function Fueled(bool _isFueled) external {
+    function Fueled(uint _contractorProposalID, bool _isFueled) external {
     
         if (msg.sender != address(client) && msg.sender != FundingRules.mainPartner) {
             throw;
         }
 
-        isFueled = _isFueled;
+        isFueled[_contractorProposalID] = _isFueled;
         
     }
     
     /// @notice Function to know if the funding is fueled
+    /// @param _contractorProposalID The index of the Dao proposal
     /// @return Whether the funding is fueled or not
-    function IsFueled() constant external returns (bool) {
-        return isFueled;
+    function IsFueled(uint _contractorProposalID) constant external returns (bool) {
+        return isFueled[_contractorProposalID];
     }
 
     /// @dev Function used by the client
@@ -341,8 +343,7 @@ contract AccountManager is Token, AccountManagerInterface {
         uint256 _value
         ) returns (bool success) {  
 
-        if (isFueled
-            && transferAble
+        if (transferAble
             && blocked[msg.sender] == 0
             && blocked[_to] == 0
             && _to != address(this)
@@ -362,8 +363,7 @@ contract AccountManager is Token, AccountManagerInterface {
         uint256 _value
         ) returns (bool success) {
         
-        if (isFueled
-            && transferAble
+        if (transferAble
             && blocked[_from] == 0
             && blocked[_to] == 0
             && _to != address(this)
