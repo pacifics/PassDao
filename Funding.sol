@@ -45,6 +45,8 @@ contract Funding {
     AccountManager public DaoAccountManager;
     // The account manager for the reward of contractor tokens
     AccountManager public ContractorAccountManager;
+    // The index of the Dao contractor proposal
+    uint public contractorProposalID;
     // Minimal amount to fund
     uint public minAmount;
     // Maximal amount to fund
@@ -91,6 +93,7 @@ contract Funding {
     /// @dev Constructor function with setting
     /// @param _DaoAccountManager The Dao account manager
     /// @param _contractorAccountManager The contractor account manager for the reward of tokens
+    /// @param _contractorProposalID The index of the Dao proposal
     /// @param _minAmount Minimal amount to fund
     /// @param _maxAmount Maximal amount to fund
     /// @param _startTime The start time to intend to fund
@@ -99,6 +102,7 @@ contract Funding {
         address _creator,
         address _DaoAccountManager,
         address _contractorAccountManager,
+        uint _contractorProposalID, 
         uint _minAmount,
         uint _maxAmount,
         uint _startTime,
@@ -108,6 +112,8 @@ contract Funding {
         creator = _creator;
         DaoAccountManager = AccountManager(_DaoAccountManager);
         ContractorAccountManager = AccountManager(_contractorAccountManager);
+        contractorProposalID = _contractorProposalID;
+        
         minAmount = _minAmount;
         maxAmount = _maxAmount;
         if (_startTime == 0) {startTime = now;} else {startTime = startTime;}
@@ -207,8 +213,8 @@ contract Funding {
             }
             else {
                 allSet = true;
-                return true;
                 AllSet();
+                return true;
             }
         }
 
@@ -243,10 +249,9 @@ contract Funding {
 
         }
 
-        if (totalFunded >= minAmount && !ContractorAccountManager.IsFueled()) {
-            DaoAccountManager.Fueled(true);
-            ContractorAccountManager.Fueled(true); 
-            Fueled();
+        if (totalFunded >= minAmount) {
+            ContractorAccountManager.Fueled(contractorProposalID, true); 
+            DaoAccountManager.Fueled(contractorProposalID, true); 
         }
 
     }
@@ -349,6 +354,7 @@ contract FundingCreator {
     function createFunding(
         address _DaoAccountManager,
         address _contractorAccountManager,
+        uint _contractorProposalID, 
         uint _minAmount,
         uint _maxAmount,
         uint _startTime,
@@ -357,7 +363,8 @@ contract FundingCreator {
         Funding _newFunding = new Funding(
             msg.sender,
             _DaoAccountManager,
-            _contractorAccountManager,
+            _contractorAccountManager,        
+            _contractorProposalID, 
             _minAmount,
             _maxAmount,
             _startTime,
