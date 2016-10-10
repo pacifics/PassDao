@@ -101,6 +101,8 @@ Main functions:
 
 - Create a DAO smart contract (DAO Creator Json Interface, address 0x4857b5699268698048a0A086cCb1eEC48C47bAaC).
 
+- Watch the DAO smart contract (DAO Json Interface, address in the DAO creator events).
+
 - Watch the DAO Account Manager smart contract (Account Manager Json Interface, address in the DAO smart contract interface).
 
 - Create the first Dao contractor proposal and watch the contractor Account Manager (Account Manager Json Interface, address in the DAO smart contract events).
