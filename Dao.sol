@@ -21,6 +21,8 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
+import "AccountManager.sol";
+
 contract DAOInterface {
 
     struct BoardMeeting {        
@@ -582,12 +584,12 @@ contract DAO is DAOInterface
 
         if (p.dateOfExecution == 0 || c.weightToRecieve[_Tokenholder]==0 || c.totalAmountForTokenReward == 0) {throw; }
         
-        uint _amount = (c.totalAmountForTokenReward*c.weightToRecieve[_Tokenholder])/c.totalWeight;
+        uint _amount = (c.totalAmountForTokenReward*c.weightToRecieve[_TokenHolder])/c.totalWeight;
 
         c.weightToRecieve[_Tokenholder] = 0;
 
         AccountManager m = ContractorAccountManager[c.recipient];
-        m.rewardToken(_Tokenholder, _amount, p.voteDate[msg.sender]);
+        m.rewardToken(_Tokenholder, _amount, p.voteDate[_Tokenholder]);
 
         TokensBoughtFor(_contractorProposalID, _Tokenholder, _amount);
 
@@ -630,7 +632,6 @@ contract DAO is DAOInterface
     function minQuorum() constant returns (uint) {
         return uint(DaoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
     }
-
 
 }
 
