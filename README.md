@@ -107,7 +107,7 @@ Main functions:
 
 - Set the first Dao contractor proposal and watch the contractor Account Manager (Account Manager Json Interface, address in the DAO smart contract events).
 
-- Create a Funding smart contract linked to the DAO and contractor Account Manager smart contracts (Funding Creator Json Interface, address 0x6a547DD969DCc095BDAE304aDeCE9E1c8933f0Cb).
+- Create a Funding smart contract linked to the DAO and contractor Account Manager smart contracts (Funding Creator Json Interface, address 0xa3c2025DAa1F8d0605137Cf4f9F4b08AE2b836e3).
 
 - Set, vote and execute in the Dao the primary funding proposal linked to the first contractor proposal and the primary funding smart contract.
 
