@@ -584,7 +584,7 @@ contract DAO is DAOInterface
 
         if (p.dateOfExecution == 0 || c.weightToRecieve[_Tokenholder]==0 || c.totalAmountForTokenReward == 0) {throw; }
         
-        uint _amount = (c.totalAmountForTokenReward*c.weightToRecieve[_TokenHolder])/c.totalWeight;
+        uint _amount = (c.totalAmountForTokenReward*c.weightToRecieve[_Tokenholder])/c.totalWeight;
 
         c.weightToRecieve[_Tokenholder] = 0;
 
