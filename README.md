@@ -97,10 +97,17 @@ Main functions:
 
 =
 
-# Test on Testnet
+# Test the settings on Testnet
 
 - Create a DAO smart contract (DAO Creator Json Interface, address 0x4857b5699268698048a0A086cCb1eEC48C47bAaC).
 
 - Watch the Account Manager contract (Account Manager Json Interface, address in the DAO smart contract interface).
 
-- Create a Funding smart contract (Funding Creator Json Interface, address 0x6a547DD969DCc095BDAE304aDeCE9E1c8933f0Cb).
+- Create the first Project Manager Dao contractor proposal and watch the contractor Account Manager (Account Manager Json Interface, address in the DAO smart contract events).
+
+- Create a Funding smart contract linked to the DAO and Project Manager Account Managers (Funding Creator Json Interface, address 0x6a547DD969DCc095BDAE304aDeCE9E1c8933f0Cb).
+
+- Create, vote and execute a new Dao funding proposal to set the Dao rules.
+
+- Create, vote and execute a new Dao rules proposal to set 
+
