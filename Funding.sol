@@ -17,7 +17,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 
 
 /*
- * Standard smart contract used for the funding of the Dao.
+ * Smart contract used for the funding of the Dao.
 */
 
 import "AccountManager.sol";
