@@ -99,15 +99,13 @@ Main functions:
 
 # Set and test on Mist Testnet
 
-- Create a DAO smart contract (DAO Creator Json Interface, address 0xAF2445c260fb30ae2865a5f32167D911AC35dd17).
-
-- Watch the DAO smart contract (DAO Json Interface, address in the DAO creator events).
+- Create a DAO smart contract (DAO Creator Json Interface, address 0xAF2445c260fb30ae2865a5f32167D911AC35dd17). Watch the DAO smart contract (DAO Json Interface, address in the DAO Creator events).
 
 - Watch the DAO Account Manager smart contract (Account Manager Json Interface, address in the DAO smart contract interface).
 
 - Set the first Dao contractor proposal and watch the contractor Account Manager (Account Manager Json Interface, address in the DAO smart contract events).
 
-- Create a Funding smart contract linked to the DAO and contractor Account Manager smart contracts (Funding Creator Json Interface, address 0xa3c2025DAa1F8d0605137Cf4f9F4b08AE2b836e3).
+- Create a Funding smart contract linked to the DAO and contractor Account Manager smart contracts (Funding Creator Json Interface, address 0xa3c2025DAa1F8d0605137Cf4f9F4b08AE2b836e3). Watch the Funding smart contract (Funding Json Interface, address in the Fundng Creator events).
 
 - Set, vote and execute in the Dao the primary funding proposal linked to the first contractor proposal and the primary funding smart contract.
 
