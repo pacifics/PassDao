@@ -82,10 +82,6 @@ Main functions:
 - It is necessary to ask to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders and avoid the possibility to fund using "hundreds" addresses.
 
 - By allowing fundings (public or private) for each step of the project and by limiting the funding amounts, we avoid useless blocked ethers in the Dao. It is possible to link a funding proposal with a contractor proposal and that will be completed only if the funding is fueled during a predefined period, unless the Dao is not funded and the contractor proposal not completed. We use this method for the first Project Manager proposal and the primary funding.
- 
-- There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to tokenholders.
-
-- There is no split function.
 
 - Make a proposal will cost board meeting fees. In case of funding or Dao rules proposals, the fees return to the creator if the quorum is reached.
 
@@ -94,3 +90,7 @@ Main functions:
 - The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. The contractor proposal can foresee an inflation rate for the reward of tokens which will incentivize shareholders to vote early.
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares or contractor tokens.
+
+- There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to tokenholders.
+
+- There is no split function.
