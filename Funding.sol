@@ -133,6 +133,7 @@ contract Funding {
         ) throw;
         
         if (partnerID[msg.sender] == 0) {
+
             uint _partnerID = partners.length++;
             Partner t = partners[_partnerID];
              
@@ -143,8 +144,10 @@ contract Funding {
             t.presaleDate = now;
         }
         else {
-            partners[partnerID[msg.sender]].intentionAmount += msg.value;
-            t.presaleDate = now;
+            Partner p = partners[partnerID[msg.sender]];
+            p.presaleDate = (p.presaleDate*p.intentionAmount + now*msg.value)/(p.intentionAmount + msg.value);
+            p.intentionAmount += msg.value;
+            
         }    
         
         IntentionToFund(msg.sender, msg.value);
