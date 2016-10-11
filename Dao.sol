@@ -63,6 +63,8 @@ contract DAOInterface {
         address recipient;
         // The amount to transfer to `recipient` if the proposal is accepted.
         uint amount; 
+        // The description of the proposal
+        string description;
         // The hash of the proposal's document
         bytes32 hashOfTheDocument;
         // The initial price multiplier of a contractor token
@@ -276,6 +278,7 @@ contract DAO is DAOInterface
             _MinutesDebatingPeriod, msg.value);    
 
         c.amount = _amount;
+        c.description = _description;
         c.hashOfTheDocument = _hashOfTheDocument; 
         c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         c.inflationRate = _inflationRate;
