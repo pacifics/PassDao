@@ -51,6 +51,10 @@ contract Funding {
     uint public minAmount;
     // Maximal amount to fund
     uint public maxAmount;
+    // Minimal intention amount that partners have to send
+    uint public minIntentionAmount;
+    // Maximal intention amount that partners have to send
+    uint public maxIntentionAmount;
     // The start time to intend to fund
     uint public startTime;
     // The closing time to intend to fund
@@ -74,9 +78,7 @@ contract Funding {
     
     // To allow the set of partners in several times
     uint fromPartner;
-    // Mutex
-    bool mutex;
-    
+
     // Protects users by preventing the execution of method calls that
     // inadvertently also transferred ether
     modifier noEther() {if (msg.value > 0) throw; _}
@@ -91,11 +93,12 @@ contract Funding {
     event Fueled();
 
     /// @dev Constructor function with setting
+    /// @param _creator The creator of the smart contract
     /// @param _DaoAccountManager The Dao account manager
     /// @param _contractorAccountManager The contractor account manager for the reward of tokens
     /// @param _contractorProposalID The index of the Dao proposal
-    /// @param _minAmount Minimal amount to fund
-    /// @param _maxAmount Maximal amount to fund
+    /// @param _minAmount minimal amount to fund
+    /// @param _maxAmount maximal amount to fund
     /// @param _startTime The start time to intend to fund
     /// @param _closingTime The closing time to intend to fund
     function Funding (
@@ -113,14 +116,28 @@ contract Funding {
         DaoAccountManager = AccountManager(_DaoAccountManager);
         ContractorAccountManager = AccountManager(_contractorAccountManager);
         contractorProposalID = _contractorProposalID;
-        
+
         minAmount = _minAmount;
         maxAmount = _maxAmount;
-        if (_startTime == 0) {startTime = now;} else {startTime = _startTime;}
+        
+        if (_startTime == 0) {startTime = now;} else {startTime = startTime;}
         closingTime = _closingTime;
         fromPartner = 1;
         partners.length = 1; 
         
+        }
+
+    /// @dev Function to set the limits for the intention amounts
+    /// @param _minIntentionAmount Minimal intention amount that partners have to send
+    /// @param _maxIntentionAmount Maximal intention amount that partners have to send
+    function SetIntentionAmountLimits(
+        uint _minIntentionAmount,
+        uint _maxIntentionAmount
+        ) noEther onlyCreator {
+
+        minIntentionAmount = _minIntentionAmount;
+        maxIntentionAmount = _maxIntentionAmount;
+
         }
 
     /// @notice Function to give an intention to fund the Dao
@@ -130,24 +147,24 @@ contract Funding {
             || now < startTime
             || (now > closingTime && closingTime != 0)
             || limitSet
+            || msg.value < minIntentionAmount
+            || msg.value > maxIntentionAmount
         ) throw;
         
         if (partnerID[msg.sender] == 0) {
-
             uint _partnerID = partners.length++;
             Partner t = partners[_partnerID];
              
             partnerID[msg.sender] = _partnerID;
-             
+            
             t.partnerAddress = msg.sender;
             t.intentionAmount += msg.value;
             t.presaleDate = now;
         }
         else {
-            Partner p = partners[partnerID[msg.sender]];
-            p.presaleDate = (p.presaleDate*p.intentionAmount + now*msg.value)/(p.intentionAmount + msg.value);
-            p.intentionAmount += msg.value;
-            
+            if (t.intentionAmount + msg.value > maxIntentionAmount) throw;
+            partners[partnerID[msg.sender]].intentionAmount += msg.value;
+            t.presaleDate = now;
         }    
         
         IntentionToFund(msg.sender, msg.value);
@@ -165,6 +182,8 @@ contract Funding {
 
         if (allSet) throw;
         
+        if (_from < 1 || _to > partners.length - 1) throw;
+        
         for (uint i = _from; i <= _to; i++) {
             Partner t = partners[i];
             t.valid = _valid;
@@ -176,7 +195,7 @@ contract Funding {
     /// @param _amountLimit Limit in amount a partner can fund
     /// @param _divisorBalanceLimit  The partner can fund 
     /// only under a defined percentage of their ether balance 
-    function setLimits(
+    function setFundingLimits(
             uint _amountLimit, 
             uint _divisorBalanceLimit
     ) noEther onlyCreator {
@@ -192,13 +211,13 @@ contract Funding {
     
     }
 
-    /// @dev Function used by the creator to close the set of limits and partners
-    /// @param _to The index of the last partner
-    function setFundingLimits(uint _to) noEther onlyCreator returns (bool _success) {
+    /// @dev Function used by the creator to set the funding limits for partners
+    /// @param _to The index of the last partner to set
+    function setPartnersLimits(uint _to) noEther onlyCreator returns (bool _success) {
         
         if (!limitSet) throw;
 
-        if (fromPartner > _to || _to > partners.length-1) throw;
+        if (fromPartner > _to || _to > partners.length - 1) throw;
         
         for (uint i = fromPartner; i <= _to; i++) {
             sumOfFundingAmountLimits -= partners[i].fundingAmountLimit;
@@ -233,7 +252,7 @@ contract Funding {
 
         if (!allSet) throw;
         
-        if (_from < 1 || _to > partners.length-1) throw;
+        if (_from < 1 || _to > partners.length - 1) throw;
         
         address _partner;
         uint _amountToFund;
@@ -259,34 +278,55 @@ contract Funding {
 
     }
 
-    /// @notice Function used to refund the amounts above limit
+    /// @notice Function used to refund for a partner
+    /// @param _index The index of the partner
+    /// @return Whether the refund was successful or not 
+    function refundFor(uint _index) noEther returns (bool) {
+
+        Partner t = partners[_index];
+        uint _amountToRefund;
+
+            if (t.fundedAmount > 0 || !t.valid || now > closingTime) {
+                _amountToRefund = t.intentionAmount - t.fundedAmount;
+                t.intentionAmount = t.fundedAmount;
+                if (_amountToRefund != 0) {
+                    if (t.partnerAddress.send(_amountToRefund)) {
+                        return true;
+                    } else {
+                        t.intentionAmount = t.fundedAmount + _amountToRefund;
+                        return false;
+                    }
+                }
+            }
+
+        return true;
+
+    }
+
+    /// @notice Function used to refund
+    /// @return Whether the refund was successful or not 
+    function refund() noEther returns (bool) {
+        return refundFor(partnerID[msg.sender]);
+    }
+
+    /// @notice Function used to refund the amounts above limit for a group of valid partners
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
-    function refundFor(
+    function refundForPartners(
             uint _from,
             uint _to
         ) noEther {
 
-        if (mutex) { throw; }
-        mutex = true;
-
-        if (_from < 1 || _to > partners.length-1) throw;
+        if (_from < 1 || _to > partners.length - 1) throw;
         
         uint i;
-        uint _amountToRefund;
 
         for (i = _from; i <= _to; i++) {
-            if (partners[i].fundedAmount > 0 || !partners[i].valid || now > closingTime) {
-                _amountToRefund = partners[i].intentionAmount - partners[i].fundedAmount;
-                partners[i].intentionAmount = partners[i].fundedAmount;
-                if (_amountToRefund != 0) {
-                    if (!partners[i].partnerAddress.send(_amountToRefund)) throw;
-                }
+            if (partners[i].valid) {
+                if (!refundFor(i)) throw;
             }
         }
 
-        mutex = false;
-        
     }
     
     /// @dev Allow to calculate the result of the funding procedure at present time
@@ -304,7 +344,7 @@ contract Funding {
         uint _to
         ) constant returns (uint _total) {
 
-        if (_from < 1 || _to > partners.length-1) throw;
+        if (_from < 1 || _to > partners.length - 1) throw;
 
         for (uint i = _from; i <= _to; i++) {
             _total += partnerFundingLimit(i, _amountLimit, _divisorBalanceLimit);
@@ -345,9 +385,29 @@ contract Funding {
         
     }
 
-    /// @return the number of partners who wish to fund
+    /// @return the number of partners which sent ethers
     function numberOfPartners() constant returns (uint) {
         return partners.length - 1;
+    }
+    
+    /// @param _from The index of the first partner
+    /// @param _to The index of the last partner
+    /// @return the number of valid partners who wish to fund
+    function numberOfValidPartners(
+        uint _from,
+        uint _to
+        ) constant returns (uint) {
+        
+        if (_from < 1 || _to > partners.length-1) throw;
+
+        uint _total;
+        
+        for (uint i = _from; i <= _to; i++) {
+            if (partners[i].valid) _total += 1;
+        }
+
+        return _total;
+        
     }
 
 }
