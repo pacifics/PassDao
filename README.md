@@ -79,7 +79,7 @@ Main functions:
 
 # About Security
 
-- It is necessary to ask to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders and avoid the possibility to fund using "hundreds" addresses. 
+- It is necessary to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders and avoid the possibility to fund using "hundreds" addresses. 
 
 - We limit the amount to send to the funding smart contract and if fueled we limit the amount to fund to the Dao for each partner.
 
