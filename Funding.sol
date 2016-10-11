@@ -162,9 +162,10 @@ contract Funding {
             t.presaleDate = now;
         }
         else {
-            if (t.intentionAmount + msg.value > maxIntentionAmount) throw;
-            partners[partnerID[msg.sender]].intentionAmount += msg.value;
-            t.presaleDate = now;
+            Partner p = partners[partnerID[msg.sender]];
+            if (p.intentionAmount + msg.value > maxIntentionAmount) throw;
+            p.presaleDate = (p.presaleDate*p.intentionAmount + now*msg.value)/(p.intentionAmount + msg.value);
+            p.intentionAmount += msg.value;
         }    
         
         IntentionToFund(msg.sender, msg.value);
