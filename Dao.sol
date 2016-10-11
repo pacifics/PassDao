@@ -129,6 +129,8 @@ contract DAOInterface {
     // The Dao account manager contract
     AccountManager public DaoAccountManager;
 
+    // Map to allow to withdraw board meeting fees
+    mapping (address => uint) public pendingWithdrawals;
     // Map to check if a recipient has an account manager or not
     mapping (address => bool) hasAnAccountManager; 
     // The account management contract of the recipient
@@ -314,7 +316,7 @@ contract DAO is DAOInterface
         uint _minutesFundingPeriod,
         uint _minutesSetPeriod,
         uint _MinutesDebatingPeriod
-    ) returns (uint) {
+    ) onlyTokenholders returns (uint) {
 
         if (msg.value < DaoRules.minBoardMeetingFees ) throw;
 
@@ -341,9 +343,8 @@ contract DAO is DAOInterface
             cf.fundingProposalID = _FundingProposalID;
             cf.totalAmountForTokenReward = 0;
 
-            uint _amountToGiveBack = b.fees;
             b.fees = 0;
-            if (!address(b.creator).send(_amountToGiveBack)) throw;
+            pendingWithdrawals[b.creator] += b.fees;
 
         }
         
@@ -377,7 +378,7 @@ contract DAO is DAOInterface
         uint _maxContractorTokenInflationRate,
         uint _MinutesDebatingPeriod,
         address _tokenTransferAble
-    ) returns (uint) {
+    ) onlyTokenholders returns (uint) {
     
         if (msg.value < DaoRules.minBoardMeetingFees ) throw; 
         
@@ -465,7 +466,7 @@ contract DAO is DAOInterface
         if (b.fees > 0 && b.ContractorProposalID != 0) {
             uint _rewardedamount = b.fees*DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
             b.totalRewardedAmount += _rewardedamount;
-            if (!msg.sender.send(_rewardedamount)) throw;
+            pendingWithdrawals[msg.sender] += _rewardedamount;
         }
 
         Voted(_BoardMeetingID, _supportsProposal, msg.sender, _rewardedamount);
@@ -484,16 +485,13 @@ contract DAO is DAOInterface
             || !b.open ) {
             throw;
         }
-
-        b.open = false;
         
         uint quorum = b.yea + b.nay;
-        uint _amountToGiveBack = 0;
-        
+
         if (b.FundingProposalID != 0 || b.DaoRulesProposalID != 0) {
                 if (b.fees > 0 && quorum >= minQuorum()  
                 ) {
-                    _amountToGiveBack = b.fees;
+                    pendingWithdrawals[b.creator] += b.fees;
                     b.fees = 0;
                 }
         }        
@@ -503,24 +501,21 @@ contract DAO is DAOInterface
             ContractorProposal c = ContractorProposals[b.ContractorProposalID];
             _contractorProposalFueled = DaoAccountManager.IsFueled(b.ContractorProposalID);
             if (now < b.executionDeadline && c.fundingProposalID != 0 && !_contractorProposalFueled) {
-                b.open = true;
                 return; 
             }
         }
-
+        
+        b.open = false;
+        takeBoardMeetingFees(_BoardMeetingID);
+        BoardMeetingClosed(_BoardMeetingID);
+        
         if (now > b.executionDeadline 
             || ((quorum < minQuorum() || b.yea <= b.nay) && !_contractorProposalFueled)
             ) {
-            takeBoardMeetingFees(_BoardMeetingID);
-            if (_amountToGiveBack > 0) {
-                if (!address(b.creator).send(_amountToGiveBack)) throw;
-            }
-            BoardMeetingClosed(_BoardMeetingID);
             return;
         }
 
         b.dateOfExecution = now;
-        takeBoardMeetingFees(_BoardMeetingID);
 
         if (b.FundingProposalID != 0) {
 
@@ -565,11 +560,6 @@ contract DAO is DAOInterface
             DaoAccountManager.sendTo(address(c.recipient), c.amount);
         }
 
-        if (_amountToGiveBack > 0) {
-            if (!address(b.creator).send(_amountToGiveBack)) throw;
-            BoardMeetingFeesGivenBack(_BoardMeetingID);
-        }
-
         ProposalTallied(_BoardMeetingID);
         
     }
@@ -596,6 +586,19 @@ contract DAO is DAOInterface
 
         TokensBoughtFor(_contractorProposalID, _Tokenholder, _amount);
 
+    }
+
+    /// @notice Function to reward contractor tokens to voters 
+    /// @return Whether the withdraw was successful or not    
+    function withdrawFees() returns (bool) {
+        uint amount = pendingWithdrawals[msg.sender];
+        pendingWithdrawals[msg.sender] = 0;
+        if (msg.sender.send(amount)) {
+            return true;
+        } else {
+            pendingWithdrawals[msg.sender] = amount;
+            return false;
+        }
     }
 
     /// @dev internal function to put to the Dao balance the board meeting fees of non voters
