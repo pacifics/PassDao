@@ -89,7 +89,7 @@ Main functions:
 
 - A period to consider or set the proposal is foreseen before each board meeting. 
 
-- The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. The contractor proposal can foresee an inflation rate for the reward of tokens which will incentivize shareholders to vote early.
+- The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. The contractor proposal can foresee an inflation rate for the reward of contractor tokens which will incentivize shareholders to vote early.
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares or contractor tokens.
 
