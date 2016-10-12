@@ -1,3 +1,5 @@
+pragma solidity ^0.3.6;
+
 /*
 This file is part of the DAO.
 
