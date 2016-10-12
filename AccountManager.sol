@@ -1,4 +1,4 @@
-pragma solidity ^0.3.6;
+//pragma solidity ^0.3.6;
 
 /*
 This file is part of the DAO.
@@ -35,6 +35,8 @@ contract AccountManagerInterface {
         address mainPartner;
         // True if crowdfunding
         bool publicTokenCreation; 
+        // The maximum amount of the funding
+        uint maxAmountToFund;
         // Maximum quantity of tokens to create
         uint256 maxTotalSupply; 
         // Start time of the funding
@@ -75,6 +77,7 @@ contract AccountManagerInterface {
 
 }
 
+/// @title Account Manager smart contract of the Pass Decentralized Autonomous Organisation
 contract AccountManager is Token, AccountManagerInterface {
 
 
@@ -220,7 +223,7 @@ contract AccountManager is Token, AccountManagerInterface {
         return tokenPriceDivisor(now);
 
     }
-    
+
     /// @dev Function to extent funding. Can be private or public
     /// @param _mainPartner The address for the managing of the funding
     /// @param _publicTokenCreation True if public
@@ -241,15 +244,29 @@ contract AccountManager is Token, AccountManagerInterface {
 
         FundingRules.mainPartner = _mainPartner;
         FundingRules.publicTokenCreation = _publicTokenCreation;
-        FundingRules.startTime = _startTime;
+        
+        if (_startTime < FundingRules.closingTime) FundingRules.startTime = FundingRules.closingTime;
+        else FundingRules.startTime = _startTime;
+
         FundingRules.closingTime = _closingTime; 
         FundingRules.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
+        FundingRules.maxAmountToFund = _maxAmountToFund;
         FundingRules.maxTotalSupply = totalSupply + _maxAmountToFund*FundingRules.initialTokenPriceMultiplier;
         FundingRules.inflationRate = _inflationRate;  
         
         FundingRulesSet(_mainPartner, _startTime);
 
     } 
+    
+    /// @return the maximal amount to fund if funding and 0 unless
+    function fundingMaxAmount() constant returns (uint) {
+        
+        if ((now > FundingRules.closingTime && FundingRules.closingTime != 0)
+            || now < FundingRules.startTime) {
+            return 0;   
+        } else return FundingRules.maxAmountToFund;
+
+    }
     
     /// @dev Function used by the client to send ethers
     /// @param _recipient The address to send to
