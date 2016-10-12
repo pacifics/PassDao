@@ -1,4 +1,4 @@
-pragma solidity ^0.3.6;
+//pragma solidity ^0.3.6;
 
 /*
 This file is part of the DAO.
@@ -24,6 +24,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 
 import "AccountManager.sol";
 
+/// @title Primary Funding smart contract of the Pass Decentralized Autonomous Organisation
 contract Funding {
 
     struct Partner {
@@ -100,7 +101,6 @@ contract Funding {
     /// @param _contractorAccountManager The contractor account manager for the reward of tokens
     /// @param _contractorProposalID The index of the Dao proposal
     /// @param _minAmount minimal amount to fund
-    /// @param _maxAmount maximal amount to fund
     /// @param _startTime The start time to intend to fund
     /// @param _closingTime The closing time to intend to fund
     function Funding (
@@ -109,7 +109,6 @@ contract Funding {
         address _contractorAccountManager,
         uint _contractorProposalID, 
         uint _minAmount,
-        uint _maxAmount,
         uint _startTime,
         uint _closingTime
         ) {
@@ -120,8 +119,7 @@ contract Funding {
         contractorProposalID = _contractorProposalID;
 
         minAmount = _minAmount;
-        maxAmount = _maxAmount;
-        
+
         if (_startTime == 0) {startTime = now;} else {startTime = startTime;}
         closingTime = _closingTime;
         fromPartner = 1;
@@ -204,7 +202,8 @@ contract Funding {
     ) noEther onlyCreator {
         
         if (limitSet) throw;
-         
+        
+        maxAmount = DaoAccountManager.maxAmountToFund();
         amountLimit = _amountLimit;
         divisorBalanceLimit = _divisorBalanceLimit;
 
@@ -297,7 +296,7 @@ contract Funding {
         if (t.fundedAmount > 0 || now > closingTime) {
             _amountnotToRefund = t.fundedAmount;
         }
-            
+
         _amountToRefund = t.intentionAmount - _amountnotToRefund;
         if (_amountToRefund == 0) return true;
 
@@ -427,7 +426,6 @@ contract FundingCreator {
         address _contractorAccountManager,
         uint _contractorProposalID, 
         uint _minAmount,
-        uint _maxAmount,
         uint _startTime,
         uint _closingTime
         ) returns (Funding) {
@@ -437,7 +435,6 @@ contract FundingCreator {
             _contractorAccountManager,        
             _contractorProposalID, 
             _minAmount,
-            _maxAmount,
             _startTime,
             _closingTime
         );
