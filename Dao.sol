@@ -1,4 +1,4 @@
-pragma solidity ^0.3.6;
+//pragma solidity ^0.3.6;
 
 /*
 This file is part of the DAO.
@@ -160,7 +160,7 @@ contract DAOInterface {
 
 }
 
-/// @title Our Decentralized Autonomous Organisation
+/// @title Pass Decentralized Autonomous Organisation
 contract DAO is DAOInterface
 {
 
@@ -311,7 +311,7 @@ contract DAO is DAOInterface
     function newFundingProposal(
         bool _publicTokenCreation,
         address _mainPartner,
-        uint _maxFundingAmount, 
+        uint _maxFundingAmount,  
         uint _tokenPriceMultiplier,    
         uint _inflationRate,
         uint _contractorProposalID,
@@ -320,7 +320,7 @@ contract DAO is DAOInterface
         uint _MinutesDebatingPeriod
     ) onlyTokenholders returns (uint) {
 
-        if (msg.value < DaoRules.minBoardMeetingFees ) throw;
+        if (msg.value < DaoRules.minBoardMeetingFees) throw;
 
         uint _FundingProposalID = FundingProposals.length++;
         FundingProposal f = FundingProposals[_FundingProposalID];
