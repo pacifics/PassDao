@@ -1,3 +1,5 @@
+import "AccountManager.sol";
+
 //pragma solidity ^0.3.6;
 
 /*
@@ -23,7 +25,7 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-import "AccountManager.sol";
+// import "AccountManager.sol";
 
 contract DAOInterface {
 
@@ -79,10 +81,6 @@ contract DAOInterface {
         uint fundingProposalID;
         // Total amount if the proposal foreseen to reward tokens to voters
         uint totalAmountForTokenReward;
-        // The number of shares of the voters allow them to recieve contractor tokens
-        mapping (address => uint) weightToRecieve;
-        // The total number of shares of the voters of the contractor proposal
-        uint totalWeight; 
 
     }
     
@@ -175,7 +173,7 @@ contract DAO is DAOInterface
     /// @dev The constructor function
     function DAO(address _creator) {
 
-        DaoAccountManager = new AccountManager(address(this), _creator, 10);
+        DaoAccountManager = new AccountManager(_creator, address(this), 0, 10);
 
         DaoRules.maxMinutesDebatePeriod = 57600;
         DaoRules.minutesExecuteProposalPeriod = 57600;
@@ -270,12 +268,19 @@ contract DAO is DAOInterface
 
         c.recipient = _recipient;       
         c.initialSupply = _initialSupply;
+        
         if (!hasAnAccountManager[c.recipient]) {
-            AccountManager m = new AccountManager(address(this), c.recipient, c.initialSupply) ;
+
+            AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
                 
             ContractorAccountManager[c.recipient] = m;
             AccountManagerCreated(c.recipient, address(m));
             hasAnAccountManager[c.recipient] = true;
+
+        } else {
+
+            if (msg.sender != c. recipient || !ContractorAccountManager[c.recipient].IsCreator(msg.sender)) throw;
+
         }
         
         c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, now + (DaoRules.minMinutesSetPeriod * 1 minutes), 
@@ -288,10 +293,11 @@ contract DAO is DAOInterface
         c.inflationRate = _inflationRate;
 
         c.totalAmountForTokenReward = _totalAmountForTokenReward;
-
-        ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.initialTokenPriceMultiplier, 
-                    c.totalAmountForTokenReward, now, 0, c.inflationRate);
-
+        if (_totalAmountForTokenReward != 0) {
+            ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
+                now, now + (DaoRules.minMinutesSetPeriod * 1 minutes) + (_MinutesDebatingPeriod * 1 minutes), c.inflationRate);
+        }
+        
         return _ContractorProposalID;
         
     }
@@ -401,24 +407,6 @@ contract DAO is DAOInterface
         return _DaoRulesProposalID;
         
     }
- 
-    /// @notice Function to extent the set period before a board meeting
-    /// @param _BoardMeetingID The index of the board meeting
-    /// @param _MinutesPeriod The period to extent
-    function extentSetPeriod(
-        uint _BoardMeetingID,
-        uint  _MinutesPeriod) {
-        
-        BoardMeeting b = BoardMeetings[_BoardMeetingID];
-        if (now > b.setDeadline 
-            || msg.sender != address(b.creator)) throw;
-        
-        b.setDeadline += _MinutesPeriod * 1 minutes;
-        b.votingDeadline += _MinutesPeriod * 1 minutes;
-        
-        BoardMeetingDelayed(_BoardMeetingID, _MinutesPeriod);
-        
-    }
     
     /// @notice Function to vote during a board meeting
     /// @param _BoardMeetingID The index of the board meeting
@@ -448,13 +436,22 @@ contract DAO is DAOInterface
         }
 
         if (b.ContractorProposalID != 0) {
+            
             ContractorProposal c = ContractorProposals[b.ContractorProposalID];
+
             if (c.fundingProposalID != 0) throw;
+            
             if (c.totalAmountForTokenReward > 0) {
-                uint _weight = DaoAccountManager.balanceOf(msg.sender);
-                c.weightToRecieve[msg.sender] += _weight; 
-                c.totalWeight += _weight;
+                
+                uint _amount = c.totalAmountForTokenReward
+                    *DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
+
+                AccountManager m = ContractorAccountManager[c.recipient];
+                m.rewardToken(msg.sender, _amount, now);
+                TokensBoughtFor(b.ContractorProposalID, msg.sender, _amount);
+
             }
+
         }
 
         uint _deadline = DaoAccountManager.blockedAccountDeadLine(msg.sender);
@@ -501,9 +498,11 @@ contract DAO is DAOInterface
         bool _contractorProposalFueled;
         if (b.ContractorProposalID != 0) {
             ContractorProposal c = ContractorProposals[b.ContractorProposalID];
-            _contractorProposalFueled = DaoAccountManager.IsFueled(b.ContractorProposalID);
-            if (now < b.executionDeadline && c.fundingProposalID != 0 && !_contractorProposalFueled) {
-                return; 
+            if (c.fundingProposalID != 0) {
+                _contractorProposalFueled = DaoAccountManager.IsFueled(b.ContractorProposalID);
+                if (now < b.executionDeadline && !_contractorProposalFueled) {
+                    return; 
+                }
             }
         }
         
@@ -566,33 +565,9 @@ contract DAO is DAOInterface
         
     }
 
-    /// @notice Function to reward contractor tokens for voters 
-    /// after the execution of the contractor proposal,
-    /// @param _contractorProposalID The index of the proposal
-    /// @param _Tokenholder The address of the tokenholder
-    /// @return Whether the transfer was successful or not    
-    function RewardContractorTokens(uint _contractorProposalID, address _Tokenholder) 
-    noEther returns (bool) {
-
-        ContractorProposal c = ContractorProposals[_contractorProposalID];
-        BoardMeeting b = BoardMeetings[c.BoardMeetingID];
-
-        if (c.weightToRecieve[_Tokenholder]==0 || c.totalAmountForTokenReward == 0) {throw; }
-        
-        uint _weight = c.weightToRecieve[_Tokenholder];
-        c.weightToRecieve[_Tokenholder] = 0;
-        uint _amount = (c.totalAmountForTokenReward*_weight)/c.totalWeight;
-
-        AccountManager m = ContractorAccountManager[c.recipient];
-        m.rewardToken(_Tokenholder, _amount, b.voteDate[_Tokenholder]);
-
-        TokensBoughtFor(_contractorProposalID, _Tokenholder, _amount);
-
-    }
-
-    /// @notice Function to reward contractor tokens to voters 
+    /// @notice Function to withdraw the boardmeeting fees to voters 
     /// @return Whether the withdraw was successful or not    
-    function withdrawFees() returns (bool) {
+    function withdrawBoardMeetingFees() returns (bool) {
         uint amount = pendingWithdrawals[msg.sender];
         pendingWithdrawals[msg.sender] = 0;
         if (msg.sender.send(amount)) {
@@ -620,19 +595,6 @@ contract DAO is DAOInterface
     /// @return the number of meetings (passed or current)
     function numberOfMeetings() constant returns (uint) {
         return BoardMeetings.length - 1;
-    }
-
-    /// @notice Interface function to get the right of a tokenholder to receive contractor tokens 
-    /// @param _contractorProposalID The index of the proposal
-    /// @param _Tokenholder The address of the tokenholder
-    /// @return the weight of the tokenholder
-    function weightToReceive(
-            uint _contractorProposalID, 
-            address _Tokenholder) constant returns (uint) {
-                
-        ContractorProposal c = ContractorProposals[_contractorProposalID];
-        return c.weightToRecieve[_Tokenholder];
-        
     }
         
     /// @dev internal function to get the minimum quorum needed for a proposal    
