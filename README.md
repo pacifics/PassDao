@@ -93,6 +93,8 @@ Main functions:
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares or contractor tokens.
 
-- There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to tokenholders.
+- There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to tokenholders. 
+
+- Refund from the funding smart contract will before the closing time of the primary funding for the valid adresses and after the closing time of the primary funding for the not valid adresses.
 
 - There is no split function.
