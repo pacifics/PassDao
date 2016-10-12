@@ -287,7 +287,7 @@ contract Funding {
     function refundFor(uint _index) internal returns (bool) {
 
         Partner t = partners[_index];
-        uint _amountnotToRefund;
+        uint _amountnotToRefund = t.intentionAmount;
         uint _amountToRefund;
         
         if (t.intentionAmount > maxIntentionAmount && t.valid) {
