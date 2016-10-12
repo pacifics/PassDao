@@ -299,8 +299,10 @@ contract Funding {
         }
             
         _amountToRefund = t.intentionAmount - _amountnotToRefund;
+        if (_amountToRefund == 0) return true;
+
         t.intentionAmount = _amountnotToRefund;
-        if (_amountToRefund != 0 && t.partnerAddress.send(_amountToRefund)) {
+        if (t.partnerAddress.send(_amountToRefund)) {
             return true;
         } else {
             t.intentionAmount = _amountnotToRefund + _amountToRefund;
