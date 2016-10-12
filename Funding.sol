@@ -282,25 +282,28 @@ contract Funding {
     /// @notice Function used to refund for a partner
     /// @param _index The index of the partner
     /// @return Whether the refund was successful or not 
-    function refundFor(uint _index) noEther returns (bool) {
+    function refundFor(uint _index) internal returns (bool) {
 
         Partner t = partners[_index];
+        uint _amountnotToRefund;
         uint _amountToRefund;
-
-            if (t.fundedAmount > 0 || !t.valid || now > closingTime) {
-                _amountToRefund = t.intentionAmount - t.fundedAmount;
-                t.intentionAmount = t.fundedAmount;
-                if (_amountToRefund != 0) {
-                    if (t.partnerAddress.send(_amountToRefund)) {
-                        return true;
-                    } else {
-                        t.intentionAmount = t.fundedAmount + _amountToRefund;
-                        return false;
-                    }
-                }
-            }
-
-        return true;
+        
+        if (t.intentionAmount > maxIntentionAmount) {
+            _amountnotToRefund = maxIntentionAmount;
+        }
+        
+        if (t.fundedAmount > 0 || now > closingTime) {
+            _amountnotToRefund = t.fundedAmount;
+        }
+            
+        _amountToRefund = t.intentionAmount - _amountnotToRefund;
+        t.intentionAmount = _amountnotToRefund;
+        if (_amountToRefund != 0 && t.partnerAddress.send(_amountToRefund)) {
+            return true;
+        } else {
+            t.intentionAmount = _amountnotToRefund + _amountToRefund;
+            return false;
+        }
 
     }
 
