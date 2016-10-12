@@ -97,4 +97,4 @@ Main functions:
 
 - Refund from the funding smart contract will be before the closing time of the primary funding for the valid adresses and after the closing time of the primary funding for the not valid adresses.
 
-- There is no split function.
+- There is no split function of the Dao.
