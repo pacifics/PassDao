@@ -1,3 +1,5 @@
+import "AccountManager.sol";
+
 //pragma solidity ^0.3.6;
 
 /*
@@ -22,7 +24,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * Smart contract used for the funding of the Dao.
 */
 
-import "AccountManager.sol";
+// import "AccountManager.sol";
 
 /// @title Primary Funding smart contract of the Pass Decentralized Autonomous Organisation
 contract Funding {
@@ -203,7 +205,7 @@ contract Funding {
         
         if (limitSet) throw;
         
-        maxAmount = DaoAccountManager.maxAmountToFund();
+        maxAmount = DaoAccountManager.fundingMaxAmount();
         amountLimit = _amountLimit;
         divisorBalanceLimit = _divisorBalanceLimit;
 
