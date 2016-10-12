@@ -288,7 +288,7 @@ contract Funding {
         uint _amountnotToRefund;
         uint _amountToRefund;
         
-        if (t.intentionAmount > maxIntentionAmount) {
+        if (t.intentionAmount > maxIntentionAmount && t.valid) {
             _amountnotToRefund = maxIntentionAmount;
         }
         
