@@ -1,3 +1,5 @@
+import "Token.sol";
+
 //pragma solidity ^0.3.6;
 
 /*
@@ -24,7 +26,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-import "Token.sol";
+// import "Token.sol";
 
 contract AccountManagerInterface {
 
@@ -49,10 +51,10 @@ contract AccountManagerInterface {
         uint inflationRate; 
     } 
 
-     // address of the Dao    
+    // Address of the creator
+    address public creator;
+    // Address of the Dao    
     address public client;
-    // Address of the recipient
-    address public recipient;
 
     // True if the funding of the Dao contractor proposal is fueled
     mapping (uint => bool) isFueled;
@@ -64,8 +66,6 @@ contract AccountManagerInterface {
 
     // Modifier that allows only the cient to manage tokens
     modifier onlyClient {if (msg.sender != address(client)) throw; _ }
-    // modifier to allow public to fund only in case of crowdfunding
-    modifier onlyRecipient {if (msg.sender != address(recipient)) throw; _ }
     // Modifier that allows public to buy tokens only in case of crowdfunding
     modifier onlyPublicTokenCreation {if (!FundingRules.publicTokenCreation) throw; _ }
     // Modifier that allows the main partner to buy tokens only in case of private funding
@@ -85,21 +85,26 @@ contract AccountManager is Token, AccountManagerInterface {
     modifier onlyTokenholders {if (balances[msg.sender] == 0) throw; _ }
 
     /// @dev Constructor setting the Client, Recipient and initial Supply
+    /// @param _creator The creator address
     /// @param _client The Dao address
     /// @param _recipient The recipient address
     /// @param _initialSupply The initial supply of tokens for the recipient
     function AccountManager(
+        address _creator,
         address _client,
         address _recipient,
         uint256 _initialSupply
     ) {
-    
+        
+        creator = _creator;
         client = _client;
-        recipient = _recipient;
+        
+        address recipient = _recipient;
+        if (_recipient == 0)  recipient = _creator;
 
-        balances[_recipient] = _initialSupply; 
+        balances[recipient] = _initialSupply; 
         totalSupply =_initialSupply;
-        TokensCreated(msg.sender, _recipient, _initialSupply);
+        TokensCreated(msg.sender, recipient, _initialSupply);
         
    }
 
@@ -163,13 +168,19 @@ contract AccountManager is Token, AccountManagerInterface {
         
     }
 
+    /// @dev Function used by the client to know the creator of this smart contract
+    /// @return True if the sender is the creator
+    function IsCreator(address _sender) external returns (bool) {
+        if (creator == _sender) return true;
+    }
+
     /// @dev Function used by the client
     /// @return The total supply of tokens 
     function TotalSupply() external returns (uint256) {
         return totalSupply;
     }
     
-    /// @dev Function used by the main partner to set the funding fueled
+    /// @dev Function used by the client or the main partner to set the funding fueled
     /// @param _contractorProposalID The index of the Dao proposal
     /// @param _isFueled Whether the funding is fueled or not
     function Fueled(uint _contractorProposalID, bool _isFueled) external {
@@ -245,9 +256,9 @@ contract AccountManager is Token, AccountManagerInterface {
         FundingRules.mainPartner = _mainPartner;
         FundingRules.publicTokenCreation = _publicTokenCreation;
         
-        if (_startTime < FundingRules.closingTime) FundingRules.startTime = FundingRules.closingTime;
-        else FundingRules.startTime = _startTime;
+        if (_startTime < FundingRules.closingTime) throw;
 
+        FundingRules.startTime = _startTime; 
         FundingRules.closingTime = _closingTime; 
         FundingRules.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         FundingRules.maxAmountToFund = _maxAmountToFund;
