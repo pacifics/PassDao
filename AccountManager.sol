@@ -55,7 +55,9 @@ contract AccountManagerInterface {
     address public creator;
     // Address of the Dao    
     address public client;
-
+    // Address of the account manager recipient;
+    address recipient;
+    
     // True if the funding of the Dao contractor proposal is fueled
     mapping (uint => bool) isFueled;
     // If true, the tokens can be transfered
@@ -98,13 +100,14 @@ contract AccountManager is Token, AccountManagerInterface {
         
         creator = _creator;
         client = _client;
+        recipient = _recipient;
         
         if (_initialSupply > 0) {
-            address recipient = _recipient;
-            if (_recipient == 0)  recipient = _creator;
-            balances[recipient] = _initialSupply; 
-            totalSupply =_initialSupply;
-            TokensCreated(msg.sender, recipient, _initialSupply);
+            address _initialSupplyTo = _recipient;
+            if (_recipient == 0)  _initialSupplyTo = _creator;
+            balances[_initialSupplyTo] = _initialSupply; 
+            totalSupply = _initialSupply;
+            TokensCreated(msg.sender, _initialSupplyTo, _initialSupply);
         }
         
    }
