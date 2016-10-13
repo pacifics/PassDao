@@ -91,7 +91,7 @@ Main functions:
 
 - The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. The contractor proposal can foresee an inflation rate for the reward of contractor tokens which will incentivize shareholders to vote early.
 
-- Only the Dao shareholders can decide by vote to allow the transfer of shares or contractor tokens.
+- Only the Dao shareholders can decide by vote to allow the transfer of shares.
 
 - There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to tokenholders. 
 
