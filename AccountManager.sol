@@ -56,7 +56,7 @@ contract AccountManagerInterface {
     // Address of the Dao    
     address public client;
     // Address of the account manager recipient;
-    address recipient;
+    address public recipient;
     
     // True if the funding of the Dao contractor proposal is fueled
     mapping (uint => bool) isFueled;
