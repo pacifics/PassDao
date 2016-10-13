@@ -294,8 +294,10 @@ contract DAO is DAOInterface
 
         c.totalAmountForTokenReward = _totalAmountForTokenReward;
         if (_totalAmountForTokenReward != 0) {
-            ContractorAccountManager[c.recipient].extentFunding(address(this), false, c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
-                now, now + (DaoRules.minMinutesSetPeriod * 1 minutes) + (_MinutesDebatingPeriod * 1 minutes), c.inflationRate);
+            ContractorAccountManager[c.recipient].extentFunding(address(this), false, 
+                c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
+                now + (DaoRules.minMinutesSetPeriod * 1 minutes), 
+                now + (DaoRules.minMinutesSetPeriod * 1 minutes) + (_MinutesDebatingPeriod * 1 minutes), c.inflationRate);
         }
         
         return _ContractorProposalID;
