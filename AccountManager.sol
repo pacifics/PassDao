@@ -99,12 +99,13 @@ contract AccountManager is Token, AccountManagerInterface {
         creator = _creator;
         client = _client;
         
-        address recipient = _recipient;
-        if (_recipient == 0)  recipient = _creator;
-
-        balances[recipient] = _initialSupply; 
-        totalSupply =_initialSupply;
-        TokensCreated(msg.sender, recipient, _initialSupply);
+        if (_initialSupply > 0) {
+            address recipient = _recipient;
+            if (_recipient == 0)  recipient = _creator;
+            balances[recipient] = _initialSupply; 
+            totalSupply =_initialSupply;
+            TokensCreated(msg.sender, recipient, _initialSupply);
+        }
         
    }
 
