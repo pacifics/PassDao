@@ -97,11 +97,12 @@ contract AccountManager is Token, AccountManagerInterface {
         recipient = _recipient;
         
         if (_initialSupply > 0) {
-            address _initialSupplyTo = _recipient;
-            if (_recipient == 0)  _initialSupplyTo = _creator;
-            balances[_initialSupplyTo] = _initialSupply; 
+
+            if (_recipient == 0)  _recipient = _creator;
+            balances[_recipient] = _initialSupply; 
             totalSupply = _initialSupply;
-            TokensCreated(msg.sender, _initialSupplyTo, _initialSupply);
+            TokensCreated(msg.sender, _recipient, _initialSupply);
+
         }
         
    }
@@ -123,7 +124,7 @@ contract AccountManager is Token, AccountManagerInterface {
         address _tokenHolder,
         uint _amount,
         uint _saleDate
-        ) onlyPrivateTokenCreation returns (bool _succes) {
+        ) returns (bool _succes) {
         
         if (msg.sender != FundingRules.mainPartner) throw;
 
@@ -167,12 +168,12 @@ contract AccountManager is Token, AccountManagerInterface {
     }
 
     /// @return True if the sender is the creator
-    function IsCreator(address _sender) external returns (bool) {
+    function IsCreator(address _sender) constant external returns (bool) {
         if (creator == _sender) return true;
     }
 
     /// @return The total supply of tokens 
-    function TotalSupply() external returns (uint256) {
+    function TotalSupply() constant external returns (uint256) {
         return totalSupply;
     }
     
@@ -204,23 +205,22 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @return the token price divisor condidering the sale date and the inflation rate
     function tokenPriceDivisor(uint _saleDate) internal returns (uint) {
 
-        uint _date;
+        uint _date = _saleDate;
         
         if (_saleDate > FundingRules.closingTime && FundingRules.closingTime != 0) {
             _date = FundingRules.closingTime;
         } 
-        else if (_saleDate < FundingRules.startTime) {
+        
+        if (_saleDate < FundingRules.startTime) {
             _date = FundingRules.startTime;
             }
-        else _date = _saleDate;
-        
-        
+
         return 100 + 100*FundingRules.inflationRate*(_date - FundingRules.startTime)/(100*365 days);
 
     }
     
     /// @return the actual token price
-    function actualTokenPriceDivisor() constant returns (uint) {
+    function actualTokenPriceDivisor() constant external returns (uint) {
         
         return tokenPriceDivisor(now);
 
@@ -261,7 +261,7 @@ contract AccountManager is Token, AccountManagerInterface {
     } 
     
     /// @return The maximal amount to fund of the actual funding. 0 if there is not any funding at this moment
-    function fundingMaxAmount() constant returns (uint) {
+    function fundingMaxAmount() constant external returns (uint) {
         
         if ((now > FundingRules.closingTime && FundingRules.closingTime != 0)
             || now < FundingRules.startTime) {
@@ -305,7 +305,7 @@ contract AccountManager is Token, AccountManagerInterface {
 
     /// @param _tokenHolder The address of a token holder
     /// @return When a tokenHolder address can be unblocked
-    function blockedAccountDeadLine(address _tokenHolder) external constant returns (uint) {
+    function blockedAccountDeadLine(address _tokenHolder) constant external returns (uint) {
         
         return blocked[_tokenHolder];
 
@@ -318,12 +318,16 @@ contract AccountManager is Token, AccountManagerInterface {
         blocked[_tokenHolder] = _deadLine;
     }
     
-    /// @dev Function used by the client to able or disable the transfer of tokens
-    /// @param _able True if the client want to able
-    function TransferAble(bool _able) external onlyClient {
-        transferAble = _able;
+    /// @dev Function used by the client to able the transfer of tokens
+    function TransferAble() external onlyClient {
+        transferAble = true;
     }
 
+    /// @dev Function used by the client to disable the transfer of tokens
+    function TransferDisable() external onlyClient {
+        transferAble = false;
+    }
+    
     /// @dev Internal function for the creation of tokens
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
