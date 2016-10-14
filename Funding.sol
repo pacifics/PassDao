@@ -24,9 +24,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * Smart contract used for the funding of the Dao.
 */
 
-// import "AccountManager.sol";
-
-/// @title Primary Funding smart contract of the Pass Decentralized Autonomous Organisation
+/// @title Primary Funding smart contract for the Pass Decentralized Autonomous Organisation
 contract Funding {
 
     struct Partner {
@@ -34,13 +32,13 @@ contract Funding {
         address partnerAddress; 
         // The amount that the partner wish to fund
         uint256 intentionAmount;
-        // The date of the intentionamount
+        // The average date of the presale of the partner 
         uint presaleDate;
-        // The funding amount according to set limits
+        // The funding amount according to the set limits
         uint fundingAmountLimit;
         // the amount that the partner funded to the Dao
         uint fundedAmount;
-        // True if the partner is in the mailing list
+        // True if the partner can fund the dao
         bool valid;
     }
 
@@ -52,33 +50,33 @@ contract Funding {
     AccountManager public ContractorAccountManager;
     // The index of the Dao contractor proposal
     uint public contractorProposalID;
-    // Minimal amount to fund
+    // Minimum amount (in wei) to fund
     uint public minAmount;
-    // Maximal amount to fund
+    // Maximum amount (in wei) to fund
     uint public maxAmount;
-    // Minimal intention amount that partners have to send
+    // Minimum amount (in wei) that partners can send to this smart contract
     uint public minIntentionAmount;
-    // Maximal intention amount that partners have to send
+    // Maximum amount (in wei) that partners can send to this smart contract
     uint public maxIntentionAmount;
-    // The start time to intend to fund
+    // The unix start time of the presale
     uint public startTime;
-    // The closing time to intend to fund
+    // The unix closing time of the presale
     uint public closingTime;
     /// Limit in amount a partner can fund
     uint public amountLimit; 
-    /// The partner can fund only under a defined percentage of their ether balance 
+    /// The partner can fund only under a defined percentage of his ether balance 
     uint public divisorBalanceLimit;
-    // True if the limits for funding are set
+    // True if the amount and divisor balance limits for the funding are set by the creator
     bool public limitSet;
-    // True if all the partners are set and the funding can start
+    // True if all the partners are set by the creator and the funding can be completed 
     bool public allSet;
-    // Array of partners which wish to fund 
+    // Array of partners which wish to fund the dao
     Partner[] public partners;
-    // The index of the partners
+    // Map with the indexes of the partners
     mapping (address => uint) public partnerID; 
-    // The total funded amount (in wei) if private funding
+    // The total funded amount (in wei)
     uint public totalFunded; 
-    // The callculated sum of funding amout limits
+    // The calculated sum of funding amout limits according to the set limits
     uint public sumOfFundingAmountLimits;
     
     // To allow the set of partners in several times
@@ -86,9 +84,9 @@ contract Funding {
 
     // Protects users by preventing the execution of method calls that
     // inadvertently also transferred ether
-    modifier noEther() {if (msg.value > 0) throw; _}
-    // The main partner for private funding is the creator of this contract
-    modifier onlyCreator {if (msg.sender != address(creator)) throw; _ }
+    modifier noEther() {if (msg.value > 0) throw; _;}
+    // The manager of this funding is the creator of this contract
+    modifier onlyCreator {if (msg.sender != address(creator)) throw; _ ;}
 
     event IntentionToFund(address partner, uint amount);
     event Fund(address partner, uint amount);
@@ -97,14 +95,14 @@ contract Funding {
     event AllSet();
     event Fueled();
 
-    /// @dev Constructor function with setting
+    /// @dev Constructor function
     /// @param _creator The creator of the smart contract
     /// @param _DaoAccountManager The Dao account manager
     /// @param _contractorAccountManager The contractor account manager for the reward of tokens
-    /// @param _contractorProposalID The index of the Dao proposal
-    /// @param _minAmount minimal amount to fund
-    /// @param _startTime The start time to intend to fund
-    /// @param _closingTime The closing time to intend to fund
+    /// @param _contractorProposalID The index of the Dao contractor proposal
+    /// @param _minAmount minimum amount to fund
+    /// @param _startTime The start time of the presale
+    /// @param _closingTime The closing time of the presale
     function Funding (
         address _creator,
         address _DaoAccountManager,
@@ -129,20 +127,20 @@ contract Funding {
         
         }
 
-    /// @dev Function to set the limits for the intention amounts
-    /// @param _minIntentionAmount Minimal intention amount that partners have to send
-    /// @param _maxIntentionAmount Maximal intention amount that partners have to send
-    function SetIntentionAmountLimits(
-        uint _minIntentionAmount,
-        uint _maxIntentionAmount
+    /// @notice Function used by the creator to set the presale limits
+    /// @param _minAmount Minimum amount that partners can send
+    /// @param _maxAmount Maximum amount that partners can send
+    function SetPresaleAmountLimits(
+        uint _minAmount,
+        uint _maxAmount
         ) noEther onlyCreator {
 
-        minIntentionAmount = _minIntentionAmount;
-        maxIntentionAmount = _maxIntentionAmount;
+        minIntentionAmount = _minAmount;
+        maxIntentionAmount = _maxAmount;
 
         }
 
-    /// @notice Function to give an intention to fund the Dao
+    /// @notice Function for the presale
     function () {
         
         if (msg.value <= 0
@@ -173,11 +171,11 @@ contract Funding {
         IntentionToFund(msg.sender, msg.value);
     }
     
-    /// @dev Function used by the creator to set partners
+    /// @notice Function used by the creator to set valid partners that can fund the dao
     /// @param _valid True if the address can fund the Dao
     /// @param _from The index of the first partner to set
     /// @param _to The index of the last partner to set
-    function setPartners(
+    function setValidPartners(
             bool _valid,
             uint _from,
             uint _to
@@ -194,10 +192,10 @@ contract Funding {
         
     }
 
-    /// @dev Function used by the creator to set the funding limits
+    /// @notice Function used by the creator to set the funding limits for the funding
     /// @param _amountLimit Limit in amount a partner can fund
     /// @param _divisorBalanceLimit  The partner can fund 
-    /// only under a defined percentage of their ether balance 
+    /// only under a defined percentage of his ether balance 
     function setFundingLimits(
             uint _amountLimit, 
             uint _divisorBalanceLimit
@@ -215,9 +213,9 @@ contract Funding {
     
     }
 
-    /// @dev Function used by the creator to set the funding limits for partners
+    /// @notice Function used by the creator to set the funding limits for partners
     /// @param _to The index of the last partner to set
-    function setPartnersLimits(uint _to) noEther onlyCreator returns (bool _success) {
+    function setPartnersFundingLimits(uint _to) noEther onlyCreator returns (bool _success) {
         
         if (!limitSet) throw;
 
@@ -246,7 +244,7 @@ contract Funding {
 
     }
 
-    /// @notice Function used to fund the Dao
+    /// @notice Function for the funding of the Dao by a group of partners
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
     function fundDaoFor(
@@ -282,7 +280,7 @@ contract Funding {
 
     }
 
-    /// @notice Function used to refund for a partner
+    /// @notice Function for the refund for a partner the amount not funded
     /// @param _index The index of the partner
     /// @return Whether the refund was successful or not 
     function refundFor(uint _index) internal returns (bool) {
@@ -312,13 +310,13 @@ contract Funding {
 
     }
 
-    /// @notice Function used to refund
+    /// @notice Function for the refund of the amount not funded
     /// @return Whether the refund was successful or not 
     function refund() noEther returns (bool) {
         return refundFor(partnerID[msg.sender]);
     }
 
-    /// @notice Function used to refund the amounts above limit for a group of valid partners
+    /// @notice Function to refund for a group of valid partners
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
     function refundForPartners(
@@ -338,14 +336,12 @@ contract Funding {
 
     }
     
-    /// @dev Allow to calculate the result of the funding procedure at present time
     /// @param _amountLimit Limit in amount a partner can fund
-    /// @param _divisorBalanceLimit  The partner can fund 
+    /// @param _divisorBalanceLimit The partner can fund 
     /// only under a defined percentage of their ether balance 
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
-    /// @return The maximum amount if all the addresses are valid partners 
-    /// and fund according to their limit
+    /// @return The result of the funding procedure at present time
     function fundingAmount(
         uint _amountLimit, 
         uint _divisorBalanceLimit,
@@ -394,14 +390,14 @@ contract Funding {
         
     }
 
-    /// @return the number of partners which sent ethers
+    /// @return the number of partners
     function numberOfPartners() constant returns (uint) {
         return partners.length - 1;
     }
     
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
-    /// @return the number of valid partners who wish to fund
+    /// @return the number of valid partners
     function numberOfValidPartners(
         uint _from,
         uint _to
