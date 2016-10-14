@@ -208,14 +208,12 @@ contract AccountManager is Token, AccountManagerInterface {
         
         if (_saleDate > FundingRules.closingTime && FundingRules.closingTime != 0) {
             _date = FundingRules.closingTime;
-        }
-        
-        if (_saleDate < FundingRules.startTime) {
+        } 
+        else if (_saleDate < FundingRules.startTime) {
             _date = FundingRules.startTime;
             }
-        else {
-            _date = _saleDate;
-        }
+        else _date = _saleDate;
+        
         
         return 100 + 100*FundingRules.inflationRate*(_date - FundingRules.startTime)/(100*365 days);
 
@@ -320,9 +318,10 @@ contract AccountManager is Token, AccountManagerInterface {
         blocked[_tokenHolder] = _deadLine;
     }
     
-    /// @dev Function used by the client to able the transfer of tokens
-    function TransferAble() external onlyClient {
-        transferAble = true;
+    /// @dev Function used by the client to able or disable the transfer of tokens
+    /// @param _able True if the client want to able
+    function TransferAble(bool _able) external onlyClient {
+        transferAble = _able;
     }
 
     /// @dev Internal function for the creation of tokens
@@ -336,15 +335,13 @@ contract AccountManager is Token, AccountManagerInterface {
         uint _saleDate
     ) internal returns (bool _success) {
 
-        if ((totalSupply + _quantity > FundingRules.maxTotalSupply)
-            || (now > FundingRules.closingTime && FundingRules.closingTime !=0) 
+        if ((now > FundingRules.closingTime && FundingRules.closingTime !=0) 
             || _amount <= 0
             || (now < FundingRules.startTime) ) {
             throw;
             }
 
         uint _quantity = 100*_amount*FundingRules.initialTokenPriceMultiplier/tokenPriceDivisor(_saleDate);
-
         if (totalSupply + _quantity > FundingRules.maxTotalSupply) throw;
 
         balances[_tokenHolder] += _quantity; 
@@ -369,7 +366,6 @@ contract AccountManager is Token, AccountManagerInterface {
             && blocked[msg.sender] == 0
             && blocked[_to] == 0
             && _to != address(this)
-            && now > FundingRules.closingTime
             && super.transfer(_to, _value)) {
                 return true;
             } else {
@@ -389,7 +385,6 @@ contract AccountManager is Token, AccountManagerInterface {
             && blocked[_from] == 0
             && blocked[_to] == 0
             && _to != address(this)
-            && now > FundingRules.closingTime 
             && super.transferFrom(_from, _to, _value)) {
             return true;
         } else {
