@@ -213,18 +213,16 @@ contract DAO is DAOInterface
         BoardMeeting b = BoardMeetings[_BoardMeetingID];
 
         b.creator = msg.sender;
+
         b.ContractorProposalID = _ContractorProposalID;
         b.DaoRulesProposalID = _DaoRulesProposalID;
         b.FundingProposalID = _FundingProposalID;
-        b.fees = _boardMeetingFees;
-        b.setDeadline = now + DaoRules.minutesSetProposalPeriod * 1 minutes;        
-        
-        uint _DebatePeriod;
-        if (_MinutesDebatingPeriod < DaoRules.minMinutesDebatePeriod) _DebatePeriod = DaoRules.minMinutesDebatePeriod; 
-        else _DebatePeriod = _MinutesDebatingPeriod; 
 
-        b.votingDeadline = b.setDeadline + (_DebatePeriod * 1 minutes); 
-        b.executionDeadline = b.votingDeadline + DaoRules.minutesExecuteProposalPeriod * 1 minutes;
+        b.fees = _boardMeetingFees;
+        
+        b.setDeadline = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);        
+        b.votingDeadline = b.setDeadline + (_MinutesDebatingPeriod * 1 minutes); 
+        b.executionDeadline = b.votingDeadline + (DaoRules.minutesExecuteProposalPeriod * 1 minutes);
 
         b.open = true; 
 
@@ -258,8 +256,7 @@ contract DAO is DAOInterface
 
         if (msg.value < DaoRules.minBoardMeetingFees) throw;
         if (_inflationRate < DaoRules.minContractorTokenInflationRate
-                || (_inflationRate > DaoRules.maxContractorTokenInflationRate 
-                    && DaoRules.maxContractorTokenInflationRate != 0)) throw;
+                || _inflationRate > DaoRules.maxContractorTokenInflationRate) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -272,7 +269,7 @@ contract DAO is DAOInterface
             AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
                 
             ContractorAccountManager[c.recipient] = m;
-            m.TransferAble();
+            m.TransferAble(true);
             AccountManagerCreated(c.recipient, address(m));
             hasAnAccountManager[c.recipient] = true;
 
@@ -388,7 +385,7 @@ contract DAO is DAOInterface
         Rules r = DaoRulesProposals[_DaoRulesProposalID];
 
         r.minQuorumDivisor = _minQuorumDivisor;
-        r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, now, _MinutesDebatingPeriod, msg.value);      
+        r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID,0, _MinutesDebatingPeriod, msg.value);      
         r.minBoardMeetingFees = _minBoardMeetingFees;
         r.minutesSetProposalPeriod = _minutesSetProposalPeriod;
         r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
@@ -414,7 +411,6 @@ contract DAO is DAOInterface
         if (b.hasVoted[msg.sender] 
             || now < b.setDeadline
             || now > b.votingDeadline 
-            ||!b.open
         ) {
         throw;
         }
@@ -445,6 +441,14 @@ contract DAO is DAOInterface
 
             }
 
+            if (b.fees > 0) {
+
+                uint _rewardedamount = b.fees*DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
+                b.totalRewardedAmount += _rewardedamount;
+                pendingFeesWithdrawals[msg.sender] += _rewardedamount;
+
+            }
+
         }
 
         uint _deadline = DaoAccountManager.blockedAccountDeadLine(msg.sender);
@@ -453,12 +457,6 @@ contract DAO is DAOInterface
         }
         else if (b.votingDeadline > _deadline) {
             DaoAccountManager.blockAccount(msg.sender, b.votingDeadline);
-        }
-
-        if (b.fees > 0 && b.ContractorProposalID != 0) {
-            uint _rewardedamount = b.fees*DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
-            b.totalRewardedAmount += _rewardedamount;
-            pendingFeesWithdrawals[msg.sender] += _rewardedamount;
         }
 
         Voted(_BoardMeetingID, msg.sender, _rewardedamount);
@@ -537,12 +535,10 @@ contract DAO is DAOInterface
             DaoRules.minutesSetProposalPeriod = r.minutesSetProposalPeriod;
             DaoRules.minContractorTokenInflationRate = r.minContractorTokenInflationRate;
             DaoRules.maxContractorTokenInflationRate = r.maxContractorTokenInflationRate;
-
             DaoRules.transferAble = r.transferAble;
-            if (r.transferAble) {
-                DaoAccountManager.TransferAble();
-            }
-            
+
+            DaoAccountManager.TransferAble(r.transferAble);
+
         }
             
         if (b.ContractorProposalID != 0) {
