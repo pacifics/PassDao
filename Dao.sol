@@ -166,7 +166,7 @@ contract DAO is DAOInterface
     // inadvertently also transferred ether
     modifier noEther() {if (msg.value > 0) throw; _;}
     
-    // Modifier that allows only shareholders to vote and set a Dao rules proposals
+    // Modifier that allows only shareholders to vote
     modifier onlyTokenholders {
         if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
     
@@ -175,7 +175,6 @@ contract DAO is DAOInterface
 
         DaoAccountManager = new AccountManager(_creator, address(this), 0, 10);
 
-        DaoRules.maxMinutesDebatePeriod = 57600;
         DaoRules.minutesExecuteProposalPeriod = 57600;
         DaoRules.minutesSetProposalPeriod = 10;
 
@@ -254,28 +253,27 @@ contract DAO is DAOInterface
         uint _MinutesDebatingPeriod
     ) returns (uint) {
 
-        if (msg.value < DaoRules.minBoardMeetingFees) throw;
-        if (_inflationRate < DaoRules.minContractorTokenInflationRate
-                || _inflationRate > DaoRules.maxContractorTokenInflationRate) throw;
+        if (msg.value < DaoRules.minBoardMeetingFees
+            ||_inflationRate < DaoRules.minContractorTokenInflationRate
+            || _inflationRate > DaoRules.maxContractorTokenInflationRate) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
 
         c.recipient = _recipient;       
         c.initialSupply = _initialSupply;
-        
-        if (!hasAnAccountManager[c.recipient]) {
+        if (hasAnAccountManager[c.recipient]) {
+            
+            if (msg.sender != c. recipient || !ContractorAccountManager[c.recipient].IsCreator(msg.sender)) throw;
+
+        } else {
 
             AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
                 
             ContractorAccountManager[c.recipient] = m;
-            m.TransferAble(true);
-            AccountManagerCreated(c.recipient, address(m));
+            m.TransferAble();
             hasAnAccountManager[c.recipient] = true;
-
-        } else {
-
-            if (msg.sender != c. recipient || !ContractorAccountManager[c.recipient].IsCreator(msg.sender)) throw;
+            AccountManagerCreated(c.recipient, address(m));
 
         }
         
@@ -290,10 +288,10 @@ contract DAO is DAOInterface
             
             c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
             c.inflationRate = _inflationRate;
+            uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
             ContractorAccountManager[c.recipient].extentFunding(address(this), false, 
                 c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
-                now + (DaoRules.minutesSetProposalPeriod * 1 minutes), 
-                now + (DaoRules.minutesSetProposalPeriod * 1 minutes) + (_MinutesDebatingPeriod * 1 minutes), c.inflationRate);
+                _setDeadLine, _setDeadLine + (_MinutesDebatingPeriod * 1 minutes), c.inflationRate);
 
         }
         
@@ -344,7 +342,6 @@ contract DAO is DAOInterface
             if (now > b.setDeadline || b.creator != msg.sender) throw;
 
             cf.fundingProposalID = _FundingProposalID;
-            cf.totalAmountForTokenReward = 0;
 
             b.fees = 0;
             pendingFeesWithdrawals[b.creator] += b.fees;
@@ -377,7 +374,7 @@ contract DAO is DAOInterface
         uint _maxContractorTokenInflationRate,
         bool _transferAble,
         uint _MinutesDebatingPeriod
-    ) onlyTokenholders returns (uint) {
+    ) returns (uint) {
     
         if (msg.value < DaoRules.minBoardMeetingFees ) throw; 
         
@@ -535,9 +532,10 @@ contract DAO is DAOInterface
             DaoRules.minutesSetProposalPeriod = r.minutesSetProposalPeriod;
             DaoRules.minContractorTokenInflationRate = r.minContractorTokenInflationRate;
             DaoRules.maxContractorTokenInflationRate = r.maxContractorTokenInflationRate;
-            DaoRules.transferAble = r.transferAble;
 
-            DaoAccountManager.TransferAble(r.transferAble);
+            DaoRules.transferAble = r.transferAble;
+            if (r.transferAble) DaoAccountManager.TransferAble();
+            else DaoAccountManager.TransferAble();
 
         }
             
