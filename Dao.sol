@@ -176,7 +176,8 @@ contract DAO is DAOInterface
         DaoAccountManager = new AccountManager(_creator, address(this), 0, 10);
 
         DaoRules.minutesSetProposalPeriod = 10;
-        DaoRules.minutesExecuteProposalPeriod = 10000;
+        DaoRules.maxMinutesDebatePeriod = 100000;
+        DaoRules.minutesExecuteProposalPeriod = 100000;
         DaoRules.maxContractorTokenInflationRate = 1000;
 
         BoardMeetings.length = 1; 
