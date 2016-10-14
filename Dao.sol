@@ -1,6 +1,6 @@
 import "AccountManager.sol";
 
-//pragma solidity ^0.3.6;
+pragma solidity ^0.4.2;
 
 /*
 This file is part of the DAO.
@@ -25,8 +25,6 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-// import "AccountManager.sol";
-
 contract DAOInterface {
 
     struct BoardMeeting {        
@@ -36,34 +34,34 @@ contract DAOInterface {
         uint ContractorProposalID;
         // Index to identify the proposal to update the Dao rules 
         uint DaoRulesProposalID; 
-        // Index to identify the proposal to a private funding of the Dao
+        // Index to identify the proposal for a funding of the Dao
         uint FundingProposalID;
-        // unix timestamp, denoting the end of the set period
+        // unix timestamp, denoting the end of the set period of a proposal before the board meeting 
         uint setDeadline;
         // Fees (in wei) paid by the creator of the board meeting
         uint fees; 
-        // Fees (in wei) rewarded to the voters
+        // Total of fees (in wei) to be rewarded to the voters
         uint totalRewardedAmount;
         // A unix timestamp, denoting the end of the voting period
         uint votingDeadline;
         // True if the proposal's votes have yet to be counted, otherwise False
         bool open; 
-        // A unix timestamp, denoting the date of the execution of the voted proposal
+        // A unix timestamp, denoting the date of the execution of the approved proposal
         uint dateOfExecution;
-        // A unix timestamp, denoting the deadline to execution of the voted proposal 
+        // A unix timestamp, denoting the deadline to execute the approved proposal 
         uint executionDeadline;
         // Number of shares in favor of the proposal
         uint yea; 
         // Number of shares opposed to the proposal
         uint nay; 
-        // mapping to indicate the vote date
-        mapping (address => uint) voteDate;  
+        // mapping to indicate if a shareholder has voted
+        mapping (address => bool) hasVoted;  
     }
 
     struct ContractorProposal {
         // Index to identify the board meeting of the proposal
         uint BoardMeetingID;
-        // The address of the proposal creator where the `amount` will go to if the proposal is accepted
+        // The address of the proposal recipient where the `amount` will go to if the proposal is accepted
         address recipient;
         // The amount to transfer to `recipient` if the proposal is accepted.
         uint amount; 
@@ -71,15 +69,15 @@ contract DAOInterface {
         string description;
         // The hash of the proposal's document
         bytes32 hashOfTheDocument;
-        // The initial price multiplier of a contractor token
+        // The initial price multiplier of the contractor token
         uint initialTokenPriceMultiplier;
-        // The inflation rate to calculate the actual token price.
+        // The inflation rate to calculate the actual contractor token price
         uint inflationRate;
         // The initial supply of contractor tokens for the recipient
         uint256 initialSupply;
-        // The index of the fundink proposal if linked to the contractor proposal
+        // The index of the funding proposal linked to the contractor proposal (not mandatory)
         uint fundingProposalID;
-        // Total amount if the proposal foreseen to reward tokens to voters
+        // Total amount for the reward of tokens to voters
         uint totalAmountForTokenReward;
 
     }
@@ -91,20 +89,20 @@ contract DAOInterface {
         bool publicTokenCreation; 
         // Index to identify the board meeting of the proposal
         uint BoardMeetingID;
-        // The amount to fund
+        // The maximum amount to fund
         uint fundingAmount; 
-        // The price multiplier for a token
+        // The initial price multiplier of a Dao token
         uint tokenPriceMultiplier; 
-        // Rate per year applied to the token price 
+        // The inflation rate to calculate the actual contractor token price
         uint inflationRate;
         // Period for the partners to fund after the execution of the decision
         uint minutesFundingPeriod;
-        // Index of the contractor proposal (not mandatory)
+        // Index of the contractor proposal linked to the funding proposal (not mandatory)
         uint contractorProposalID;
     }
 
     struct Rules {
-        // Index to identify the board meeting which decided to apply the rules
+        // Index to identify the board meeting that decided to apply the rules
         uint BoardMeetingID;  
         // The quorum needed for each proposal is calculated by totalSupply / minQuorumDivisor
         uint minQuorumDivisor;  
@@ -112,31 +110,33 @@ contract DAOInterface {
         uint minMinutesDebatePeriod; 
         // The maximum debate period that a generic proposal can have
         uint maxMinutesDebatePeriod;
-        // Minimal fees (in wei) to create a board meeting for contractor and private funding proposals
+        // Minimal fees (in wei) to create a proposal
         uint minBoardMeetingFees; 
-        // Period after which a proposal is closed
+        // Period after the board meeting to execute a proposal
         uint minutesExecuteProposalPeriod;
-        // Period needed for the curator to check the idendity of a contractor or private funding creator
-        uint minMinutesSetPeriod; 
-        // The minimum inflation rate for the creation of contractor tokens to voters
+        // Period to consider or set a proposal before the voting procedure
+        uint minutesSetProposalPeriod; 
+        // The minimum inflation rate for the reward of contractor tokens to voters
         uint minContractorTokenInflationRate;
         // The maximum inflation rate for the reward of contractor tokens to voters
         uint maxContractorTokenInflationRate;
-        // Address of the account manager of transferable tokens
-        address tokenTransferAble;
+        // True if the dao tokens are transferable
+        bool transferAble;
     } 
 
     // The Dao account manager contract
     AccountManager public DaoAccountManager;
 
     // Map to allow to withdraw board meeting fees
-    mapping (address => uint) public pendingWithdrawals;
+    mapping (address => uint) public pendingFeesWithdrawals;
+    // Map to allow to withdraw contractor amounts of approved proposals
+    mapping (address => uint) public pendingContractorAmountsWithdrawals;
     // Map to check if a recipient has an account manager or not
     mapping (address => bool) hasAnAccountManager; 
-    // The account management contract of the recipient
+    // Map to know the account management of contractors
     mapping (address => AccountManager) public ContractorAccountManager; 
 
-    // Board meetings to decide the result of a proposal
+    // Board meetings to vote for or against a proposal
     BoardMeeting[] public BoardMeetings; 
     // Proposals to pay a contractor
     ContractorProposal[] public ContractorProposals;
@@ -164,11 +164,11 @@ contract DAO is DAOInterface
 
     // Protects users by preventing the execution of method calls that
     // inadvertently also transferred ether
-    modifier noEther() {if (msg.value > 0) throw; _}
+    modifier noEther() {if (msg.value > 0) throw; _;}
     
-    // Modifier that allows only shareholders to vote and create new proposals
+    // Modifier that allows only shareholders to vote and set a Dao rules proposals
     modifier onlyTokenholders {
-        if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _}
+        if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
     
     /// @dev The constructor function
     function DAO(address _creator) {
@@ -177,6 +177,7 @@ contract DAO is DAOInterface
 
         DaoRules.maxMinutesDebatePeriod = 57600;
         DaoRules.minutesExecuteProposalPeriod = 57600;
+        DaoRules.minutesSetProposalPeriod = 10;
 
         BoardMeetings.length = 1; 
         ContractorProposals.length = 1;
@@ -188,19 +189,17 @@ contract DAO is DAOInterface
     /// @dev This function is to avoid tokenholders to send ethers to this address
     function () {throw;}
 
-    /// @dev internal function to create a board meeting
+    /// @dev Internal function to create a board meeting
     /// @param _ContractorProposalID The index of the proposal if contractor
     /// @param _DaoRulesProposalID The index of the proposal if Dao rules
     /// @param _FundingProposalID The index of the proposal if funding
-    /// @param _setdeadline The unix start date of the meating
     /// @param _MinutesDebatingPeriod The duration of the meeting
-    /// @param _boardMeetingFees The fees rewrded to the voters by the creator of the proposal 
+    /// @param _boardMeetingFees The fees to be rewarded to the voters by the creator of the proposal 
     /// @return the index of the board meeting
     function newBoardMeeting(
         uint _ContractorProposalID, 
         uint _DaoRulesProposalID, 
         uint _FundingProposalID, 
-        uint _setdeadline, 
         uint _MinutesDebatingPeriod, 
         uint _boardMeetingFees
     ) internal returns (uint) {
@@ -218,13 +217,13 @@ contract DAO is DAOInterface
         b.DaoRulesProposalID = _DaoRulesProposalID;
         b.FundingProposalID = _FundingProposalID;
         b.fees = _boardMeetingFees;
-        b.setDeadline =_setdeadline;        
+        b.setDeadline = now + DaoRules.minutesSetProposalPeriod * 1 minutes;        
         
         uint _DebatePeriod;
         if (_MinutesDebatingPeriod < DaoRules.minMinutesDebatePeriod) _DebatePeriod = DaoRules.minMinutesDebatePeriod; 
         else _DebatePeriod = _MinutesDebatingPeriod; 
 
-        b.votingDeadline = _setdeadline + (_DebatePeriod * 1 minutes); 
+        b.votingDeadline = b.setDeadline + (_DebatePeriod * 1 minutes); 
         b.executionDeadline = b.votingDeadline + DaoRules.minutesExecuteProposalPeriod * 1 minutes;
 
         b.open = true; 
@@ -235,15 +234,14 @@ contract DAO is DAOInterface
 
     }
 
-    /// @notice Function to make a proposal to be a contractor of the Dao
+    /// @notice Function to make a proposal to work for the Dao
     /// @param _amount The amount to be sent if the proposal is approved
     /// @param _description String describing the proposal
-    /// @param _hashOfTheDocument The hash to identify the proposal document
-    /// @param _initialTokenPriceMultiplier The quantity of contractor tokens will depend on this multiplier    
-    /// @param _inflationRate If 0, the token price doesn't change during the funding
-    /// @param _initialSupply If the recipient ask for an initial supply of contractor tokens
-    /// Default and minimum value is the period for curator to check the identity of the recipient
-    /// @param _totalAmountForTokenReward Total amount if the proposal foreseen to reward tokens to voters
+    /// @param _hashOfTheDocument The hash of the proposal document
+    /// @param _totalAmountForTokenReward Total amount if the proposal foreseen to reward tokens to voters (not mandatory)
+    /// @param _initialTokenPriceMultiplier The quantity of rewarded contractor tokens will depend on this multiplier (not mandatory)    
+    /// @param _inflationRate If 0, the token price doesn't change during the funding (not mandatory)
+    /// @param _initialSupply If the recipient ask for an initial supply of contractor tokens (not mandatory)
     /// @param _MinutesDebatingPeriod Proposed period of the board meeting
     /// @return The index of the proposal
     function newContractorProposal(
@@ -251,10 +249,10 @@ contract DAO is DAOInterface
         uint _amount, 
         string _description, 
         bytes32 _hashOfTheDocument,
+        uint _totalAmountForTokenReward,
         uint _initialTokenPriceMultiplier, 
         uint _inflationRate,
         uint256 _initialSupply,
-        uint _totalAmountForTokenReward,
         uint _MinutesDebatingPeriod
     ) returns (uint) {
 
@@ -274,6 +272,7 @@ contract DAO is DAOInterface
             AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
                 
             ContractorAccountManager[c.recipient] = m;
+            m.TransferAble();
             AccountManagerCreated(c.recipient, address(m));
             hasAnAccountManager[c.recipient] = true;
 
@@ -283,21 +282,22 @@ contract DAO is DAOInterface
 
         }
         
-        c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, now + (DaoRules.minMinutesSetPeriod * 1 minutes), 
-            _MinutesDebatingPeriod, msg.value);    
+        c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod, msg.value);    
 
         c.amount = _amount;
         c.description = _description;
         c.hashOfTheDocument = _hashOfTheDocument; 
-        c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
-        c.inflationRate = _inflationRate;
 
         c.totalAmountForTokenReward = _totalAmountForTokenReward;
         if (_totalAmountForTokenReward != 0) {
+            
+            c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
+            c.inflationRate = _inflationRate;
             ContractorAccountManager[c.recipient].extentFunding(address(this), false, 
                 c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
-                now + (DaoRules.minMinutesSetPeriod * 1 minutes), 
-                now + (DaoRules.minMinutesSetPeriod * 1 minutes) + (_MinutesDebatingPeriod * 1 minutes), c.inflationRate);
+                now + (DaoRules.minutesSetProposalPeriod * 1 minutes), 
+                now + (DaoRules.minutesSetProposalPeriod * 1 minutes) + (_MinutesDebatingPeriod * 1 minutes), c.inflationRate);
+
         }
         
         return _ContractorProposalID;
@@ -306,15 +306,13 @@ contract DAO is DAOInterface
 
     /// @notice Function to make a proposal for a funding of the Dao
     /// @param _publicTokenCreation True if crowdfunding
-    /// @param _mainPartner The address of the funding contract if private
+    /// @param _mainPartner The address of the funding contract if private (mandatory if private funding)
     /// @param _maxFundingAmount The maximum amount to fund
     /// @param _tokenPriceMultiplier The quantity of created tokens will depend on this multiplier
-    /// @param _inflationRate If 0, the token price doesn't change 
+    /// @param _inflationRate If 0, the token price doesn't change during the funding (not mandatory)
+    /// @param _minutesFundingPeriod Period for the partners to fund the Dao after the execution of the proposal
     /// @param _contractorProposalID Index of the contractor proposal (not mandatory)
-    /// @param _minutesFundingPeriod Period for the partners to fund the Dao after the board meeting decision
-    /// @param _minutesSetPeriod Period before the voting period 
-    /// and for the main partner to set the partners
-    /// @param _MinutesDebatingPeriod Proposed period of the board meeting
+    /// @param _MinutesDebatingPeriod Period in minutes of the board meeting
     /// @return The index of the proposal
     function newFundingProposal(
         bool _publicTokenCreation,
@@ -322,19 +320,17 @@ contract DAO is DAOInterface
         uint _maxFundingAmount,  
         uint _tokenPriceMultiplier,    
         uint _inflationRate,
-        uint _contractorProposalID,
         uint _minutesFundingPeriod,
-        uint _minutesSetPeriod,
+        uint _contractorProposalID,
         uint _MinutesDebatingPeriod
-    ) onlyTokenholders returns (uint) {
+    ) returns (uint) {
 
         if (msg.value < DaoRules.minBoardMeetingFees) throw;
 
         uint _FundingProposalID = FundingProposals.length++;
         FundingProposal f = FundingProposals[_FundingProposalID];
 
-        f.BoardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, now + (_minutesSetPeriod * 1 minutes),
-        _MinutesDebatingPeriod, msg.value);   
+        f.BoardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod, msg.value);   
         
         f.mainPartner = _mainPartner;
         f.publicTokenCreation = _publicTokenCreation;
@@ -348,13 +344,13 @@ contract DAO is DAOInterface
 
             ContractorProposal cf = ContractorProposals[_contractorProposalID];
             BoardMeeting b = BoardMeetings[cf.BoardMeetingID];
-            if (!b.open || now > b.executionDeadline || b.creator != msg.sender) throw;
+            if (!b.open || now > b.setDeadline || b.creator != msg.sender) throw;
 
             cf.fundingProposalID = _FundingProposalID;
             cf.totalAmountForTokenReward = 0;
 
             b.fees = 0;
-            pendingWithdrawals[b.creator] += b.fees;
+            pendingFeesWithdrawals[b.creator] += b.fees;
 
         }
         
@@ -363,22 +359,18 @@ contract DAO is DAOInterface
     }
 
     /// @notice Function to make a proposal to change the Dao rules 
-    /// @param _minMinutesSetPeriod Minimum period before a board meeting
+    /// @param _minutesSetProposalPeriod Minimum period before a board meeting
     /// @param _minQuorumDivisor If 5, the minimum quorum is 20%
-    /// @param _minBoardMeetingFees The amount in wei for the voters to vote 
-    /// during a board meeting
-    /// @param _minMinutesDebatePeriod The minimum period in minutes 
-    /// of the board meeting
-    /// @param _maxMinutesDebatePeriod The maximum period in minutes 
-    /// of the board meeting
-    /// @param _minutesExecuteProposalPeriod The period in minutes to execute 
-    /// a decision after a board meeting
+    /// @param _minBoardMeetingFees The amount in wei to create o proposal and organize a board meeting
+    /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
+    /// @param _maxMinutesDebatePeriod The maximum period in minutes of the board meetings
+    /// @param _minutesExecuteProposalPeriod The period in minutes to execute a decision after a board meeting
     /// @param _minContractorTokenInflationRate The minimum inflation rate for the reward of tokens to voters
-    /// @param _maxContractorTokenInflationRate The maximum inflation rate for the reward of tokens tp voters
-    /// @param _MinutesDebatingPeriod Proposed period of the board meeting
-    /// @param _tokenTransferAble Address of the account manager of transferable tokens
+    /// @param _maxContractorTokenInflationRate The maximum inflation rate for the reward of tokens to voters
+    /// @param _transferAble True if the Dao tokens are transferable
+    /// @param _MinutesDebatingPeriod Period of the board meeting
     function newDaoRulesProposal(
-        uint _minMinutesSetPeriod,
+        uint _minutesSetProposalPeriod,
         uint _minQuorumDivisor, 
         uint _minBoardMeetingFees,
         uint _minMinutesDebatePeriod, 
@@ -386,8 +378,8 @@ contract DAO is DAOInterface
         uint _minutesExecuteProposalPeriod,
         uint _minContractorTokenInflationRate,
         uint _maxContractorTokenInflationRate,
-        uint _MinutesDebatingPeriod,
-        address _tokenTransferAble
+        bool _transferAble,
+        uint _MinutesDebatingPeriod
     ) onlyTokenholders returns (uint) {
     
         if (msg.value < DaoRules.minBoardMeetingFees ) throw; 
@@ -395,16 +387,16 @@ contract DAO is DAOInterface
         uint _DaoRulesProposalID = DaoRulesProposals.length++;
         Rules r = DaoRulesProposals[_DaoRulesProposalID];
 
-        r.minMinutesSetPeriod = _minMinutesSetPeriod;
         r.minQuorumDivisor = _minQuorumDivisor;
-        r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, now, _MinutesDebatingPeriod, msg.value);      
+        r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, now, _MinutesDebatingPeriod, msg.value);      
         r.minBoardMeetingFees = _minBoardMeetingFees;
+        r.minutesSetProposalPeriod = _minutesSetProposalPeriod;
         r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
         r.maxMinutesDebatePeriod = _maxMinutesDebatePeriod;
         r.minutesExecuteProposalPeriod = _minutesExecuteProposalPeriod;
         r.minContractorTokenInflationRate = _minContractorTokenInflationRate;
         r.maxContractorTokenInflationRate = _maxContractorTokenInflationRate;
-        r.tokenTransferAble = _tokenTransferAble;
+        r.transferAble = _transferAble;
 
         return _DaoRulesProposalID;
         
@@ -413,14 +405,13 @@ contract DAO is DAOInterface
     /// @notice Function to vote during a board meeting
     /// @param _BoardMeetingID The index of the board meeting
     /// @param _supportsProposal True if the proposal is supported
-    /// @return Whether the transfer was successful or not    
     function vote(
         uint _BoardMeetingID, 
         bool _supportsProposal
-    ) noEther onlyTokenholders returns (bool _success) {
+    ) noEther onlyTokenholders {
         
         BoardMeeting b = BoardMeetings[_BoardMeetingID];
-        if (b.voteDate[msg.sender] != 0 
+        if (b.hasVoted[msg.sender] 
             || now < b.setDeadline
             || now > b.votingDeadline 
             ||!b.open
@@ -428,7 +419,7 @@ contract DAO is DAOInterface
         throw;
         }
 
-        b.voteDate[msg.sender] = now;
+        b.hasVoted[msg.sender] = true;
         
         if (_supportsProposal) {
             b.yea += DaoAccountManager.balanceOf(msg.sender);
@@ -467,18 +458,16 @@ contract DAO is DAOInterface
         if (b.fees > 0 && b.ContractorProposalID != 0) {
             uint _rewardedamount = b.fees*DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
             b.totalRewardedAmount += _rewardedamount;
-            pendingWithdrawals[msg.sender] += _rewardedamount;
+            pendingFeesWithdrawals[msg.sender] += _rewardedamount;
         }
 
         Voted(_BoardMeetingID, _supportsProposal, msg.sender, _rewardedamount);
         
     }
 
-    /// @notice Function to executes a board meeting decision
+    /// @notice Function to execute a board meeting decision
     /// @param _BoardMeetingID The index of the board meeting
-    /// @return Whether the transfer was successful or not    
-    function executeDecision(uint _BoardMeetingID) noEther returns (bool _success) 
-        {
+    function executeDecision(uint _BoardMeetingID) noEther {
 
         BoardMeeting b = BoardMeetings[_BoardMeetingID];
 
@@ -492,7 +481,7 @@ contract DAO is DAOInterface
         if (b.FundingProposalID != 0 || b.DaoRulesProposalID != 0) {
                 if (b.fees > 0 && quorum >= minQuorum()  
                 ) {
-                    pendingWithdrawals[b.creator] += b.fees;
+                    pendingFeesWithdrawals[b.creator] += b.fees;
                     b.fees = 0;
                 }
         }        
@@ -545,43 +534,53 @@ contract DAO is DAOInterface
             DaoRules.maxMinutesDebatePeriod = r.maxMinutesDebatePeriod;
             DaoRules.minBoardMeetingFees = r.minBoardMeetingFees;
             DaoRules.minutesExecuteProposalPeriod = r.minutesExecuteProposalPeriod;
-            DaoRules.minMinutesSetPeriod = r.minMinutesSetPeriod;
+            DaoRules.minutesSetProposalPeriod = r.minutesSetProposalPeriod;
             DaoRules.minContractorTokenInflationRate = r.minContractorTokenInflationRate;
             DaoRules.maxContractorTokenInflationRate = r.maxContractorTokenInflationRate;
 
-            if (r.tokenTransferAble != 0) {
-                AccountManager m = AccountManager(r.tokenTransferAble);
-                m.TransferAble();
-                if (m == DaoAccountManager) {
-                    DaoRules.tokenTransferAble = m;
-                }
+            DaoRules.transferAble = r.transferAble;
+            if (r.transferAble) {
+                DaoAccountManager.TransferAble();
             }
             
         }
             
         if (b.ContractorProposalID != 0) {
-            DaoAccountManager.sendTo(address(c.recipient), c.amount);
+            pendingContractorAmountsWithdrawals[c.recipient] += c.amount;
         }
 
         ProposalTallied(_BoardMeetingID);
         
     }
 
-    /// @notice Function to withdraw the boardmeeting fees to voters 
+    /// @notice Function to withdraw the board meeting fees to voters 
     /// @return Whether the withdraw was successful or not    
     function withdrawBoardMeetingFees() returns (bool) {
-        uint amount = pendingWithdrawals[msg.sender];
-        pendingWithdrawals[msg.sender] = 0;
+        uint amount = pendingFeesWithdrawals[msg.sender];
+        pendingFeesWithdrawals[msg.sender] = 0;
         if (msg.sender.send(amount)) {
             return true;
         } else {
-            pendingWithdrawals[msg.sender] = amount;
+            pendingFeesWithdrawals[msg.sender] = amount;
             return false;
         }
     }
 
-    /// @dev internal function to put to the Dao balance the board meeting fees of non voters
-    /// @param _boardMeetingID THe index of the proposal
+    /// @notice Function to withdraw the amounts of approved contractor proposals 
+    /// @return Whether the withdraw was successful or not    
+    function withdrawApprovedAmount() returns (bool) {
+        uint amount = pendingContractorAmountsWithdrawals[msg.sender];
+        pendingContractorAmountsWithdrawals[msg.sender] = 0;
+        if (DaoAccountManager.sendTo(msg.sender, amount)) {
+            return true;
+        } else {
+            pendingContractorAmountsWithdrawals[msg.sender] = amount;
+            return false;
+        }
+    }
+
+    /// @dev internal function to send to the Daoaccount manager the board meeting fees balance
+    /// @param _boardMeetingID THe index of the board meeting
     function takeBoardMeetingFees(uint _boardMeetingID) internal {
 
         BoardMeeting b = BoardMeetings[_boardMeetingID];
@@ -593,13 +592,13 @@ contract DAO is DAOInterface
         
     }
         
-    /// @notice Interface function to get the number of meetings 
+    /// @notice Function to get the number of meetings 
     /// @return the number of meetings (passed or current)
     function numberOfMeetings() constant returns (uint) {
         return BoardMeetings.length - 1;
     }
         
-    /// @dev internal function to get the minimum quorum needed for a proposal    
+    /// @notice Function to get the minimum quorum needed for a proposal    
     /// @return The minimum quorum for the proposal to pass 
     function minQuorum() constant returns (uint) {
         return uint(DaoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
