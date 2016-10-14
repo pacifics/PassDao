@@ -150,7 +150,7 @@ contract DAOInterface {
     event newBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
     event AccountManagerCreated(address recipient, address AccountManagerAddress);
     event BoardMeetingDelayed(uint indexed BoardMeetingID, uint MinutesProposalPeriod);
-    event Voted(uint indexed proposalID, bool position, address indexed voter, uint rewardedAmount);
+    event Voted(uint indexed proposalID, address indexed voter, uint rewardedAmount);
     event BoardMeetingFeesGivenBack(uint indexed boardMeetingID);
     event BoardMeetingClosed(uint indexed boardMeetingID);
     event ProposalTallied(uint indexed boardMeetingID);
@@ -461,7 +461,7 @@ contract DAO is DAOInterface
             pendingFeesWithdrawals[msg.sender] += _rewardedamount;
         }
 
-        Voted(_BoardMeetingID, _supportsProposal, msg.sender, _rewardedamount);
+        Voted(_BoardMeetingID, msg.sender, _rewardedamount);
         
     }
 
