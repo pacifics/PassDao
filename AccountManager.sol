@@ -1,6 +1,6 @@
 import "Token.sol";
 
-//pragma solidity ^0.3.6;
+pragma solidity ^0.4.2;
 
 /*
 This file is part of the DAO.
@@ -26,14 +26,12 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-// import "Token.sol";
-
 contract AccountManagerInterface {
 
-    // Rules for the funding
+    // Rules for the funding of the account manager
     fundingData public FundingRules;
     struct fundingData {
-        // The address which set partners in case of private funding
+        // The address which manage the funding in case of private funding
         address mainPartner;
         // True if crowdfunding
         bool publicTokenCreation; 
@@ -58,24 +56,23 @@ contract AccountManagerInterface {
     // Address of the account manager recipient;
     address public recipient;
     
-    // True if the funding of the Dao contractor proposal is fueled
+    // Map to know if the funding linked to a Dao contractor proposal is fueled
     mapping (uint => bool) isFueled;
     // If true, the tokens can be transfered
     bool public transferAble;
 
-    // Map of addresses blocked during a vote. The address points to the proposal ID
+    // Map of addresses blocked during a vote. The address points to the date when the address can be unblocked
     mapping (address => uint) blocked; 
 
-    // Modifier that allows only the cient to manage tokens
-    modifier onlyClient {if (msg.sender != address(client)) throw; _ }
+    // Modifier that allows only the cient to manage the account manager
+    modifier onlyClient {if (msg.sender != address(client)) throw; _;}
     // Modifier that allows public to buy tokens only in case of crowdfunding
-    modifier onlyPublicTokenCreation {if (!FundingRules.publicTokenCreation) throw; _ }
+    modifier onlyPublicTokenCreation {if (!FundingRules.publicTokenCreation) throw; _;}
     // Modifier that allows the main partner to buy tokens only in case of private funding
-    modifier onlyPrivateTokenCreation {if (FundingRules.publicTokenCreation) throw; _ }
+    modifier onlyPrivateTokenCreation {if (FundingRules.publicTokenCreation) throw; _;}
 
     event TokensCreated(address indexed sender, address indexed tokenHolder, uint quantity);
     event FundingRulesSet(address indexed mainPartner, uint startTime);
-    event AmountSent(address indexed recipient, uint amount);
 
 }
 
@@ -83,14 +80,11 @@ contract AccountManagerInterface {
 contract AccountManager is Token, AccountManagerInterface {
 
 
-    // Modifier that allows only shareholders to vote and create new proposals
-    modifier onlyTokenholders {if (balances[msg.sender] == 0) throw; _ }
-
-    /// @dev Constructor setting the Client, Recipient and initial Supply
+    /// @dev The constructor function
     /// @param _creator The creator address
     /// @param _client The Dao address
     /// @param _recipient The recipient address
-    /// @param _initialSupply The initial supply of tokens for the recipient
+    /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
     function AccountManager(
         address _creator,
         address _client,
@@ -112,18 +106,19 @@ contract AccountManager is Token, AccountManagerInterface {
         
    }
 
-    /// @notice Create Token with `msg.sender` as the beneficiary in case of public funding
+    /// @notice Function to send ethers to the Dao account manager. Tokens are created 
+    /// according to the funding rules with `msg.sender` as the beneficiary in case of public funding
     function () {
         if (FundingRules.publicTokenCreation) {
             buyToken(msg.sender, msg.value, now);
         }
     }
 
-    /// @notice Create Token with `_tokenHolder` as the beneficiary
+    /// @notice Create tokens with `_tokenHolder` as the beneficiary
     /// @param _tokenHolder the beneficiary of the created tokens
-    /// @param _amount the amount funded
+    /// @param _amount the amount funded by the main partner
     /// @param _saleDate in case of presale, the date of the presale
-    /// @return Whether the transfer was successful or not
+    /// @return Whether the token creation was successful or not
     function buyTokenFor(
         address _tokenHolder,
         uint _amount,
@@ -136,11 +131,11 @@ contract AccountManager is Token, AccountManagerInterface {
 
     }
      
-    /// @notice Create Token with `_tokenHolder` as the beneficiary
+    /// @dev Internal function for the creation of tokens with `_tokenHolder` as the beneficiary
     /// @param _tokenHolder the beneficiary of the created tokens
     /// @param _amount the amount funded
     /// @param _saleDate in case of presale, the date of the presale
-    /// @return Whether the transfer was successful or not
+    /// @return Whether the token creation was successful or not
     function buyToken(
         address _tokenHolder,
         uint _amount,
@@ -153,18 +148,17 @@ contract AccountManager is Token, AccountManagerInterface {
 
     }
     
-    /// @notice If the tokenholder account is blocked by a proposal whose voting deadline
-    /// has exprired then unblock him.
-    /// @param _account The address of the tokenHolder
-    /// @return Whether the account is blocked (not allowed to transfer tokens) or not.
-    function unblockAccount(address _account) noEther returns (bool) {
+    /// @notice Function to unblock a tokenHolder address
+    /// @param _tokenHolder The address of the tokenHolder
+    /// @return Whether the tokenholder address is blocked (not allowed to transfer tokens) or not.
+    function unblockAccount(address _tokenHolder) noEther returns (bool) {
     
-        uint _deadLine = blocked[_account];
+        uint _deadLine = blocked[_tokenHolder];
         
         if (_deadLine == 0) return false;
         
         if (now > _deadLine) {
-            blocked[_account] = 0;
+            blocked[_tokenHolder] = 0;
             return false;
         } else {
             return true;
@@ -172,21 +166,19 @@ contract AccountManager is Token, AccountManagerInterface {
         
     }
 
-    /// @dev Function used by the client to know the creator of this smart contract
     /// @return True if the sender is the creator
     function IsCreator(address _sender) external returns (bool) {
         if (creator == _sender) return true;
     }
 
-    /// @dev Function used by the client
     /// @return The total supply of tokens 
     function TotalSupply() external returns (uint256) {
         return totalSupply;
     }
     
-    /// @dev Function used by the client or the main partner to set the funding fueled
-    /// @param _contractorProposalID The index of the Dao proposal
-    /// @param _isFueled Whether the funding is fueled or not
+    /// @notice Function used by the Dao or a main partner to set a Dao contractor proposal fueled
+    /// @param _contractorProposalID The index of the Dao contractor proposal
+    /// @param _isFueled Whether the funding has to be set fueled or not
     function Fueled(uint _contractorProposalID, bool _isFueled) external {
     
         if (msg.sender != address(client) && msg.sender != FundingRules.mainPartner) {
@@ -197,20 +189,17 @@ contract AccountManager is Token, AccountManagerInterface {
         
     }
     
-    /// @notice Function to know if the funding is fueled
-    /// @param _contractorProposalID The index of the Dao proposal
+    /// @param _contractorProposalID The index of the Dao contarctor proposal
     /// @return Whether the funding is fueled or not
     function IsFueled(uint _contractorProposalID) constant external returns (bool) {
         return isFueled[_contractorProposalID];
     }
 
-    /// @dev Function used by the client
     /// @return The maximum tokens after the funding
     function MaxTotalSupply() external returns (uint) {
         return (FundingRules.maxTotalSupply);
     }
 
-    /// @dev Function used by the client
     /// @param _saleDate in case of presale, the date of the presale
     /// @return the token price divisor condidering the sale date and the inflation rate
     function tokenPriceDivisor(uint _saleDate) internal returns (uint) {
@@ -239,12 +228,12 @@ contract AccountManager is Token, AccountManagerInterface {
 
     }
 
-    /// @dev Function to extent funding. Can be private or public
-    /// @param _mainPartner The address for the managing of the funding
-    /// @param _publicTokenCreation True if public
+    /// @dev Function to set a funding. Can be private or public
+    /// @param _mainPartner The address for the managing of a private funding
+    /// @param _publicTokenCreation True if public funding
     /// @param _initialTokenPriceMultiplier Price multiplier without considering any inflation rate
-    /// @param _maxAmountToFund If the maximum is reached, the funding is closed
-    /// @param _startTime If 0, the start time is the creation date of this contract
+    /// @param _maxAmountToFund The maximum amount of the funding
+    /// @param _startTime The start time of the funding
     /// @param _closingTime After this date, the funding is closed
     /// @param _inflationRate If 0, the token price doesn't change during the funding
     function extentFunding(
@@ -273,7 +262,7 @@ contract AccountManager is Token, AccountManagerInterface {
 
     } 
     
-    /// @return the maximal amount to fund if funding and 0 unless
+    /// @return The maximal amount to fund of the actual funding. 0 if there is not any funding at this moment
     function fundingMaxAmount() constant returns (uint) {
         
         if ((now > FundingRules.closingTime && FundingRules.closingTime != 0)
@@ -286,19 +275,19 @@ contract AccountManager is Token, AccountManagerInterface {
     /// @dev Function used by the client to send ethers
     /// @param _recipient The address to send to
     /// @param _amount The amount to send
+    /// @return Whether the transfer was successful or not
     function sendTo(
         address _recipient, 
         uint _amount
-    ) external onlyClient {
+    ) external onlyClient returns (bool _success) {
     
-        if (!_recipient.send(_amount)) throw;    
-        AmountSent(_recipient, _amount);
+        return _recipient.send(_amount);    
 
-}
+    }
     
-    /// @dev Function used by the Dao to reward of tokens
+    /// @notice Function used by the Dao or a main partner to reward tokens
     /// @param _tokenHolder The address of the token holder
-    /// @param _amount The amount in Wei
+    /// @param _amount The amount in Wei to calculate the quantity to create
     /// @param _date The date to consider for the token price calculation
     /// @return Whether the transfer was successful or not
     function rewardToken(
@@ -316,20 +305,19 @@ contract AccountManager is Token, AccountManagerInterface {
 
     }
 
-    /// @notice Function to know when a tokenholder account can be unblocked
-    /// @param _account The address of the tokenHolder
-    /// @return When the account can be unblocked
-    function blockedAccountDeadLine(address _account) external constant returns (uint) {
+    /// @param _tokenHolder The address of a token holder
+    /// @return When a tokenHolder address can be unblocked
+    function blockedAccountDeadLine(address _tokenHolder) external constant returns (uint) {
         
-        return blocked[_account];
+        return blocked[_tokenHolder];
 
     }
     
     /// @dev Function used by the client to block tokens transfer of from a tokenholder
-    /// @param _account The address of the tokenHolder
+    /// @param _tokenHolder The address of the token holder
     /// @param _deadLine When the account can be unblocked
-    function blockAccount(address _account, uint _deadLine) external onlyClient {
-        blocked[_account] = _deadLine;
+    function blockAccount(address _tokenHolder, uint _deadLine) external onlyClient {
+        blocked[_tokenHolder] = _deadLine;
     }
     
     /// @dev Function used by the client to able the transfer of tokens
@@ -371,7 +359,7 @@ contract AccountManager is Token, AccountManagerInterface {
         
     }
    
-    // Function transfer only if the funding is not fueled and the account is not blocked
+    // Function to transfer tokens to another address
     function transfer(
         address _to, 
         uint256 _value
@@ -390,7 +378,7 @@ contract AccountManager is Token, AccountManagerInterface {
 
     }
 
-    // Function transferFrom only if the funding is not fueled and the account is not blocked
+    // Function to transfer tokens from an address to another address
     function transferFrom(
         address _from, 
         address _to, 
