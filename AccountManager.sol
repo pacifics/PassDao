@@ -111,7 +111,7 @@ contract AccountManager is Token, AccountManagerInterface {
     /// according to the funding rules with `msg.sender` as the beneficiary in case of public funding
     function () {
         if (FundingRules.publicTokenCreation) {
-            buyToken(msg.sender, msg.value, now);
+            createToken(msg.sender, msg.value, now);
         }
     }
 
@@ -128,27 +128,10 @@ contract AccountManager is Token, AccountManagerInterface {
         
         if (msg.sender != FundingRules.mainPartner) throw;
 
-        return buyToken(_tokenHolder, _amount, _saleDate);
+        createToken(_tokenHolder, _amount, _saleDate);
 
     }
      
-    /// @dev Internal function for the creation of tokens with `_tokenHolder` as the beneficiary
-    /// @param _tokenHolder the beneficiary of the created tokens
-    /// @param _amount the amount funded
-    /// @param _saleDate in case of presale, the date of the presale
-    /// @return Whether the token creation was successful or not
-    function buyToken(
-        address _tokenHolder,
-        uint _amount,
-        uint _saleDate) internal returns (bool _succes) {
-        
-        if (createToken(_tokenHolder, _amount, _saleDate)) {
-            return true;
-        }
-        else throw;
-
-    }
-    
     /// @notice Function to unblock a tokenHolder address
     /// @param _tokenHolder The address of the tokenHolder
     /// @return Whether the tokenholder address is blocked (not allowed to transfer tokens) or not.
@@ -298,8 +281,7 @@ contract AccountManager is Token, AccountManagerInterface {
             throw;
         }
         
-        if (createToken(_tokenHolder, _amount, _date)) return true;
-        else throw;
+        createToken(_tokenHolder, _amount, _date);
 
     }
 
@@ -337,7 +319,7 @@ contract AccountManager is Token, AccountManagerInterface {
         address _tokenHolder, 
         uint _amount,
         uint _saleDate
-    ) internal returns (bool _success) {
+    ) internal {
 
         if ((now > FundingRules.closingTime && FundingRules.closingTime !=0) 
             || _amount <= 0
@@ -356,8 +338,6 @@ contract AccountManager is Token, AccountManagerInterface {
             FundingRules.closingTime = now;
         }
 
-        return true;
-        
     }
    
     // Function to transfer tokens to another address
