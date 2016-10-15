@@ -493,6 +493,7 @@ contract DAO {
         }
         
         if (b.fees > b.totalRewardedAmount && !takeBoardMeetingFees(_BoardMeetingID)) return;
+        
         b.open = false;
         BoardMeetingClosed(_BoardMeetingID);
         
