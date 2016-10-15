@@ -120,7 +120,7 @@ contract Funding {
 
         minAmount = _minAmount;
 
-        if (_startTime == 0) {startTime = now;} else {startTime = startTime;}
+        if (_startTime == 0) {startTime = now;} else {startTime = _startTime;}
         closingTime = _closingTime;
         fromPartner = 1;
         partners.length = 1; 
