@@ -537,7 +537,7 @@ contract DAO is DAOInterface
 
             DaoRules.transferAble = r.transferAble;
             if (r.transferAble) DaoAccountManager.TransferAble();
-            else DaoAccountManager.TransferAble();
+            else DaoAccountManager.TransferDisable();
 
         }
             
@@ -590,13 +590,13 @@ contract DAO is DAOInterface
         
     /// @notice Function to get the number of meetings 
     /// @return the number of meetings (passed or current)
-    function numberOfMeetings() constant returns (uint) {
+    function numberOfMeetings()  constant external returns (uint) {
         return BoardMeetings.length - 1;
     }
         
     /// @notice Function to get the minimum quorum needed for a proposal    
     /// @return The minimum quorum for the proposal to pass 
-    function minQuorum() constant returns (uint) {
+    function minQuorum()  constant returns (uint) {
         return uint(DaoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
     }
 
