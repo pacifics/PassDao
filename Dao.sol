@@ -461,7 +461,8 @@ contract DAO {
 
     /// @notice Function to execute a board meeting decision
     /// @param _BoardMeetingID The index of the board meeting
-    function executeDecision(uint _BoardMeetingID) noEther {
+    /// @return Whether the function was executed or not  
+    function executeDecision(uint _BoardMeetingID) noEther returns (bool) {
 
         BoardMeeting b = BoardMeetings[_BoardMeetingID];
 
@@ -491,8 +492,8 @@ contract DAO {
             }
         }
         
+        if (b.fees > b.totalRewardedAmount && !takeBoardMeetingFees(_BoardMeetingID)) return;
         b.open = false;
-        takeBoardMeetingFees(_BoardMeetingID);
         BoardMeetingClosed(_BoardMeetingID);
         
         if (now > b.executionDeadline 
@@ -542,6 +543,8 @@ contract DAO {
             pendingContractorAmountsWithdrawals[c.recipient] += c.amount;
         }
 
+        return true;
+        
         ProposalTallied(_BoardMeetingID);
         
     }
@@ -549,7 +552,9 @@ contract DAO {
     /// @notice Function to withdraw the rewarded board meeting fees 
     /// @return Whether the withdraw was successful or not    
     function withdrawBoardMeetingFees() returns (bool) {
+
         uint amount = pendingFeesWithdrawals[msg.sender];
+
         pendingFeesWithdrawals[msg.sender] = 0;
         if (msg.sender.send(amount)) {
             return true;
@@ -557,12 +562,15 @@ contract DAO {
             pendingFeesWithdrawals[msg.sender] = amount;
             return false;
         }
+
     }
 
     /// @notice Function to withdraw the amounts of approved contractor proposals 
     /// @return Whether the withdraw was successful or not    
     function withdrawApprovedAmount() returns (bool) {
+        
         uint amount = pendingContractorAmountsWithdrawals[msg.sender];
+
         pendingContractorAmountsWithdrawals[msg.sender] = 0;
         if (DaoAccountManager.sendTo(msg.sender, amount)) {
             return true;
@@ -570,19 +578,25 @@ contract DAO {
             pendingContractorAmountsWithdrawals[msg.sender] = amount;
             return false;
         }
+
     }
 
     /// @dev internal function to send to the Daoaccount manager the board meeting fees balance
     /// @param _boardMeetingID THe index of the board meeting
-    function takeBoardMeetingFees(uint _boardMeetingID) internal {
+    /// @return Whether the function was successful or not 
+    function takeBoardMeetingFees(uint _boardMeetingID) internal returns (bool) {
 
         BoardMeeting b = BoardMeetings[_boardMeetingID];
-        if (b.fees - b.totalRewardedAmount > 0) {
-            uint _amount = b.fees - b.totalRewardedAmount;
-            b.totalRewardedAmount = b.fees;
-            if (!DaoAccountManager.send(_amount)) throw;
+        uint _amount = b.fees - b.totalRewardedAmount;
+
+        b.totalRewardedAmount = b.fees;
+        if (DaoAccountManager.send(_amount)) {
+            return true;
+        } else {
+            b.totalRewardedAmount = b.fees - _amount;
+            return false;
         }
-        
+
     }
         
     /// @notice Function to get the number of meetings 
