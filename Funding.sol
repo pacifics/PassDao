@@ -355,7 +355,7 @@ contract Funding {
         uint _divisorBalanceLimit,
         uint _from,
         uint _to
-        ) constant returns (uint _total) {
+        ) constant external returns (uint _total) {
 
         if (_from < 1 || _to > partners.length - 1) throw;
 
@@ -376,7 +376,7 @@ contract Funding {
         uint _minAmountLimit,
         uint _maxAmountLimit, 
         uint _divisorBalanceLimit
-        ) internal returns (uint) {
+        ) constant internal returns (uint) {
 
         uint _amount = 0;
         uint _balanceLimit;
@@ -403,7 +403,7 @@ contract Funding {
     }
 
     /// @return the number of partners
-    function numberOfPartners() constant returns (uint) {
+    function numberOfPartners() constant external returns (uint) {
         return partners.length - 1;
     }
     
@@ -413,7 +413,7 @@ contract Funding {
     function numberOfValidPartners(
         uint _from,
         uint _to
-        ) constant returns (uint) {
+        ) constant external returns (uint) {
         
         if (_from < 1 || _to > partners.length-1) throw;
 
