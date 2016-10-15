@@ -84,9 +84,6 @@ contract Funding {
     // To allow the set of partners in several times
     uint fromPartner;
 
-    // Protects users by preventing the execution of method calls that
-    // inadvertently also transferred ether
-    modifier noEther() {if (msg.value > 0) throw; _;}
     // The manager of this funding is the creator of this contract
     modifier onlyCreator {if (msg.sender != address(creator)) throw; _ ;}
 
@@ -135,7 +132,7 @@ contract Funding {
     function SetPresaleAmountLimits(
         uint _minAmount,
         uint _maxAmount
-        ) noEther onlyCreator {
+        ) onlyCreator {
 
         minPresaleAmount = _minAmount;
         maxPresaleAmount = _maxAmount;
@@ -143,7 +140,7 @@ contract Funding {
         }
 
     /// @notice Function for the presale
-    function () {
+    function () payable {
         
         if (msg.value <= 0
             || now < startTime
@@ -181,7 +178,7 @@ contract Funding {
             bool _valid,
             uint _from,
             uint _to
-        ) noEther onlyCreator {
+        ) onlyCreator {
 
         if (allSet) throw;
         
@@ -203,7 +200,7 @@ contract Funding {
             uint _minAmountLimit,
             uint _maxAmountLimit, 
             uint _divisorBalanceLimit
-    ) noEther onlyCreator {
+    ) onlyCreator {
         
         if (limitSet) throw;
         
@@ -220,7 +217,7 @@ contract Funding {
 
     /// @notice Function used by the creator to set the funding limits for partners
     /// @param _to The index of the last partner to set
-    function setPartnersFundingLimits(uint _to) noEther onlyCreator returns (bool _success) {
+    function setPartnersFundingLimits(uint _to) onlyCreator returns (bool _success) {
         
         if (!limitSet) throw;
 
@@ -255,7 +252,7 @@ contract Funding {
     function fundDaoFor(
             uint _from,
             uint _to
-        ) noEther {
+        ) {
 
         if (!allSet) throw;
         
@@ -318,7 +315,7 @@ contract Funding {
 
     /// @notice Function for the refund of the amount not funded
     /// @return Whether the refund was successful or not 
-    function refund() noEther returns (bool) {
+    function refund() returns (bool) {
         return refundFor(partnerID[msg.sender]);
     }
 
@@ -328,7 +325,7 @@ contract Funding {
     function refundForPartners(
             uint _from,
             uint _to
-        ) noEther {
+        ) {
 
         if (_from < 1 || _to > partners.length - 1) throw;
         
