@@ -544,7 +544,7 @@ contract DAO {
         
     }
 
-    /// @notice Function to withdraw the board meeting fees to voters 
+    /// @notice Function to withdraw the rewarded board meeting fees 
     /// @return Whether the withdraw was successful or not    
     function withdrawBoardMeetingFees() returns (bool) {
         uint amount = pendingFeesWithdrawals[msg.sender];
