@@ -182,7 +182,7 @@ contract DAO {
 
     }
     
-    /// @dev This function is to avoid tokenholders to send ethers to this address
+    /// @dev This function is to prevent tokenholders sending ethers to this address
     function () {throw;}
 
     /// @dev Internal function to create a board meeting
