@@ -261,7 +261,8 @@ contract DAO {
         c.initialSupply = _initialSupply;
         if (hasAnAccountManager[c.recipient]) {
             
-            if (msg.sender != c. recipient || !ContractorAccountManager[c.recipient].IsCreator(msg.sender)) throw;
+            if (msg.sender != address(c. recipient) 
+                || !ContractorAccountManager[c.recipient].IsCreator(msg.sender)) throw;
 
         } else {
 
@@ -280,11 +281,12 @@ contract DAO {
         c.description = _description;
         c.hashOfTheDocument = _hashOfTheDocument; 
 
+        c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
+        c.inflationRate = _inflationRate;
+
         c.totalAmountForTokenReward = _totalAmountForTokenReward;
         if (_totalAmountForTokenReward != 0) {
             
-            c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
-            c.inflationRate = _inflationRate;
             uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
             ContractorAccountManager[c.recipient].extentFunding(address(this), false, 
                 c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
