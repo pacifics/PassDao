@@ -247,7 +247,7 @@ contract AccountManager is Token, AccountManagerInterface {
         FundingRules.mainPartner = _mainPartner;
         FundingRules.publicTokenCreation = _publicTokenCreation;
         
-        if (_startTime < FundingRules.closingTime) throw;
+        if (_startTime < FundingRules.closingTime && FundingRules.closingTime != 0) throw;
 
         FundingRules.startTime = _startTime; 
         FundingRules.closingTime = _closingTime; 
