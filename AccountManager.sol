@@ -59,7 +59,7 @@ contract AccountManagerInterface {
     // Map to know if the funding linked to a Dao contractor proposal is fueled
     mapping (uint => bool) isFueled;
     // If true, the tokens can be transfered
-    bool public transferAble;
+    bool public transferable;
 
     // Map of addresses blocked during a vote. The address points to the date when the address can be unblocked
     mapping (address => uint) blocked; 
@@ -320,12 +320,12 @@ contract AccountManager is Token, AccountManagerInterface {
     
     /// @dev Function used by the client to able the transfer of tokens
     function TransferAble() external onlyClient {
-        transferAble = true;
+        transferable = true;
     }
 
     /// @dev Function used by the client to disable the transfer of tokens
     function TransferDisable() external onlyClient {
-        transferAble = false;
+        transferable = false;
     }
     
     /// @dev Internal function for the creation of tokens
@@ -366,7 +366,7 @@ contract AccountManager is Token, AccountManagerInterface {
         uint256 _value
         ) returns (bool success) {  
 
-        if (transferAble
+        if (transferable
             && blocked[msg.sender] == 0
             && blocked[_to] == 0
             && _to != address(this)
@@ -385,7 +385,7 @@ contract AccountManager is Token, AccountManagerInterface {
         uint256 _value
         ) returns (bool success) {
         
-        if (transferAble
+        if (transferable
             && blocked[_from] == 0
             && blocked[_to] == 0
             && _to != address(this)
