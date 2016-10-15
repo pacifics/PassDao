@@ -1,6 +1,6 @@
 import "AccountManager.sol";
 
-//pragma solidity ^0.3.6;
+pragma solidity ^0.4.2;
 
 /*
 This file is part of the DAO.
