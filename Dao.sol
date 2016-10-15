@@ -288,7 +288,7 @@ contract DAO {
         if (_totalAmountForTokenReward != 0) {
             
             uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
-            ContractorAccountManager[c.recipient].extentFunding(address(this), false, 
+            ContractorAccountManager[c.recipient].setFundingRules(address(this), false, 
                 c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
                 _setDeadLine, _setDeadLine + (_MinutesDebatingPeriod * 1 minutes), c.inflationRate);
 
@@ -507,12 +507,12 @@ contract DAO {
 
             FundingProposal f = FundingProposals[b.FundingProposalID];
 
-            DaoAccountManager.extentFunding(f.mainPartner, f.publicTokenCreation, f.tokenPriceMultiplier, 
+            DaoAccountManager.setFundingRules(f.mainPartner, f.publicTokenCreation, f.tokenPriceMultiplier, 
                 f.fundingAmount, now, now + f.minutesFundingPeriod * 1 minutes, f.inflationRate);
 
             if (f.contractorProposalID != 0) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
-                ContractorAccountManager[cf.recipient].extentFunding(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
+                ContractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
                     f.fundingAmount, now, now + f.minutesFundingPeriod * 1 minutes, cf.inflationRate);
             }
             
