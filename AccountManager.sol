@@ -26,7 +26,8 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * and used for the management of tokens by a client smart contract (the Dao)
 */
 
-contract AccountManagerInterface {
+/// @title Account Manager smart contract of the Pass Decentralized Autonomous Organisation
+contract AccountManager is Token {
 
     // Rules for the funding of the account manager
     fundingData public FundingRules;
@@ -73,12 +74,6 @@ contract AccountManagerInterface {
 
     event TokensCreated(address indexed sender, address indexed tokenHolder, uint quantity);
     event FundingRulesSet(address indexed mainPartner, uint startTime);
-
-}
-
-/// @title Account Manager smart contract of the Pass Decentralized Autonomous Organisation
-contract AccountManager is Token, AccountManagerInterface {
-
 
     /// @dev The constructor function
     /// @param _creator The creator address
