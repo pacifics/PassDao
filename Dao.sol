@@ -25,7 +25,8 @@ Smart contract for a Decentralized Autonomous Organization (DAO)
 to automate organizational governance and decision-making.
 */
 
-contract DAOInterface {
+/// @title Pass Decentralized Autonomous Organisation
+contract DAO {
 
     struct BoardMeeting {        
         // Address who created the board meeting for a proposal
@@ -147,6 +148,14 @@ contract DAOInterface {
     // The current Dao rules
     Rules public DaoRules; 
     
+    // Protects users by preventing the execution of method calls that
+    // inadvertently also transferred ether
+    modifier noEther() {if (msg.value > 0) throw; _;}
+    
+    // Modifier that allows only shareholders to vote
+    modifier onlyTokenholders {
+        if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
+    
     event newBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
     event AccountManagerCreated(address recipient, address AccountManagerAddress);
     event BoardMeetingDelayed(uint indexed BoardMeetingID, uint MinutesProposalPeriod);
@@ -156,20 +165,6 @@ contract DAOInterface {
     event ProposalTallied(uint indexed boardMeetingID);
     event TokensBoughtFor(uint indexed contractorProposalID, address Tokenholder, uint amount);
 
-}
-
-/// @title Pass Decentralized Autonomous Organisation
-contract DAO is DAOInterface
-{
-
-    // Protects users by preventing the execution of method calls that
-    // inadvertently also transferred ether
-    modifier noEther() {if (msg.value > 0) throw; _;}
-    
-    // Modifier that allows only shareholders to vote
-    modifier onlyTokenholders {
-        if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
-    
     /// @dev The constructor function
     function DAO(address _creator) {
 
