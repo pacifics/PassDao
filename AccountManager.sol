@@ -121,7 +121,7 @@ contract AccountManager is Token {
         uint _saleDate
         ) {
         
-        if (msg.sender != FundingRules.mainPartner) throw;
+        if (msg.sender != address(FundingRules.mainPartner)) throw;
 
         createToken(_tokenHolder, _amount, _saleDate);
 
@@ -160,7 +160,7 @@ contract AccountManager is Token {
     /// @param _isFueled Whether the funding has to be set fueled or not
     function Fueled(uint _contractorProposalID, bool _isFueled) external {
     
-        if (msg.sender != address(client) && msg.sender != FundingRules.mainPartner) {
+        if (msg.sender != address(client) && msg.sender != address(FundingRules.mainPartner)) {
             throw;
         }
 
@@ -212,7 +212,7 @@ contract AccountManager is Token {
     /// @param _startTime The start time of the funding
     /// @param _closingTime After this date, the funding is closed
     /// @param _inflationRate If 0, the token price doesn't change during the funding
-    function extentFunding(
+    function setFundingRules(
         address _mainPartner,
         bool _publicTokenCreation, 
         uint _initialTokenPriceMultiplier, 
@@ -272,7 +272,7 @@ contract AccountManager is Token {
         uint _date
         ) external {
         
-        if (msg.sender != address(client) && msg.sender != FundingRules.mainPartner) {
+        if (msg.sender != address(client) && msg.sender != address(FundingRules.mainPartner)) {
             throw;
         }
         
