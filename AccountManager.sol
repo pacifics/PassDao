@@ -225,9 +225,12 @@ contract AccountManager is Token {
         FundingRules.mainPartner = _mainPartner;
         FundingRules.publicTokenCreation = _publicTokenCreation;
         
-        if (_startTime < FundingRules.closingTime && FundingRules.closingTime != 0) throw;
-
-        FundingRules.startTime = _startTime; 
+        if (_startTime < FundingRules.closingTime) {
+            FundingRules.startTime = FundingRules.closingTime;
+        } else {
+            FundingRules.startTime = _startTime;
+        }
+        
         FundingRules.closingTime = _closingTime; 
         FundingRules.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         FundingRules.maxAmountToFund = _maxAmountToFund;
