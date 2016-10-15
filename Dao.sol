@@ -156,7 +156,7 @@ contract DAO {
     modifier onlyTokenholders {
         if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
     
-    event newBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
+    event NewBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
     event AccountManagerCreated(address recipient, address AccountManagerAddress);
     event BoardMeetingDelayed(uint indexed BoardMeetingID, uint MinutesProposalPeriod);
     event Voted(uint indexed proposalID, address indexed voter, uint rewardedAmount);
@@ -601,13 +601,13 @@ contract DAO {
         
     /// @notice Function to get the number of meetings 
     /// @return the number of meetings (passed or current)
-    function numberOfMeetings()  constant external returns (uint) {
+    function numberOfMeetings() constant external returns (uint) {
         return BoardMeetings.length - 1;
     }
         
     /// @notice Function to get the minimum quorum needed for a proposal    
     /// @return The minimum quorum for the proposal to pass 
-    function minQuorum()  constant returns (uint) {
+    function minQuorum() constant returns (uint) {
         return uint(DaoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
     }
 
