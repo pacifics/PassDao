@@ -175,13 +175,13 @@ contract AccountManager is Token {
     }
 
     /// @return The maximum tokens after the funding
-    function MaxTotalSupply() external returns (uint) {
+    function MaxTotalSupply() constant external returns (uint) {
         return (FundingRules.maxTotalSupply);
     }
 
     /// @param _saleDate in case of presale, the date of the presale
     /// @return the token price divisor condidering the sale date and the inflation rate
-    function tokenPriceDivisor(uint _saleDate) internal returns (uint) {
+    function tokenPriceDivisor(uint _saleDate) constant internal returns (uint) {
 
         uint _date = _saleDate;
         
@@ -199,9 +199,7 @@ contract AccountManager is Token {
     
     /// @return the actual token price
     function actualTokenPriceDivisor() constant external returns (uint) {
-        
         return tokenPriceDivisor(now);
-
     }
 
     /// @dev Function to set a funding. Can be private or public
@@ -247,8 +245,10 @@ contract AccountManager is Token {
         if ((now > FundingRules.closingTime && FundingRules.closingTime != 0)
             || now < FundingRules.startTime) {
             return 0;   
-        } else return FundingRules.maxAmountToFund;
-
+        } else {
+            return FundingRules.maxAmountToFund;
+        }
+        
     }
     
     /// @dev Function used by the client to send ethers
