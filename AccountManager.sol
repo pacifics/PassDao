@@ -69,8 +69,6 @@ contract AccountManager is Token {
     modifier onlyClient {if (msg.sender != address(client)) throw; _;}
     // Modifier that allows public to buy tokens only in case of crowdfunding
     modifier onlyPublicTokenCreation {if (!FundingRules.publicTokenCreation) throw; _;}
-    // Modifier that allows the main partner to buy tokens only in case of private funding
-    modifier onlyPrivateTokenCreation {if (FundingRules.publicTokenCreation) throw; _;}
 
     event TokensCreated(address indexed sender, address indexed tokenHolder, uint quantity);
     event FundingRulesSet(address indexed mainPartner, uint startTime);
@@ -104,22 +102,26 @@ contract AccountManager is Token {
 
     /// @notice Function to send ethers to the Dao account manager. Tokens are created 
     /// according to the funding rules with `msg.sender` as the beneficiary in case of public funding
-    function () {
-        if (FundingRules.publicTokenCreation) {
+    function () payable {
+
+        if (FundingRules.publicTokenCreation 
+            && msg.sender != address(client)) {
+
             createToken(msg.sender, msg.value, now);
+
         }
+
     }
 
     /// @notice Create tokens with `_tokenHolder` as the beneficiary
     /// @param _tokenHolder the beneficiary of the created tokens
     /// @param _amount the amount funded by the main partner
     /// @param _saleDate in case of presale, the date of the presale
-    /// @return Whether the token creation was successful or not
     function buyTokenFor(
         address _tokenHolder,
         uint _amount,
         uint _saleDate
-        ) {
+        ) returns (bool _success) {
         
         if (msg.sender != address(FundingRules.mainPartner)) throw;
 
@@ -130,7 +132,7 @@ contract AccountManager is Token {
     /// @notice Function to unblock a tokenHolder address
     /// @param _tokenHolder The address of the tokenHolder
     /// @return Whether the tokenholder address is blocked (not allowed to transfer tokens) or not.
-    function unblockAccount(address _tokenHolder) noEther returns (bool) {
+    function unblockAccount(address _tokenHolder) returns (bool) {
     
         uint _deadLine = blocked[_tokenHolder];
         
@@ -268,12 +270,11 @@ contract AccountManager is Token {
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The amount in Wei to calculate the quantity to create
     /// @param _date The date to consider for the token price calculation
-    /// @return Whether the transfer was successful or not
     function rewardToken(
         address _tokenHolder, 
         uint _amount,
         uint _date
-        ) external {
+        ) external returns (bool _success) {
         
         if (msg.sender != address(client) && msg.sender != address(FundingRules.mainPartner)) {
             throw;
@@ -312,12 +313,11 @@ contract AccountManager is Token {
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
     /// @param _saleDate in case of presale, the date of the presale
-    /// @return Whether the token creation was successful or not
     function createToken(
         address _tokenHolder, 
         uint _amount,
         uint _saleDate
-    ) internal {
+    ) internal returns (bool _success) {
 
         if ((now > FundingRules.closingTime && FundingRules.closingTime !=0) 
             || _amount <= 0
