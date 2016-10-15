@@ -84,12 +84,12 @@ contract DAO {
     }
     
     struct FundingProposal {
+        // Index to identify the board meeting of the proposal
+        uint BoardMeetingID;
         // The address which set partners in case of private funding
         address mainPartner;
         // True if crowdfunding
         bool publicTokenCreation; 
-        // Index to identify the board meeting of the proposal
-        uint BoardMeetingID;
         // The maximum amount to fund
         uint fundingAmount; 
         // The initial price multiplier of a Dao token
@@ -122,7 +122,7 @@ contract DAO {
         // The maximum inflation rate for the reward of contractor tokens to voters
         uint maxContractorTokenInflationRate;
         // True if the dao tokens are transferable
-        bool transferAble;
+        bool transferable;
     } 
 
     // The Dao account manager contract
@@ -148,10 +148,6 @@ contract DAO {
     // The current Dao rules
     Rules public DaoRules; 
     
-    // Protects users by preventing the execution of method calls that
-    // inadvertently also transferred ether
-    modifier noEther() {if (msg.value > 0) throw; _;}
-    
     // Modifier that allows only shareholders to vote
     modifier onlyTokenholders {
         if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
@@ -170,6 +166,7 @@ contract DAO {
 
         DaoAccountManager = new AccountManager(_creator, address(this), 0, 10);
 
+        DaoRules.minQuorumDivisor = 5;
         DaoRules.minutesSetProposalPeriod = 10;
         DaoRules.maxMinutesDebatePeriod = 100000;
         DaoRules.minutesExecuteProposalPeriod = 100000;
@@ -182,9 +179,6 @@ contract DAO {
 
     }
     
-    /// @dev This function is to prevent tokenholders sending ethers to this address
-    function () {throw;}
-
     /// @dev Internal function to create a board meeting
     /// @param _ContractorProposalID The index of the proposal if contractor
     /// @param _DaoRulesProposalID The index of the proposal if Dao rules
@@ -222,7 +216,7 @@ contract DAO {
 
         b.open = true; 
 
-        newBoardMeetingAdded(_BoardMeetingID, b.setDeadline, b.votingDeadline);
+        NewBoardMeetingAdded(_BoardMeetingID, b.setDeadline, b.votingDeadline);
 
         return _BoardMeetingID;
 
@@ -248,7 +242,7 @@ contract DAO {
         uint _inflationRate,
         uint256 _initialSupply,
         uint _MinutesDebatingPeriod
-    ) returns (uint) {
+    ) payable returns (uint) {
 
         if (msg.value < DaoRules.minBoardMeetingFees
             ||_inflationRate < DaoRules.minContractorTokenInflationRate
@@ -317,7 +311,7 @@ contract DAO {
         uint _minutesFundingPeriod,
         uint _contractorProposalID,
         uint _MinutesDebatingPeriod
-    ) returns (uint) {
+    ) payable returns (uint) {
 
         if (msg.value < DaoRules.minBoardMeetingFees) throw;
 
@@ -360,7 +354,7 @@ contract DAO {
     /// @param _minutesExecuteProposalPeriod The period in minutes to execute a decision after a board meeting
     /// @param _minContractorTokenInflationRate The minimum inflation rate for the reward of tokens to voters
     /// @param _maxContractorTokenInflationRate The maximum inflation rate for the reward of tokens to voters
-    /// @param _transferAble True if the Dao tokens are transferable
+    /// @param _transferable True if the Dao tokens are transferable
     /// @param _MinutesDebatingPeriod Period of the board meeting
     function newDaoRulesProposal(
         uint _minutesSetProposalPeriod,
@@ -371,11 +365,13 @@ contract DAO {
         uint _minutesExecuteProposalPeriod,
         uint _minContractorTokenInflationRate,
         uint _maxContractorTokenInflationRate,
-        bool _transferAble,
+        bool _transferable,
         uint _MinutesDebatingPeriod
-    ) returns (uint) {
+    ) payable returns (uint) {
     
-        if (msg.value < DaoRules.minBoardMeetingFees ) throw; 
+        if (msg.value < DaoRules.minBoardMeetingFees 
+            || _minQuorumDivisor == 0
+            || _maxMinutesDebatePeriod == 0) throw; 
         
         uint _DaoRulesProposalID = DaoRulesProposals.length++;
         Rules r = DaoRulesProposals[_DaoRulesProposalID];
@@ -389,7 +385,7 @@ contract DAO {
         r.minutesExecuteProposalPeriod = _minutesExecuteProposalPeriod;
         r.minContractorTokenInflationRate = _minContractorTokenInflationRate;
         r.maxContractorTokenInflationRate = _maxContractorTokenInflationRate;
-        r.transferAble = _transferAble;
+        r.transferable = _transferable;
 
         return _DaoRulesProposalID;
         
@@ -401,7 +397,7 @@ contract DAO {
     function vote(
         uint _BoardMeetingID, 
         bool _supportsProposal
-    ) noEther onlyTokenholders {
+    ) onlyTokenholders {
         
         BoardMeeting b = BoardMeetings[_BoardMeetingID];
         if (b.hasVoted[msg.sender] 
@@ -462,14 +458,11 @@ contract DAO {
     /// @notice Function to execute a board meeting decision
     /// @param _BoardMeetingID The index of the board meeting
     /// @return Whether the function was executed or not  
-    function executeDecision(uint _BoardMeetingID) noEther returns (bool) {
+    function executeDecision(uint _BoardMeetingID) returns (bool) {
 
         BoardMeeting b = BoardMeetings[_BoardMeetingID];
 
-        if (now <= b.votingDeadline
-            || !b.open ) {
-            throw;
-        }
+        if (now <= b.votingDeadline || !b.open) throw;
         
         uint quorum = b.yea + b.nay;
 
@@ -482,6 +475,7 @@ contract DAO {
         }        
 
         bool _contractorProposalFueled;
+
         if (b.ContractorProposalID != 0) {
             ContractorProposal c = ContractorProposals[b.ContractorProposalID];
             if (c.fundingProposalID != 0) {
@@ -534,8 +528,8 @@ contract DAO {
             DaoRules.minContractorTokenInflationRate = r.minContractorTokenInflationRate;
             DaoRules.maxContractorTokenInflationRate = r.maxContractorTokenInflationRate;
 
-            DaoRules.transferAble = r.transferAble;
-            if (r.transferAble) DaoAccountManager.TransferAble();
+            DaoRules.transferable = r.transferable;
+            if (r.transferable) DaoAccountManager.TransferAble();
             else DaoAccountManager.TransferDisable();
 
         }
