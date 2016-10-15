@@ -124,7 +124,7 @@ contract AccountManager is Token, AccountManagerInterface {
         address _tokenHolder,
         uint _amount,
         uint _saleDate
-        ) returns (bool _succes) {
+        ) {
         
         if (msg.sender != FundingRules.mainPartner) throw;
 
@@ -275,7 +275,7 @@ contract AccountManager is Token, AccountManagerInterface {
         address _tokenHolder, 
         uint _amount,
         uint _date
-        ) external returns (bool _success) {
+        ) external {
         
         if (msg.sender != address(client) && msg.sender != FundingRules.mainPartner) {
             throw;
