@@ -31,7 +31,7 @@ contract Funding {
         // The address of the partner
         address partnerAddress; 
         // The amount that the partner wish to fund
-        uint256 intentionAmount;
+        uint256 presaleAmount;
         // The average date of the presale of the partner 
         uint presaleDate;
         // The funding amount according to the set limits
@@ -55,9 +55,9 @@ contract Funding {
     // Maximum amount (in wei) to fund
     uint public maxAmount;
     // Minimum amount (in wei) that partners can send to this smart contract
-    uint public minIntentionAmount;
+    uint public minPresaleAmount;
     // Maximum amount (in wei) that partners can send to this smart contract
-    uint public maxIntentionAmount;
+    uint public maxPresaleAmount;
     // The unix start time of the presale
     uint public startTime;
     // The unix closing time of the presale
@@ -135,8 +135,8 @@ contract Funding {
         uint _maxAmount
         ) noEther onlyCreator {
 
-        minIntentionAmount = _minAmount;
-        maxIntentionAmount = _maxAmount;
+        minPresaleAmount = _minAmount;
+        maxPresaleAmount = _maxAmount;
 
         }
 
@@ -147,8 +147,8 @@ contract Funding {
             || now < startTime
             || (now > closingTime && closingTime != 0)
             || limitSet
-            || msg.value < minIntentionAmount
-            || msg.value > maxIntentionAmount
+            || msg.value < minPresaleAmount
+            || msg.value > maxPresaleAmount
         ) throw;
         
         if (partnerID[msg.sender] == 0) {
@@ -158,14 +158,14 @@ contract Funding {
             partnerID[msg.sender] = _partnerID;
             
             t.partnerAddress = msg.sender;
-            t.intentionAmount += msg.value;
+            t.presaleAmount += msg.value;
             t.presaleDate = now;
         }
         else {
             Partner p = partners[partnerID[msg.sender]];
-            if (p.intentionAmount + msg.value > maxIntentionAmount) throw;
-            p.presaleDate = (p.presaleDate*p.intentionAmount + now*msg.value)/(p.intentionAmount + msg.value);
-            p.intentionAmount += msg.value;
+            if (p.presaleAmount + msg.value > maxPresaleAmount) throw;
+            p.presaleDate = (p.presaleDate*p.presaleAmount + now*msg.value)/(p.presaleAmount + msg.value);
+            p.presaleAmount += msg.value;
         }    
         
         IntentionToFund(msg.sender, msg.value);
@@ -286,25 +286,25 @@ contract Funding {
     function refundFor(uint _index) internal returns (bool) {
 
         Partner t = partners[_index];
-        uint _amountnotToRefund = t.intentionAmount;
+        uint _amountnotToRefund = t.presaleAmount;
         uint _amountToRefund;
         
-        if (t.intentionAmount > maxIntentionAmount && t.valid) {
-            _amountnotToRefund = maxIntentionAmount;
+        if (t.presaleAmount > maxPresaleAmount && t.valid) {
+            _amountnotToRefund = maxPresaleAmount;
         }
         
         if (t.fundedAmount > 0 || now > closingTime) {
             _amountnotToRefund = t.fundedAmount;
         }
 
-        _amountToRefund = t.intentionAmount - _amountnotToRefund;
+        _amountToRefund = t.presaleAmount - _amountnotToRefund;
         if (_amountToRefund == 0) return true;
 
-        t.intentionAmount = _amountnotToRefund;
+        t.presaleAmount = _amountnotToRefund;
         if (t.partnerAddress.send(_amountToRefund)) {
             return true;
         } else {
-            t.intentionAmount = _amountnotToRefund + _amountToRefund;
+            t.presaleAmount = _amountnotToRefund + _amountToRefund;
             return false;
         }
 
@@ -382,7 +382,7 @@ contract Funding {
 
             if (_amount > _amountLimit) _amount = _amountLimit;
             
-            if (_amount > t.intentionAmount) _amount = t.intentionAmount;
+            if (_amount > t.presaleAmount) _amount = t.presaleAmount;
             
         }
         
