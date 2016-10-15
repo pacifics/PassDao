@@ -62,8 +62,10 @@ contract Funding {
     uint public startTime;
     // The unix closing time of the presale
     uint public closingTime;
-    /// Limit in amount a partner can fund
-    uint public amountLimit; 
+    /// The amount below this limit can fund the dao
+    uint public minAmountLimit;
+    /// Maximum amount a partner can fund
+    uint public maxAmountLimit; 
     /// The partner can fund only under a defined percentage of his ether balance 
     uint public divisorBalanceLimit;
     // True if the amount and divisor balance limits for the funding are set by the creator
@@ -193,18 +195,21 @@ contract Funding {
     }
 
     /// @notice Function used by the creator to set the funding limits for the funding
-    /// @param _amountLimit Limit in amount a partner can fund
+    /// @param _minAmountLimit The amount below this limit can fund the dao
+    /// @param _maxAmountLimit Limit in amount a partner can fund
     /// @param _divisorBalanceLimit  The partner can fund 
     /// only under a defined percentage of his ether balance 
     function setFundingLimits(
-            uint _amountLimit, 
+            uint _minAmountLimit,
+            uint _maxAmountLimit, 
             uint _divisorBalanceLimit
     ) noEther onlyCreator {
         
         if (limitSet) throw;
         
         maxAmount = DaoAccountManager.fundingMaxAmount();
-        amountLimit = _amountLimit;
+        minAmountLimit = _minAmountLimit;
+        maxAmountLimit = _maxAmountLimit;
         divisorBalanceLimit = _divisorBalanceLimit;
 
         limitSet = true;
@@ -223,7 +228,7 @@ contract Funding {
         
         for (uint i = fromPartner; i <= _to; i++) {
             sumOfFundingAmountLimits -= partners[i].fundingAmountLimit;
-            partners[i].fundingAmountLimit = partnerFundingLimit(i, amountLimit, divisorBalanceLimit);
+            partners[i].fundingAmountLimit = partnerFundingLimit(i, minAmountLimit, maxAmountLimit, divisorBalanceLimit);
             sumOfFundingAmountLimits += partners[i].fundingAmountLimit;
         }
         
@@ -337,14 +342,16 @@ contract Funding {
 
     }
     
-    /// @param _amountLimit Limit in amount a partner can fund
+    /// @param _minAmountLimit The amount below this limit can fund the dao
+    /// @param _maxAmountLimit Limit in amount a partner can fund
     /// @param _divisorBalanceLimit The partner can fund 
     /// only under a defined percentage of their ether balance 
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
     /// @return The result of the funding procedure at present time
     function fundingAmount(
-        uint _amountLimit, 
+        uint _minAmountLimit,
+        uint _maxAmountLimit, 
         uint _divisorBalanceLimit,
         uint _from,
         uint _to
@@ -353,19 +360,21 @@ contract Funding {
         if (_from < 1 || _to > partners.length - 1) throw;
 
         for (uint i = _from; i <= _to; i++) {
-            _total += partnerFundingLimit(i, _amountLimit, _divisorBalanceLimit);
+            _total += partnerFundingLimit(i, _minAmountLimit, _maxAmountLimit, _divisorBalanceLimit);
         }
 
     }
 
     /// @param _index The index of the partner
-    /// @param _amountLimit Limit in amount a partner can fund
+    /// @param _minAmountLimit The amount below this limit can fund the dao
+    /// @param _maxAmountLimit Maximum amount a partner can fund
     /// @param _divisorBalanceLimit  The partner can fund 
     /// only under a defined percentage of their ether balance 
     /// @return The maximum amount the partner can fund
     function partnerFundingLimit(
         uint _index, 
-        uint _amountLimit, 
+        uint _minAmountLimit,
+        uint _maxAmountLimit, 
         uint _divisorBalanceLimit
         ) internal returns (uint) {
 
@@ -381,8 +390,10 @@ contract Funding {
                 _amount = _balanceLimit;
                 }
 
-            if (_amount > _amountLimit) _amount = _amountLimit;
+            if (_amount > maxAmountLimit) _amount = maxAmountLimit;
             
+            if (_amount < minAmountLimit) _amount = minAmountLimit;
+
             if (_amount > t.presaleAmount) _amount = t.presaleAmount;
             
         }
