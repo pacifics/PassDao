@@ -250,8 +250,8 @@ contract DAO {
         
         if (hasAnAccountManager[c.recipient]) {
             
-            if (msg.sender != address(c.recipient) 
-                || !ContractorAccountManager[c.recipient].IsCreator(msg.sender)) throw;
+            if (msg.sender != c.recipient 
+                && !ContractorAccountManager[c.recipient].IsCreator(msg.sender)) throw;
 
         } else {
 
