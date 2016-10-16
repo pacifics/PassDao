@@ -387,9 +387,9 @@ contract Funding {
                 _amount = _balanceLimit;
                 }
 
-            if (_amount > maxAmountLimit) _amount = maxAmountLimit;
+            if (_amount > _maxAmountLimit) _amount = _maxAmountLimit;
             
-            if (_amount < minAmountLimit) _amount = minAmountLimit;
+            if (_amount < _minAmountLimit) _amount = _minAmountLimit;
 
             if (_amount > t.presaleAmount) _amount = t.presaleAmount;
             
