@@ -128,8 +128,8 @@ contract DAO {
     mapping (address => uint) public pendingFeesWithdrawals;
     // Map to allow to withdraw contractor amounts of approved proposals
     mapping (address => uint) public pendingContractorAmountsWithdrawals;
-    // Map to check if a recipient has an account manager or not
-    mapping (address => bool) hasAnAccountManager; 
+    // Map to to know the last contractor proposal of a recipient
+    mapping (address => uint) public lastRecipientProposalId; 
     // Map to know the account management of contractors
     mapping (address => AccountManager) public ContractorAccountManager; 
 
@@ -248,7 +248,7 @@ contract DAO {
         c.recipient = _recipient;       
         c.initialSupply = _initialSupply;
         
-        if (hasAnAccountManager[c.recipient]) {
+        if (lastRecipientProposalId[c.recipient] != 0) {
             
             if (msg.sender != c.recipient 
                 && !ContractorAccountManager[c.recipient].IsCreator(msg.sender)) throw;
@@ -259,10 +259,11 @@ contract DAO {
                 
             ContractorAccountManager[c.recipient] = m;
             m.TransferAble();
-            hasAnAccountManager[c.recipient] = true;
             AccountManagerCreated(c.recipient, address(m));
 
         }
+        
+        lastRecipientProposalId[c.recipient] = _ContractorProposalID;
         
         c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod, msg.value);    
 
