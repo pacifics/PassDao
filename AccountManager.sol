@@ -66,7 +66,7 @@ contract AccountManager is Token {
     mapping (address => uint) blocked; 
 
     // Modifier that allows only the cient to manage the account manager
-    modifier onlyClient {if (msg.sender != address(client)) throw; _;}
+    modifier onlyClient {if (msg.sender != client) throw; _;}
     // Modifier that allows public to buy tokens only in case of crowdfunding
     modifier onlyPublicTokenCreation {if (!FundingRules.publicTokenCreation) throw; _;}
 
@@ -105,9 +105,9 @@ contract AccountManager is Token {
     function () payable {
 
         if (FundingRules.publicTokenCreation 
-            && msg.sender != address(client)) {
+            && msg.sender != client) {
 
-            createToken(msg.sender, msg.value, now);
+            if (!createToken(msg.sender, msg.value, now)) throw;
 
         }
 
@@ -117,15 +117,16 @@ contract AccountManager is Token {
     /// @param _tokenHolder the beneficiary of the created tokens
     /// @param _amount the amount funded by the main partner
     /// @param _saleDate in case of presale, the date of the presale
+    /// @return Whether the token creation was successful or not
     function buyTokenFor(
         address _tokenHolder,
         uint _amount,
         uint _saleDate
         ) returns (bool _success) {
         
-        if (msg.sender != address(FundingRules.mainPartner)) throw;
+        if (msg.sender != FundingRules.mainPartner) throw;
 
-        createToken(_tokenHolder, _amount, _saleDate);
+        return createToken(_tokenHolder, _amount, _saleDate);
 
     }
      
@@ -162,7 +163,7 @@ contract AccountManager is Token {
     /// @param _isFueled Whether the funding has to be set fueled or not
     function Fueled(uint _contractorProposalID, bool _isFueled) external {
     
-        if (msg.sender != address(client) && msg.sender != address(FundingRules.mainPartner)) {
+        if (msg.sender != client && msg.sender != FundingRules.mainPartner) {
             throw;
         }
 
@@ -270,17 +271,18 @@ contract AccountManager is Token {
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The amount in Wei to calculate the quantity to create
     /// @param _date The date to consider for the token price calculation
+    /// @return Whether the transfer was successful or not
     function rewardToken(
         address _tokenHolder, 
         uint _amount,
         uint _date
         ) external returns (bool _success) {
         
-        if (msg.sender != address(client) && msg.sender != address(FundingRules.mainPartner)) {
+        if (msg.sender != client && msg.sender != FundingRules.mainPartner) {
             throw;
         }
         
-        createToken(_tokenHolder, _amount, _date);
+        return createToken(_tokenHolder, _amount, _date);
 
     }
 
@@ -313,6 +315,7 @@ contract AccountManager is Token {
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
     /// @param _saleDate in case of presale, the date of the presale
+    /// @return Whether the token creation was successful or not
     function createToken(
         address _tokenHolder, 
         uint _amount,
@@ -326,7 +329,7 @@ contract AccountManager is Token {
             }
 
         uint _quantity = 100*_amount*FundingRules.initialTokenPriceMultiplier/tokenPriceDivisor(_saleDate);
-        if (totalSupply + _quantity > FundingRules.maxTotalSupply) throw;
+        if (totalSupply + _quantity > FundingRules.maxTotalSupply) return;
 
         balances[_tokenHolder] += _quantity; 
         totalSupply += _quantity;
@@ -335,6 +338,8 @@ contract AccountManager is Token {
         if (totalSupply == FundingRules.maxTotalSupply) {
             FundingRules.closingTime = now;
         }
+        
+        return true;
 
     }
    
