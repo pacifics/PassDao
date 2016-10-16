@@ -57,8 +57,8 @@ contract AccountManager is Token {
     // Address of the account manager recipient;
     address public recipient;
     
-    // Map to know if the funding linked to a Dao contractor proposal is fueled
-    mapping (uint => bool) isFueled;
+    // Map The funding dates for contractor proposals
+    mapping (uint => uint) fundingDate;
     // If true, the tokens can be transfered
     bool public transferable;
 
@@ -160,21 +160,20 @@ contract AccountManager is Token {
     
     /// @notice Function used by the Dao or a main partner to set a Dao contractor proposal fueled
     /// @param _contractorProposalID The index of the Dao contractor proposal
-    /// @param _isFueled Whether the funding has to be set fueled or not
-    function Fueled(uint _contractorProposalID, bool _isFueled) external {
+    function Fueled(uint _contractorProposalID) external {
     
         if (msg.sender != client && msg.sender != FundingRules.mainPartner) {
             throw;
         }
 
-        isFueled[_contractorProposalID] = _isFueled;
+        fundingDate[_contractorProposalID] = now;
         
     }
     
     /// @param _contractorProposalID The index of the Dao contarctor proposal
-    /// @return Whether the funding is fueled or not
-    function IsFueled(uint _contractorProposalID) constant external returns (bool) {
-        return isFueled[_contractorProposalID];
+    /// @return The unix date when the dao is funded
+    function fundingDateForContractor(uint _contractorProposalID) constant external returns (uint) {
+        return fundingDate[_contractorProposalID];
     }
 
     /// @return The maximum tokens after the funding
