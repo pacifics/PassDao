@@ -91,7 +91,7 @@ contract Funding {
     event Fund(address partner, uint amount);
     event Refund(address partner, uint amount);
     event LimitSet(uint minAmountLimit, uint maxAmountLimit, uint divisorBalanceLimit);
-    event AllSet();
+    event AllSet(uint fundingAmount);
     event Fueled();
 
     /// @dev Constructor function
@@ -239,7 +239,7 @@ contract Funding {
             }
             else {
                 allSet = true;
-                AllSet();
+                AllSet(sumOfFundingAmountLimits);
                 return true;
             }
         }
@@ -346,7 +346,7 @@ contract Funding {
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
     /// @return The result of the funding procedure at present time
-    function fundingAmount(
+    function estimatedFundingAmount(
         uint _minAmountLimit,
         uint _maxAmountLimit, 
         uint _divisorBalanceLimit,
