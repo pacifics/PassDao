@@ -280,8 +280,8 @@ contract Funding {
         }
 
         if (totalFunded >= minAmount) {
-            ContractorAccountManager.Fueled(contractorProposalID, true); 
-            DaoAccountManager.Fueled(contractorProposalID, true); 
+            ContractorAccountManager.Fueled(contractorProposalID); 
+            DaoAccountManager.Fueled(contractorProposalID); 
         }
 
     }
@@ -380,18 +380,16 @@ contract Funding {
         uint _minAmountLimit,
         uint _maxAmountLimit, 
         uint _divisorBalanceLimit
-        ) constant internal returns (uint) {
+        ) internal returns (uint) {
 
         uint _amount = 0;
-        uint _balanceLimit;
-        
+
         Partner t = partners[_index];
             
         if (t.valid) {
 
             if (_divisorBalanceLimit > 0) {
-                _balanceLimit = t.partnerAddress.balance/_divisorBalanceLimit;
-                _amount = _balanceLimit;
+                _amount = uint(t.partnerAddress.balance)/uint(_divisorBalanceLimit);
                 }
 
             if (_amount > _maxAmountLimit) _amount = _maxAmountLimit;
