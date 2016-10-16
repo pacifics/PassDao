@@ -91,7 +91,8 @@ contract Funding {
     event Fund(address partner, uint amount);
     event Refund(address partner, uint amount);
     event LimitSet(uint minAmountLimit, uint maxAmountLimit, uint divisorBalanceLimit);
-    event AllSet(uint fundingAmount);
+    event PartnersNotSet(uint sumOfFundingAmountLimits);
+    event AllPartnersSet(uint fundingAmount);
     event Fueled();
 
     /// @dev Constructor function
@@ -235,11 +236,12 @@ contract Funding {
             if (sumOfFundingAmountLimits < minAmount || sumOfFundingAmountLimits > maxAmount) {
                 fromPartner = 1;
                 limitSet = false;
+                PartnersNotSet(sumOfFundingAmountLimits);
                 return;
             }
             else {
                 allSet = true;
-                AllSet(sumOfFundingAmountLimits);
+                AllPartnersSet(sumOfFundingAmountLimits);
                 return true;
             }
         }
@@ -352,13 +354,17 @@ contract Funding {
         uint _divisorBalanceLimit,
         uint _from,
         uint _to
-        ) constant external returns (uint _total) {
+        ) constant external returns (uint) {
 
         if (_from < 1 || _to > partners.length - 1) throw;
 
+        uint _total = 0;
+        
         for (uint i = _from; i <= _to; i++) {
             _total += partnerFundingLimit(i, _minAmountLimit, _maxAmountLimit, _divisorBalanceLimit);
         }
+
+        return _total;
 
     }
 
