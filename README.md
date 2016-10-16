@@ -95,5 +95,5 @@ Main functions:
 
 - There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to tokenholders or the payment of approved proposal amounts to contractors. 
 
-- Refund from the funding smart contract will be before the closing time of the primary funding for the valid adresses and after the closing time of the primary funding for the not valid adresses.
+- Refund from the funding smart contract will be before the closing time of the primary funding for the valid adresses and after the closing time of the primary funding for the invalid adresses.
 
