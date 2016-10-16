@@ -85,7 +85,7 @@ contract Funding {
     uint fromPartner;
 
     // The manager of this funding is the creator of this contract
-    modifier onlyCreator {if (msg.sender != address(creator)) throw; _ ;}
+    modifier onlyCreator {if (msg.sender != creator) throw; _ ;}
 
     event IntentionToFund(address partner, uint amount);
     event Fund(address partner, uint amount);
@@ -420,7 +420,7 @@ contract Funding {
         
         if (_from < 1 || _to > partners.length-1) throw;
 
-        uint _total;
+        uint _total = 0;
         
         for (uint i = _from; i <= _to; i++) {
             if (partners[i].valid) _total += 1;
