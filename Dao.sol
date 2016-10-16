@@ -107,20 +107,16 @@ contract DAO {
         uint BoardMeetingID;  
         // The quorum needed for each proposal is calculated by totalSupply / minQuorumDivisor
         uint minQuorumDivisor;  
-        // The minimum debate period that a generic proposal can have
-        uint minMinutesDebatePeriod; 
-        // The maximum debate period that a generic proposal can have
-        uint maxMinutesDebatePeriod;
         // Minimal fees (in wei) to create a proposal
         uint minBoardMeetingFees; 
-        // Period after the board meeting to execute a proposal
-        uint minutesExecuteProposalPeriod;
         // Period to consider or set a proposal before the voting procedure
         uint minutesSetProposalPeriod; 
+        // The minimum debate period that a generic proposal can have
+        uint minMinutesDebatePeriod; 
+        // Period after the board meeting to execute a proposal
+        uint minutesExecuteProposalPeriod;
         // The minimum inflation rate for the reward of contractor tokens to voters
         uint minContractorTokenInflationRate;
-        // The maximum inflation rate for the reward of contractor tokens to voters
-        uint maxContractorTokenInflationRate;
         // True if the dao tokens are transferable
         bool transferable;
     } 
@@ -168,9 +164,7 @@ contract DAO {
 
         DaoRules.minQuorumDivisor = 5;
         DaoRules.minutesSetProposalPeriod = 10;
-        DaoRules.maxMinutesDebatePeriod = 100000;
         DaoRules.minutesExecuteProposalPeriod = 100000;
-        DaoRules.maxContractorTokenInflationRate = 1000;
 
         BoardMeetings.length = 1; 
         ContractorProposals.length = 1;
@@ -194,7 +188,7 @@ contract DAO {
         uint _boardMeetingFees
     ) internal returns (uint) {
 
-        if (_MinutesDebatingPeriod > DaoRules.maxMinutesDebatePeriod 
+        if (_MinutesDebatingPeriod > 100000 
             || _MinutesDebatingPeriod < DaoRules.minMinutesDebatePeriod) {
             throw;
         }
@@ -246,7 +240,7 @@ contract DAO {
 
         if (msg.value < DaoRules.minBoardMeetingFees
             ||_inflationRate < DaoRules.minContractorTokenInflationRate
-            || _inflationRate > DaoRules.maxContractorTokenInflationRate) throw;
+            || _inflationRate > 1000) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -350,28 +344,27 @@ contract DAO {
     /// @param _minQuorumDivisor If 5, the minimum quorum is 20%
     /// @param _minBoardMeetingFees The amount in wei to create o proposal and organize a board meeting
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
-    /// @param _maxMinutesDebatePeriod The maximum period in minutes of the board meetings
     /// @param _minutesExecuteProposalPeriod The period in minutes to execute a decision after a board meeting
     /// @param _minContractorTokenInflationRate The minimum inflation rate for the reward of tokens to voters
-    /// @param _maxContractorTokenInflationRate The maximum inflation rate for the reward of tokens to voters
     /// @param _transferable True if the Dao tokens are transferable
     /// @param _MinutesDebatingPeriod Period of the board meeting
     function newDaoRulesProposal(
-        uint _minutesSetProposalPeriod,
         uint _minQuorumDivisor, 
         uint _minBoardMeetingFees,
+        uint _minutesSetProposalPeriod,
         uint _minMinutesDebatePeriod, 
-        uint _maxMinutesDebatePeriod,
         uint _minutesExecuteProposalPeriod,
         uint _minContractorTokenInflationRate,
-        uint _maxContractorTokenInflationRate,
         bool _transferable,
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
     
         if (msg.value < DaoRules.minBoardMeetingFees 
-            || _minQuorumDivisor == 0
-            || _maxMinutesDebatePeriod == 0) throw; 
+            || _minQuorumDivisor <= 1
+            || _minQuorumDivisor > 10
+            || _minutesSetProposalPeriod > 50000            
+            || _minMinutesDebatePeriod > 50000
+            || _minutesExecuteProposalPeriod < 1) throw; 
         
         uint _DaoRulesProposalID = DaoRulesProposals.length++;
         Rules r = DaoRulesProposals[_DaoRulesProposalID];
@@ -381,10 +374,8 @@ contract DAO {
         r.minBoardMeetingFees = _minBoardMeetingFees;
         r.minutesSetProposalPeriod = _minutesSetProposalPeriod;
         r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
-        r.maxMinutesDebatePeriod = _maxMinutesDebatePeriod;
         r.minutesExecuteProposalPeriod = _minutesExecuteProposalPeriod;
         r.minContractorTokenInflationRate = _minContractorTokenInflationRate;
-        r.maxContractorTokenInflationRate = _maxContractorTokenInflationRate;
         r.transferable = _transferable;
 
         return _DaoRulesProposalID;
@@ -517,16 +508,14 @@ contract DAO {
         if (b.DaoRulesProposalID != 0) {
 
             Rules r = DaoRulesProposals[b.DaoRulesProposalID];
-
             DaoRules.BoardMeetingID = r.BoardMeetingID;
+
             DaoRules.minQuorumDivisor = r.minQuorumDivisor;
             DaoRules.minMinutesDebatePeriod = r.minMinutesDebatePeriod;
-            DaoRules.maxMinutesDebatePeriod = r.maxMinutesDebatePeriod;
             DaoRules.minBoardMeetingFees = r.minBoardMeetingFees;
             DaoRules.minutesExecuteProposalPeriod = r.minutesExecuteProposalPeriod;
             DaoRules.minutesSetProposalPeriod = r.minutesSetProposalPeriod;
             DaoRules.minContractorTokenInflationRate = r.minContractorTokenInflationRate;
-            DaoRules.maxContractorTokenInflationRate = r.maxContractorTokenInflationRate;
 
             DaoRules.transferable = r.transferable;
             if (r.transferable) DaoAccountManager.TransferAble();
