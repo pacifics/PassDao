@@ -247,6 +247,7 @@ contract DAO {
 
         c.recipient = _recipient;       
         c.initialSupply = _initialSupply;
+        
         if (hasAnAccountManager[c.recipient]) {
             
             if (msg.sender != address(c.recipient) 
