@@ -471,8 +471,8 @@ contract DAO {
 
         if (b.ContractorProposalID != 0) {
             ContractorProposal c = ContractorProposals[b.ContractorProposalID];
-            if (c.fundingProposalID != 0) {
-                _contractorProposalFueled = DaoAccountManager.IsFueled(b.ContractorProposalID);
+            if (c.fundingProposalID != 0 && DaoAccountManager.fundingDateForContractor(b.ContractorProposalID) != 0) {
+                _contractorProposalFueled;    
                 if (now < b.executionDeadline && !_contractorProposalFueled) {
                     return; 
                 }
