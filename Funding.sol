@@ -63,11 +63,11 @@ contract Funding {
     // The unix closing time of the presale
     uint public closingTime;
     /// The amount below this limit can fund the dao
-    uint public minAmountLimit;
+    uint minAmountLimit;
     /// Maximum amount a partner can fund
-    uint public maxAmountLimit; 
+    uint maxAmountLimit; 
     /// The partner can fund only under a defined percentage of his ether balance 
-    uint public divisorBalanceLimit;
+    uint divisorBalanceLimit;
     // True if the amount and divisor balance limits for the funding are set by the creator
     bool public limitSet;
     // True if all the partners are set by the creator and the funding can be completed 
@@ -79,7 +79,7 @@ contract Funding {
     // The total funded amount (in wei)
     uint public totalFunded; 
     // The calculated sum of funding amout limits according to the set limits
-    uint public sumOfFundingAmountLimits;
+    uint sumOfFundingAmountLimits;
     
     // To allow the set of partners in several times
     uint fromPartner;
@@ -90,8 +90,8 @@ contract Funding {
     event IntentionToFund(address partner, uint amount);
     event Fund(address partner, uint amount);
     event Refund(address partner, uint amount);
-    event LimitSet();
-    event AllSet();
+    event LimitSet(uint minAmountLimit, uint maxAmountLimit, uint divisorBalanceLimit);
+    event AllSet(uint fundingAmount);
     event Fueled();
 
     /// @dev Constructor function
@@ -211,7 +211,7 @@ contract Funding {
 
         limitSet = true;
         
-        LimitSet();
+        LimitSet(_minAmountLimit, _maxAmountLimit, _divisorBalanceLimit);
     
     }
 
@@ -239,7 +239,7 @@ contract Funding {
             }
             else {
                 allSet = true;
-                AllSet();
+                AllSet(sumOfFundingAmountLimits);
                 return true;
             }
         }
@@ -346,7 +346,7 @@ contract Funding {
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
     /// @return The result of the funding procedure at present time
-    function fundingAmount(
+    function estimatedFundingAmount(
         uint _minAmountLimit,
         uint _maxAmountLimit, 
         uint _divisorBalanceLimit,
