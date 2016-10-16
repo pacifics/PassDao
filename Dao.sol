@@ -249,7 +249,7 @@ contract DAO {
         c.initialSupply = _initialSupply;
         if (hasAnAccountManager[c.recipient]) {
             
-            if (msg.sender != address(c. recipient) 
+            if (msg.sender != address(c.recipient) 
                 || !ContractorAccountManager[c.recipient].IsCreator(msg.sender)) throw;
 
         } else {
