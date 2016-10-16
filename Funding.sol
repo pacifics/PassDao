@@ -224,8 +224,9 @@ contract Funding {
 
         if (fromPartner > _to || _to > partners.length - 1) throw;
         
+        if (fromPartner == 1) sumOfFundingAmountLimits = 0;
+        
         for (uint i = fromPartner; i <= _to; i++) {
-            sumOfFundingAmountLimits -= partners[i].fundingAmountLimit;
             partners[i].fundingAmountLimit = partnerFundingLimit(i, minAmountLimit, maxAmountLimit, divisorBalanceLimit);
             sumOfFundingAmountLimits += partners[i].fundingAmountLimit;
         }
