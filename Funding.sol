@@ -82,7 +82,9 @@ contract Funding {
     uint sumOfFundingAmountLimits;
     
     // To allow the set of partners in several times
-    uint fromPartner;
+    uint setFromPartner;
+    // To allow the refund for partners in several times
+    uint refundFromPartner;
 
     // The manager of this funding is the creator of this contract
     modifier onlyCreator {if (msg.sender != creator) throw; _ ;}
@@ -122,7 +124,8 @@ contract Funding {
 
         if (_startTime == 0) {startTime = now;} else {startTime = _startTime;}
         closingTime = _closingTime;
-        fromPartner = 1;
+        setFromPartner = 1;
+        refundFromPartner = 1;
         partners.length = 1; 
         
         }
@@ -222,19 +225,19 @@ contract Funding {
         
         if (!limitSet) throw;
 
-        if (fromPartner > _to || _to > partners.length - 1) throw;
+        if (setFromPartner > _to || _to > partners.length - 1) throw;
         
-        if (fromPartner == 1) sumOfFundingAmountLimits = 0;
+        if (setFromPartner == 1) sumOfFundingAmountLimits = 0;
         
-        for (uint i = fromPartner; i <= _to; i++) {
+        for (uint i = setFromPartner; i <= _to; i++) {
             partners[i].fundingAmountLimit = partnerFundingLimit(i, minAmountLimit, maxAmountLimit, divisorBalanceLimit);
             sumOfFundingAmountLimits += partners[i].fundingAmountLimit;
         }
         
-        fromPartner = _to + 1;
+        setFromPartner = _to + 1;
         
-        if (fromPartner >= partners.length) {
-            fromPartner = 1;
+        if (setFromPartner >= partners.length) {
+            setFromPartner = 1;
             if (sumOfFundingAmountLimits < minAmount || sumOfFundingAmountLimits > maxAmount) {
                 limitSet = false;
                 PartnersNotSet(sumOfFundingAmountLimits);
@@ -286,7 +289,7 @@ contract Funding {
 
     }
 
-    /// @notice Function for the refund for a partner
+    /// @notice Function to refund for a partner
     /// @param _index The index of the partner
     /// @return Whether the refund was successful or not 
     function refundFor(uint _index) internal returns (bool) {
@@ -316,31 +319,32 @@ contract Funding {
 
     }
 
-    /// @notice Function for the refund with 'msg.sender' as 'beneficiary'
+    /// @notice Function to refund with 'msg.sender' as 'beneficiary'
     /// @return Whether the refund was successful or not 
     function refund() returns (bool) {
         return refundFor(partnerID[msg.sender]);
     }
 
-    /// @notice Function to refund for a group of valid partners
-    /// @param _from The index of the first partner
+    /// @notice Function to refund for valid partners
     /// @param _to The index of the last partner
-    function refundForPartners(
-            uint _from,
-            uint _to
-        ) {
+    function refundForPartners(uint _to) onlyCreator {
 
-        if (_from < 1 || _to > partners.length - 1) throw;
+        if (refundFromPartner > _to || _to > partners.length - 1) throw;
         
-        uint i;
-
-        for (i = _from; i <= _to; i++) {
+        for (uint i = refundFromPartner; i <= _to; i++) {
             if (partners[i].valid) {
                 if (!refundFor(i)) throw;
             }
         }
 
+        refundFromPartner = _to + 1;
+        
+        if (refundFromPartner >= partners.length && totalFunded >= sumOfFundingAmountLimits) {
+            closingTime = now;
+        }
+        
     }
+
     
     /// @param _minAmountLimit The amount below this limit can fund the dao
     /// @param _maxAmountLimit Limit in amount a partner can fund
