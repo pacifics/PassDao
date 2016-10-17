@@ -125,7 +125,7 @@ contract DAO {
     AccountManager public DaoAccountManager;
     
     // the accumulated sum of all current proposal deposits
-    uint sumOfpendingContractorWithdrawals;
+    uint sumOfPendingContractorWithdrawals;
 
     // Map to allow to withdraw board meeting fees
     mapping (address => uint) public pendingFeesWithdrawals;
@@ -535,7 +535,7 @@ contract DAO {
             
         if (b.ContractorProposalID != 0) {
             pendingContractorAmountsWithdrawals[c.recipient] += c.amount;
-            sumOfpendingContractorWithdrawals += c.amount;
+            sumOfPendingContractorWithdrawals += c.amount;
         }
 
         return true;
@@ -568,7 +568,7 @@ contract DAO {
 
         pendingContractorAmountsWithdrawals[msg.sender] = 0;
         if (DaoAccountManager.sendTo(msg.sender, amount)) {
-            sumOfpendingContractorWithdrawals -= amount;
+            sumOfPendingContractorWithdrawals -= amount;
             return true;
         } else {
             pendingContractorAmountsWithdrawals[msg.sender] = amount;
@@ -607,7 +607,7 @@ contract DAO {
     
     /// @return The actual balance of the Dao account manager 
     function DaoAccountManagerActualBalance() constant returns (uint) {
-        return DaoAccountManager.balance - sumOfpendingContractorWithdrawals;
+        return DaoAccountManager.balance - sumOfPendingContractorWithdrawals;
     }
 
 }
