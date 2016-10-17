@@ -305,11 +305,6 @@ contract AccountManager is Token {
         transferable = true;
     }
 
-    /// @dev Function used by the client to disable the transfer of tokens
-    function TransferDisable() external onlyClient {
-        transferable = false;
-    }
-    
     /// @dev Internal function for the creation of tokens
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
