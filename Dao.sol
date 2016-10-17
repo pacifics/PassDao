@@ -124,7 +124,7 @@ contract DAO {
     // The Dao account manager contract
     AccountManager public DaoAccountManager;
     
-    // the accumulated sum of all current proposal deposits
+    // the accumulated sum of pending withdrawals of approved proposal
     uint sumOfPendingContractorWithdrawals;
 
     // Map to allow to withdraw board meeting fees
