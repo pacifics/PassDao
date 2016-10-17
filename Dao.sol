@@ -531,10 +531,10 @@ contract DAO {
             pendingContractorAmountsWithdrawals[c.recipient] += c.amount;
         }
 
-        return true;
-        
         ProposalTallied(_BoardMeetingID);
         
+        return true;
+
     }
 
     /// @notice Function to withdraw the rewarded board meeting fees 
