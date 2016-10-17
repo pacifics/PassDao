@@ -117,8 +117,6 @@ contract DAO {
         uint minMinutesDebatePeriod; 
         // Period after the board meeting to execute a proposal
         uint minutesExecuteProposalPeriod;
-        // The minimum inflation rate for the reward of contractor tokens to voters
-        uint minContractorTokenInflationRate;
         // True if the dao tokens are transferable
         bool transferable;
     } 
@@ -209,8 +207,6 @@ contract DAO {
         b.votingDeadline = b.setDeadline + (_MinutesDebatingPeriod * 1 minutes); 
         b.executionDeadline = b.votingDeadline + (DaoRules.minutesExecuteProposalPeriod * 1 minutes);
 
-        if (b.executionDeadline < now) throw;
-
         b.open = true; 
 
         NewBoardMeetingAdded(_BoardMeetingID, b.setDeadline, b.votingDeadline);
@@ -242,7 +238,6 @@ contract DAO {
     ) payable returns (uint) {
 
         if (msg.value < DaoRules.minBoardMeetingFees
-            ||_inflationRate < DaoRules.minContractorTokenInflationRate
             || _inflationRate > 1000) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
@@ -327,7 +322,7 @@ contract DAO {
         f.tokenPriceMultiplier = _tokenPriceMultiplier;
         f.inflationRate = _inflationRate;
         f.contractorProposalID = _contractorProposalID;
-        f.startTime = _startTime;
+        if (_startTime == 0) f.startTime = now; else f.startTime = _startTime;
         f.minutesFundingPeriod = _minutesFundingPeriod;
 
         if (_contractorProposalID != 0) {
@@ -353,7 +348,6 @@ contract DAO {
     /// @param _minBoardMeetingFees The amount in wei to create o proposal and organize a board meeting
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
     /// @param _minutesExecuteProposalPeriod The period in minutes to execute a decision after a board meeting
-    /// @param _minContractorTokenInflationRate The minimum inflation rate for the reward of tokens to voters
     /// @param _transferable True if the Dao tokens are transferable
     /// @param _MinutesDebatingPeriod Period of the board meeting
     function newDaoRulesProposal(
@@ -362,7 +356,6 @@ contract DAO {
         uint _minutesSetProposalPeriod,
         uint _minMinutesDebatePeriod, 
         uint _minutesExecuteProposalPeriod,
-        uint _minContractorTokenInflationRate,
         bool _transferable,
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
@@ -372,7 +365,8 @@ contract DAO {
             || _minQuorumDivisor > 10
             || _minutesSetProposalPeriod > 50000            
             || _minMinutesDebatePeriod > 50000
-            || _minutesExecuteProposalPeriod < 1) throw; 
+            || _minutesExecuteProposalPeriod < 1
+            || _minutesExecuteProposalPeriod > 100000) throw; 
         
         uint _DaoRulesProposalID = DaoRulesProposals.length++;
         Rules r = DaoRulesProposals[_DaoRulesProposalID];
@@ -383,7 +377,6 @@ contract DAO {
         r.minutesSetProposalPeriod = _minutesSetProposalPeriod;
         r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
         r.minutesExecuteProposalPeriod = _minutesExecuteProposalPeriod;
-        r.minContractorTokenInflationRate = _minContractorTokenInflationRate;
         r.transferable = _transferable;
 
         return _DaoRulesProposalID;
@@ -525,7 +518,6 @@ contract DAO {
             DaoRules.minBoardMeetingFees = r.minBoardMeetingFees;
             DaoRules.minutesExecuteProposalPeriod = r.minutesExecuteProposalPeriod;
             DaoRules.minutesSetProposalPeriod = r.minutesSetProposalPeriod;
-            DaoRules.minContractorTokenInflationRate = r.minContractorTokenInflationRate;
 
             DaoRules.transferable = r.transferable;
             if (r.transferable) DaoAccountManager.TransferAble();
