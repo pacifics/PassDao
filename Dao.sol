@@ -96,7 +96,9 @@ contract DAO {
         uint tokenPriceMultiplier; 
         // The inflation rate to calculate the actual contractor token price
         uint inflationRate;
-        // Period for the partners to fund after the execution of the decision
+        // The start time of the funding
+        uint startTime;
+        // Period in minutes for the funding after the start time
         uint minutesFundingPeriod;
         // Index of the contractor proposal linked to the funding proposal (not mandatory)
         uint contractorProposalID;
@@ -124,13 +126,8 @@ contract DAO {
     // The Dao account manager contract
     AccountManager public DaoAccountManager;
     
-    // the accumulated sum of pending withdrawals of approved proposal
-    uint sumOfPendingContractorWithdrawals;
-
     // Map to allow to withdraw board meeting fees
     mapping (address => uint) public pendingFeesWithdrawals;
-    // Map to allow to withdraw contractor amounts of approved proposals
-    mapping (address => uint) public pendingContractorAmountsWithdrawals;
     // Map to to know the last contractor proposal of a recipient
     mapping (address => uint) public lastRecipientProposalId; 
     // Map to know the account management of contractors
@@ -300,6 +297,7 @@ contract DAO {
     /// @param _maxFundingAmount The maximum amount to fund
     /// @param _tokenPriceMultiplier The quantity of created tokens will depend on this multiplier
     /// @param _inflationRate If 0, the token price doesn't change during the funding (not mandatory)
+    /// @param _startTime The start time of the funding
     /// @param _minutesFundingPeriod Period for the partners to fund the Dao after the execution of the proposal
     /// @param _contractorProposalID Index of the contractor proposal (not mandatory)
     /// @param _MinutesDebatingPeriod Period in minutes of the board meeting
@@ -310,6 +308,7 @@ contract DAO {
         uint _maxFundingAmount,  
         uint _tokenPriceMultiplier,    
         uint _inflationRate,
+        uint _startTime,
         uint _minutesFundingPeriod,
         uint _contractorProposalID,
         uint _MinutesDebatingPeriod
@@ -328,6 +327,7 @@ contract DAO {
         f.tokenPriceMultiplier = _tokenPriceMultiplier;
         f.inflationRate = _inflationRate;
         f.contractorProposalID = _contractorProposalID;
+        f.startTime = _startTime;
         f.minutesFundingPeriod = _minutesFundingPeriod;
 
         if (_contractorProposalID != 0) {
@@ -505,12 +505,12 @@ contract DAO {
             FundingProposal f = FundingProposals[b.FundingProposalID];
 
             DaoAccountManager.setFundingRules(f.mainPartner, f.publicTokenCreation, f.tokenPriceMultiplier, 
-                f.fundingAmount, now, now + f.minutesFundingPeriod * 1 minutes, f.inflationRate);
+                f.fundingAmount, f.startTime, f.startTime + f.minutesFundingPeriod * 1 minutes, f.inflationRate);
 
             if (f.contractorProposalID != 0) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
                 ContractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
-                    f.fundingAmount, now, now + f.minutesFundingPeriod * 1 minutes, cf.inflationRate);
+                    f.fundingAmount, f.startTime, f.startTime + f.minutesFundingPeriod * 1 minutes, cf.inflationRate);
             }
             
         }
@@ -534,12 +534,7 @@ contract DAO {
         }
             
         if (b.ContractorProposalID != 0) {
-            if (c.amount <= DaoAccountManagerActualBalance()) {
-                pendingContractorAmountsWithdrawals[c.recipient] += c.amount;
-                sumOfPendingContractorWithdrawals += c.amount;
-            } else {
-                throw;
-            }
+            if (!DaoAccountManager.sendTo(c.recipient, c.amount)) throw;
         }
 
         ProposalTallied(_BoardMeetingID);
@@ -559,23 +554,6 @@ contract DAO {
             return true;
         } else {
             pendingFeesWithdrawals[msg.sender] = amount;
-            return false;
-        }
-
-    }
-
-    /// @notice Function to withdraw the amounts of approved contractor proposals 
-    /// @return Whether the withdraw was successful or not    
-    function withdrawApprovedAmount() returns (bool) {
-        
-        uint amount = pendingContractorAmountsWithdrawals[msg.sender];
-
-        pendingContractorAmountsWithdrawals[msg.sender] = 0;
-        if (DaoAccountManager.sendTo(msg.sender, amount)) {
-            sumOfPendingContractorWithdrawals -= amount;
-            return true;
-        } else {
-            pendingContractorAmountsWithdrawals[msg.sender] = amount;
             return false;
         }
 
@@ -609,11 +587,6 @@ contract DAO {
         return uint(DaoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
     }
     
-    /// @return The actual balance of the Dao account manager 
-    function DaoAccountManagerActualBalance() constant returns (uint) {
-        return DaoAccountManager.balance - sumOfPendingContractorWithdrawals;
-    }
-
 }
 
 contract DAOCreator {
