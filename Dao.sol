@@ -606,8 +606,8 @@ contract DAO {
     }
     
     /// @return The actual balance of the Dao account manager 
-    function daoActualBalance() constant returns (uint) {
-        return this.balance - sumOfpendingContractorWithdrawals;
+    function DaoAccountManagerActualBalance() constant returns (uint) {
+        return DaoAccountManager.balance - sumOfpendingContractorWithdrawals;
     }
 
 }
