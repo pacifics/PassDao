@@ -170,8 +170,8 @@ contract AccountManager is Token {
         
     }
     
-    /// @param _contractorProposalID The index of the Dao contarctor proposal
-    /// @return The unix date when the dao is funded
+    /// @param _contractorProposalID The index of the Dao contractor proposal
+    /// @return The unix date when the main partner funded the Dao for the contractor
     function fundingDateForContractor(uint _contractorProposalID) constant external returns (uint) {
         return fundingDate[_contractorProposalID];
     }
