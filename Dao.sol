@@ -123,6 +123,9 @@ contract DAO {
 
     // The Dao account manager contract
     AccountManager public DaoAccountManager;
+    
+    // the accumulated sum of all current proposal deposits
+    uint sumOfpendingContractorWithdrawals;
 
     // Map to allow to withdraw board meeting fees
     mapping (address => uint) public pendingFeesWithdrawals;
@@ -189,7 +192,8 @@ contract DAO {
     ) internal returns (uint) {
 
         if (_MinutesDebatingPeriod > 100000 
-            || _MinutesDebatingPeriod < DaoRules.minMinutesDebatePeriod) {
+            || _MinutesDebatingPeriod < DaoRules.minMinutesDebatePeriod
+            || msg.sender == address(this)) {
             throw;
         }
 
@@ -207,6 +211,8 @@ contract DAO {
         b.setDeadline = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);        
         b.votingDeadline = b.setDeadline + (_MinutesDebatingPeriod * 1 minutes); 
         b.executionDeadline = b.votingDeadline + (DaoRules.minutesExecuteProposalPeriod * 1 minutes);
+
+        if (b.executionDeadline < now) throw;
 
         b.open = true; 
 
@@ -529,12 +535,13 @@ contract DAO {
             
         if (b.ContractorProposalID != 0) {
             pendingContractorAmountsWithdrawals[c.recipient] += c.amount;
+            sumOfpendingContractorWithdrawals += c.amount;
         }
+
+        return true;
 
         ProposalTallied(_BoardMeetingID);
         
-        return true;
-
     }
 
     /// @notice Function to withdraw the rewarded board meeting fees 
@@ -561,6 +568,7 @@ contract DAO {
 
         pendingContractorAmountsWithdrawals[msg.sender] = 0;
         if (DaoAccountManager.sendTo(msg.sender, amount)) {
+            sumOfpendingContractorWithdrawals -= amount;
             return true;
         } else {
             pendingContractorAmountsWithdrawals[msg.sender] = amount;
@@ -593,10 +601,14 @@ contract DAO {
         return BoardMeetings.length - 1;
     }
         
-    /// @notice Function to get the minimum quorum needed for a proposal    
-    /// @return The minimum quorum for the proposal to pass 
+    /// @return The minimum quorum for a proposal to pass 
     function minQuorum() constant returns (uint) {
         return uint(DaoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
+    }
+    
+    /// @return The actual balance of the Dao account manager 
+    function daoActualBalance() constant returns (uint) {
+        return this.balance - sumOfpendingContractorWithdrawals;
     }
 
 }
