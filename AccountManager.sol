@@ -227,7 +227,7 @@ contract AccountManager is Token {
         FundingRules.publicTokenCreation = _publicTokenCreation;
         
         if (_startTime < FundingRules.closingTime) {
-            FundingRules.startTime = FundingRules.closingTime;
+            throw;
         } else {
             FundingRules.startTime = _startTime;
         }
