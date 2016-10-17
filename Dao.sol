@@ -206,6 +206,8 @@ contract DAO {
         b.votingDeadline = b.setDeadline + (_MinutesDebatingPeriod * 1 minutes); 
         b.executionDeadline = b.votingDeadline + (DaoRules.minutesExecuteProposalPeriod * 1 minutes);
 
+        if (b.executionDeadline < now) throw;
+            
         b.open = true; 
 
         NewBoardMeetingAdded(_BoardMeetingID, b.setDeadline, b.votingDeadline);
