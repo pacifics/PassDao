@@ -234,8 +234,8 @@ contract Funding {
         fromPartner = _to + 1;
         
         if (fromPartner >= partners.length) {
+            fromPartner = 1;
             if (sumOfFundingAmountLimits < minAmount || sumOfFundingAmountLimits > maxAmount) {
-                fromPartner = 1;
                 limitSet = false;
                 PartnersNotSet(sumOfFundingAmountLimits);
                 return;
@@ -279,7 +279,7 @@ contract Funding {
 
         }
 
-        if (totalFunded >= minAmount) {
+        if (totalFunded >= sumOfFundingAmountLimits) {
             ContractorAccountManager.Fueled(contractorProposalID); 
             DaoAccountManager.Fueled(contractorProposalID); 
         }
