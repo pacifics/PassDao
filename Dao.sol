@@ -542,9 +542,9 @@ contract DAO {
             }
         }
 
-        return true;
-
         ProposalTallied(_BoardMeetingID);
+
+        return true;
         
     }
 
