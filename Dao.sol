@@ -521,9 +521,11 @@ contract DAO {
             DaoRules.minutesExecuteProposalPeriod = r.minutesExecuteProposalPeriod;
             DaoRules.minutesSetProposalPeriod = r.minutesSetProposalPeriod;
 
-            DaoRules.transferable = r.transferable;
-            if (r.transferable) DaoAccountManager.TransferAble();
-
+            if (r.transferable) {
+                DaoRules.transferable = true;
+                DaoAccountManager.TransferAble();
+            }
+            
         }
             
         if (b.ContractorProposalID != 0) {
