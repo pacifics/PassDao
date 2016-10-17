@@ -534,8 +534,12 @@ contract DAO {
         }
             
         if (b.ContractorProposalID != 0) {
-            pendingContractorAmountsWithdrawals[c.recipient] += c.amount;
-            sumOfPendingContractorWithdrawals += c.amount;
+            if (c.amount <= DaoAccountManagerActualBalance()) {
+                pendingContractorAmountsWithdrawals[c.recipient] += c.amount;
+                sumOfPendingContractorWithdrawals += c.amount;
+            } else {
+                throw;
+            }
         }
 
         return true;
