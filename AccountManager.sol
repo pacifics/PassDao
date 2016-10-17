@@ -167,6 +167,7 @@ contract AccountManager is Token {
         }
 
         fundingDate[_contractorProposalID] = now;
+        FundingRules.closingTime = now;
         
     }
     
