@@ -100,7 +100,7 @@ contract Funding {
     /// @param _DaoAccountManager The Dao account manager
     /// @param _contractorAccountManager The contractor account manager for the reward of tokens
     /// @param _contractorProposalID The index of the Dao contractor proposal
-    /// @param _minAmount minimum amount to fund
+    /// @param _minAmount Minimum amount to fund
     /// @param _startTime The start time of the presale
     /// @param _closingTime The closing time of the presale
     function Funding (
@@ -195,7 +195,7 @@ contract Funding {
     /// @notice Function used by the creator to set the funding limits for the funding
     /// @param _minAmountLimit The amount below this limit can fund the dao
     /// @param _maxAmountLimit Limit in amount a partner can fund
-    /// @param _divisorBalanceLimit  The partner can fund 
+    /// @param _divisorBalanceLimit The partner can fund 
     /// only under a defined percentage of his ether balance 
     function setFundingLimits(
             uint _minAmountLimit,
@@ -286,7 +286,7 @@ contract Funding {
 
     }
 
-    /// @notice Function for the refund for a partner the amount not funded
+    /// @notice Function for the refund for a partner
     /// @param _index The index of the partner
     /// @return Whether the refund was successful or not 
     function refundFor(uint _index) internal returns (bool) {
@@ -316,7 +316,7 @@ contract Funding {
 
     }
 
-    /// @notice Function for the refund of the amount not funded
+    /// @notice Function for the refund with 'msg.sender' as 'beneficiary'
     /// @return Whether the refund was successful or not 
     function refund() returns (bool) {
         return refundFor(partnerID[msg.sender]);
@@ -372,9 +372,9 @@ contract Funding {
     /// @param _index The index of the partner
     /// @param _minAmountLimit The amount below this limit can fund the dao
     /// @param _maxAmountLimit Maximum amount a partner can fund
-    /// @param _divisorBalanceLimit  The partner can fund 
+    /// @param _divisorBalanceLimit The partner can fund 
     /// only under a defined percentage of their ether balance 
-    /// @return The maximum amount the partner can fund
+    /// @return The maximum amount a partner can fund
     function partnerFundingLimit(
         uint _index, 
         uint _minAmountLimit,
@@ -411,7 +411,7 @@ contract Funding {
     
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
-    /// @return the number of valid partners
+    /// @return The number of valid partners
     function numberOfValidPartners(
         uint _from,
         uint _to
