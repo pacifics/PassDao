@@ -577,7 +577,7 @@ contract DAO {
 
     }
 
-    /// @dev internal function to send to the Daoaccount manager the board meeting fees balance
+    /// @dev internal function to send to the Dao account manager the board meeting fees balance
     /// @param _boardMeetingID THe index of the board meeting
     /// @return Whether the function was successful or not 
     function takeBoardMeetingFees(uint _boardMeetingID) internal returns (bool) {
