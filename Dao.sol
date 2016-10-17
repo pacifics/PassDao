@@ -176,17 +176,16 @@ contract DAO {
     /// @param _DaoRulesProposalID The index of the proposal if Dao rules
     /// @param _FundingProposalID The index of the proposal if funding
     /// @param _MinutesDebatingPeriod The duration of the meeting
-    /// @param _boardMeetingFees The fees to be rewarded to the voters by the creator of the proposal 
     /// @return the index of the board meeting
     function newBoardMeeting(
         uint _ContractorProposalID, 
         uint _DaoRulesProposalID, 
         uint _FundingProposalID, 
-        uint _MinutesDebatingPeriod, 
-        uint _boardMeetingFees
+        uint _MinutesDebatingPeriod
     ) internal returns (uint) {
 
-        if (_MinutesDebatingPeriod > 100000 
+        if (msg.value < DaoRules.minBoardMeetingFees
+            || _MinutesDebatingPeriod > 100000 
             || _MinutesDebatingPeriod < DaoRules.minMinutesDebatePeriod
             || msg.sender == address(this)) {
             throw;
@@ -201,7 +200,7 @@ contract DAO {
         b.DaoRulesProposalID = _DaoRulesProposalID;
         b.FundingProposalID = _FundingProposalID;
 
-        b.fees = _boardMeetingFees;
+        b.fees = msg.value;
         
         b.setDeadline = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);        
         b.votingDeadline = b.setDeadline + (_MinutesDebatingPeriod * 1 minutes); 
@@ -237,8 +236,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (msg.value < DaoRules.minBoardMeetingFees
-            || _inflationRate > 1000) throw;
+        if (_inflationRate > 1000) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -263,7 +261,7 @@ contract DAO {
         
         lastRecipientProposalId[c.recipient] = _ContractorProposalID;
         
-        c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod, msg.value);    
+        c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
 
         c.amount = _amount;
         c.description = _description;
@@ -309,12 +307,10 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (msg.value < DaoRules.minBoardMeetingFees) throw;
-
         uint _FundingProposalID = FundingProposals.length++;
         FundingProposal f = FundingProposals[_FundingProposalID];
 
-        f.BoardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod, msg.value);   
+        f.BoardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
         
         f.mainPartner = _mainPartner;
         f.publicTokenCreation = _publicTokenCreation;
@@ -360,8 +356,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
     
-        if (msg.value < DaoRules.minBoardMeetingFees 
-            || _minQuorumDivisor <= 1
+        if (_minQuorumDivisor <= 1
             || _minQuorumDivisor > 10
             || _minutesSetProposalPeriod > 50000            
             || _minMinutesDebatePeriod > 50000
@@ -372,7 +367,7 @@ contract DAO {
         Rules r = DaoRulesProposals[_DaoRulesProposalID];
 
         r.minQuorumDivisor = _minQuorumDivisor;
-        r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID,0, _MinutesDebatingPeriod, msg.value);      
+        r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID,0, _MinutesDebatingPeriod);      
         r.minBoardMeetingFees = _minBoardMeetingFees;
         r.minutesSetProposalPeriod = _minutesSetProposalPeriod;
         r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
