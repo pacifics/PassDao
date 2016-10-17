@@ -237,7 +237,7 @@ contract AccountManager is Token {
         FundingRules.maxTotalSupply = totalSupply + _maxAmountToFund*FundingRules.initialTokenPriceMultiplier;
         FundingRules.inflationRate = _inflationRate;  
         
-        FundingRulesSet(_mainPartner, _startTime);
+        FundingRulesSet(_mainPartner, FundingRules.startTime);
 
     } 
     
