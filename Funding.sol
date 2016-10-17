@@ -339,12 +339,14 @@ contract Funding {
 
         refundFromPartner = _to + 1;
         
-        if (refundFromPartner >= partners.length && totalFunded >= sumOfFundingAmountLimits) {
-            closingTime = now;
+        if (refundFromPartner >= partners.length)
+            refundFromPartner = 1;
+            if (totalFunded >= sumOfFundingAmountLimits) {
+                closingTime = now;
+            }
         }
         
     }
-
     
     /// @param _minAmountLimit The amount below this limit can fund the dao
     /// @param _maxAmountLimit Limit in amount a partner can fund
