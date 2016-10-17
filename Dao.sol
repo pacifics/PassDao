@@ -502,8 +502,10 @@ contract DAO {
 
             if (f.contractorProposalID != 0) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
-                ContractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
+                if (cf.initialTokenPriceMultiplier != 0) {
+                    ContractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
                     f.fundingAmount, f.startTime, f.startTime + f.minutesFundingPeriod * 1 minutes, cf.inflationRate);
+                }
             }
             
         }
@@ -521,7 +523,6 @@ contract DAO {
 
             DaoRules.transferable = r.transferable;
             if (r.transferable) DaoAccountManager.TransferAble();
-            else DaoAccountManager.TransferDisable();
 
         }
             
