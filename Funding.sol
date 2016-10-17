@@ -339,7 +339,7 @@ contract Funding {
 
         refundFromPartner = _to + 1;
         
-        if (refundFromPartner >= partners.length)
+        if (refundFromPartner >= partners.length) {
             refundFromPartner = 1;
             if (totalFunded >= sumOfFundingAmountLimits) {
                 closingTime = now;
