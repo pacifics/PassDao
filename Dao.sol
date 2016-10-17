@@ -595,7 +595,6 @@ contract DAO {
 
     }
         
-    /// @notice Function to get the number of meetings 
     /// @return the number of meetings (passed or current)
     function numberOfMeetings() constant external returns (uint) {
         return BoardMeetings.length - 1;
