@@ -167,18 +167,10 @@ contract AccountManager is Token {
         }
 
         fundingDate[_contractorProposalID] = now;
-
-    }
-    
-    /// @notice Function used by a main partner to close the actual funding
-    function closeFunding() external {
-    
-        if (msg.sender != FundingRules.mainPartner) throw;
-
         FundingRules.closingTime = now;
         
     }
-
+    
     /// @param _contractorProposalID The index of the Dao contractor proposal
     /// @return The unix date when the main partner funded the Dao for the contractor
     function fundingDateForContractor(uint _contractorProposalID) constant external returns (uint) {
