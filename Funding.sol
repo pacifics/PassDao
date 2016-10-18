@@ -342,11 +342,13 @@ contract Funding {
         if (refundFromPartner >= partners.length) {
             refundFromPartner = 1;
             if (totalFunded >= sumOfFundingAmountLimits) {
-                closingTime = now;
+                ContractorAccountManager.closeFunding(); 
+                DaoAccountManager.closeFunding(); 
             }
         }
         
     }
+
     
     /// @param _minAmountLimit The amount below this limit can fund the dao
     /// @param _maxAmountLimit Limit in amount a partner can fund
