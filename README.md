@@ -21,7 +21,7 @@ This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Et
 
 ## The Dao Smart Contract
 
-Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period that can be extent by the creator of the proposal, and during a debate period. Approved proposal can be executed during a period predefined in the Dao rules.
+Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period, and during a debate period. Approved proposal can be executed during a period predefined in the Dao rules.
 
 Main functions: 
 
@@ -29,13 +29,13 @@ Main functions:
 
 - Approve a contractor proposal: shareholders can vote for or against a contractor proposal during a board meeting which can last from two to eight weeks (can be updated by voting). If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the contractor proposal is approved and the payment of proposal amount is completed. 
 
-- Receive contractor tokens: sending ethers to a contractor gives to DAO voters the right to receive contractor tokens in proportion of their Dao shares. This will allow contractors to reward the shareholder according to the contractor proposal. For the PM contractor, this function gives to DAO holders reputation tokens which will be used for the project. 
+- Receive contractor tokens: sending ethers to a contractor gives to DAO voters the right to receive contractor tokens in proportion of their Dao shares. This will allow contractors to reward the shareholder according to the contractor proposal. For the PM contractor, this function gives to DAO holders Pass reputation tokens which will be used for the project. 
 
 - Able transfer of Dao shares and tokens : the Dao can vote to decide the start date to let their members transfer Dao shares.
 
 Notes :
 
-- If the work of a contractor allows the development of our project, it should increase the value of reputation tokens which belongs to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
+- If the work of a contractor allows the development of our project, it should increase the value of Pass reputation tokens which belongs to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
 
 - Rewards to the contractors are done with ethers and step by step for each contractor. Each new step starts with a new contractor proposal which includes a report about the result of the last proposal.  
 
