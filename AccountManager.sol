@@ -24,6 +24,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
  * The Account Manager smart contract is associated with a recipient 
  * (the Dao for dao shares and the recipient for contractor tokens) 
  * and used for the management of tokens by a client smart contract (the Dao)
+ * or for the funding and creation of tokens by a funding smart contract 
 */
 
 /// @title Account Manager smart contract of the Pass Decentralized Autonomous Organisation
@@ -36,13 +37,13 @@ contract AccountManager is Token {
         address mainPartner;
         // True if crowdfunding
         bool publicTokenCreation; 
-        // The maximum amount of the funding
+        // The maximum amount (in wei) of the funding
         uint maxAmountToFund;
         // Maximum quantity of tokens to create
         uint256 maxTotalSupply; 
-        // Start time of the funding
+        // A unix timestamp, denoting the start time of the funding
         uint startTime; 
-        // Closing time of the funding
+        // A unix timestamp, denoting the closing time of the funding
         uint closingTime;  
         // The price multiplier for a token without considering the inflation rate
         uint initialTokenPriceMultiplier;
@@ -62,7 +63,7 @@ contract AccountManager is Token {
     // If true, the tokens can be transfered
     bool public transferable;
 
-    // Map of addresses blocked during a vote. The address points to the date when the address can be unblocked
+    // Map of addresses blocked. The address points to the date when the address can be unblocked
     mapping (address => uint) blocked; 
 
     // Modifier that allows only the cient to manage the account manager
@@ -72,6 +73,8 @@ contract AccountManager is Token {
 
     event TokensCreated(address indexed sender, address indexed tokenHolder, uint quantity);
     event FundingRulesSet(address indexed mainPartner, uint startTime);
+    event FundingFueled(uint indexed contractorProposalID);
+    event TokenTransferable();
 
     /// @dev The constructor function
     /// @param _creator The creator address
@@ -162,15 +165,23 @@ contract AccountManager is Token {
     /// @param _contractorProposalID The index of the Dao contractor proposal
     function Fueled(uint _contractorProposalID) external {
     
-        if (msg.sender != client && msg.sender != FundingRules.mainPartner) {
-            throw;
-        }
+        if (msg.sender != FundingRules.mainPartner) throw;
 
         fundingDate[_contractorProposalID] = now;
+        
+        FundingFueled(_contractorProposalID);
+
+    }
+    
+    /// @notice Function used by a main partner to close the actual funding
+    function closeFunding() external {
+    
+        if (msg.sender != FundingRules.mainPartner) throw;
+
         FundingRules.closingTime = now;
         
     }
-    
+
     /// @param _contractorProposalID The index of the Dao contractor proposal
     /// @return The unix date when the main partner funded the Dao for the contractor
     function fundingDateForContractor(uint _contractorProposalID) constant external returns (uint) {
@@ -200,17 +211,17 @@ contract AccountManager is Token {
 
     }
     
-    /// @return the actual token price
+    /// @return the actual token price divisor
     function actualTokenPriceDivisor() constant external returns (uint) {
         return tokenPriceDivisor(now);
     }
 
     /// @dev Function to set a funding. Can be private or public
-    /// @param _mainPartner The address for the managing of a private funding
+    /// @param _mainPartner The address of the smart contract to manage a private funding
     /// @param _publicTokenCreation True if public funding
     /// @param _initialTokenPriceMultiplier Price multiplier without considering any inflation rate
-    /// @param _maxAmountToFund The maximum amount of the funding
-    /// @param _startTime The start time of the funding
+    /// @param _maxAmountToFund The maximum amount (in wei) of the funding
+    /// @param _startTime  A unix timestamp, denoting the start time of the funding
     /// @param _closingTime After this date, the funding is closed
     /// @param _inflationRate If 0, the token price doesn't change during the funding
     function setFundingRules(
@@ -303,6 +314,7 @@ contract AccountManager is Token {
     /// @dev Function used by the client to able the transfer of tokens
     function TransferAble() external onlyClient {
         transferable = true;
+        TokenTransferable();
     }
 
     /// @dev Internal function for the creation of tokens
