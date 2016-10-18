@@ -342,8 +342,7 @@ contract Funding {
         if (refundFromPartner >= partners.length) {
             refundFromPartner = 1;
             if (totalFunded >= sumOfFundingAmountLimits) {
-                ContractorAccountManager.closeFunding(); 
-                DaoAccountManager.closeFunding(); 
+                closingTime = now;
             }
         }
         
