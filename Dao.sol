@@ -126,6 +126,8 @@ contract DAO {
     
     // Map to allow to withdraw board meeting fees
     mapping (address => uint) public pendingFeesWithdrawals;
+    // Map to to know the number of opened proposals of a recipient
+    mapping (address => uint) public numberOfOpenedProposals; 
     // Map to to know the last contractor proposal of a recipient
     mapping (address => uint) public lastRecipientProposalId; 
     // Map to know the account management of contractors
@@ -281,6 +283,8 @@ contract DAO {
                 _setDeadLine, _setDeadLine + (_MinutesDebatingPeriod * 1 minutes), c.inflationRate);
 
         }
+        
+        numberOfOpenedProposals[c.recipient] += 1;
         
         return _ContractorProposalID;
         
@@ -480,6 +484,7 @@ contract DAO {
         if (b.fees > b.totalRewardedAmount && !takeBoardMeetingFees(_BoardMeetingID)) return;
         
         b.open = false;
+        if (b.ContractorProposalID != 0) numberOfOpenedProposals[c.recipient] -= 1;
         BoardMeetingClosed(_BoardMeetingID);
         
         if (now > b.executionDeadline 
