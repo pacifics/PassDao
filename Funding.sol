@@ -96,6 +96,7 @@ contract Funding {
     event PartnersNotSet(uint sumOfFundingAmountLimits);
     event AllPartnersSet(uint fundingAmount);
     event Fueled();
+    event AllPartnersRefunded();
 
     /// @dev Constructor function
     /// @param _creator The creator of the smart contract
@@ -343,6 +344,7 @@ contract Funding {
             refundFromPartner = 1;
             if (totalFunded >= sumOfFundingAmountLimits) {
                 closingTime = now;
+                AllPartnersRefunded();
             }
         }
         
