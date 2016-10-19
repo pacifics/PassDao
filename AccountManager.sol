@@ -162,7 +162,7 @@ contract AccountManager is Token {
         return fundingDate[_contractorProposalID];
     }
 
-    /// @return The maximum tokens after the funding
+    /// @return The maximum quantity of tokens after the funding
     function MaxTotalSupply() constant external returns (uint) {
         return (FundingRules.maxTotalSupply);
     }
