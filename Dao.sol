@@ -400,6 +400,8 @@ contract DAO {
         if (b.hasVoted[msg.sender] 
             || now < b.setDeadline
             || now > b.votingDeadline 
+            || _BoardMeetingID <= 0
+            || _BoardMeetingID > BoardMeetings.length - 1
         ) {
         throw;
         }
@@ -450,7 +452,11 @@ contract DAO {
 
         BoardMeeting b = BoardMeetings[_BoardMeetingID];
 
-        if (now <= b.votingDeadline || !b.open) throw;
+        if (now <= b.votingDeadline 
+            || !b.open
+            || _BoardMeetingID <= 0
+            || _BoardMeetingID > BoardMeetings.length - 1
+            ) throw;
         
         uint quorum = b.yea + b.nay;
 
