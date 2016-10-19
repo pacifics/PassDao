@@ -216,6 +216,7 @@ contract DAO {
     }
 
     /// @notice Function to make a proposal to work for the Dao
+    /// @param _recipient The beneficiary of the proposal amount
     /// @param _amount The amount (in wei) to be sent if the proposal is approved
     /// @param _description String describing the proposal
     /// @param _hashOfTheDocument The hash of the proposal document
@@ -237,7 +238,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000 || _amount <= 0) throw;
+        if (_inflationRate > 1000) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -310,8 +311,6 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_sharePriceMultiplier == 0) throw;
-
         uint _FundingProposalID = FundingProposals.length++;
         FundingProposal f = FundingProposals[_FundingProposalID];
 
@@ -323,7 +322,7 @@ contract DAO {
         f.sharePriceMultiplier = _sharePriceMultiplier;
         f.inflationRate = _inflationRate;
         f.contractorProposalID = _contractorProposalID;
-        if (_startTime == 0) f.startTime = now; else f.startTime = _startTime;
+        f.startTime = _startTime;
         f.minutesFundingPeriod = _minutesFundingPeriod;
 
         if (_contractorProposalID != 0) {
