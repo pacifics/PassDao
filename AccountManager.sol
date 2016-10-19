@@ -162,7 +162,7 @@ contract AccountManager is Token {
         return fundingDate[_contractorProposalID];
     }
 
-    /// @return The maximum quantity of tokens after the funding
+    /// @return The maximum quqantity of tokens after the funding
     function MaxTotalSupply() constant external returns (uint) {
         return (FundingRules.maxTotalSupply);
     }
@@ -309,8 +309,12 @@ contract AccountManager is Token {
         uint _quantity = 100*_amount*FundingRules.initialTokenPriceMultiplier/tokenPriceDivisor(_saleDate);
         if (totalSupply + _quantity > FundingRules.maxTotalSupply) return;
 
-        balances[_tokenHolder] += _quantity; 
+        balances[_tokenHolder] += _quantity;
+        
+        uint _totalSupply = totalSupply;
         totalSupply += _quantity;
+        if (totalSupply < _totalSupply) throw;
+
         TokensCreated(msg.sender, _tokenHolder, _quantity);
         
         if (totalSupply == FundingRules.maxTotalSupply) {
