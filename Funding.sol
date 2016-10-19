@@ -96,6 +96,7 @@ contract Funding {
     event PartnersNotSet(uint sumOfFundingAmountLimits);
     event AllPartnersSet(uint fundingAmount);
     event Fueled();
+    event AllPartnersRefunded();
 
     /// @dev Constructor function
     /// @param _creator The creator of the smart contract
@@ -337,16 +338,18 @@ contract Funding {
         if (refundFromPartner > _to || _to > partners.length - 1) throw;
         
         for (uint i = refundFromPartner; i <= _to; i++) {
-            if (partners[i].valid) refundFor(i);
+            if (partners[i].valid) {
+                if (!refundFor(i)) throw;
+            }
         }
 
         refundFromPartner = _to + 1;
         
         if (refundFromPartner >= partners.length) {
             refundFromPartner = 1;
-            if (totalFunded >= sumOfFundingAmountLimits) {
-                ContractorAccountManager.closeFunding(); 
-                DaoAccountManager.closeFunding(); 
+            if (totalFunded >= sumOfFundingAmountLimits && allSet) {
+                closingTime = now; 
+                AllPartnersRefunded(); 
             }
         }
         
