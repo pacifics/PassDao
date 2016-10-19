@@ -317,7 +317,9 @@ contract DAO {
         if (_minutesFundingPeriod > 45000
             || (!_publicShareCreation && _mainPartner == 0)
             || _sharePriceMultiplier == 0
-            || _contractorProposalID > ContractorProposals.length - 1) throw;
+            || _contractorProposalID > ContractorProposals.length - 1) {
+            throw;
+        }
 
         uint _FundingProposalID = FundingProposals.length++;
         FundingProposal f = FundingProposals[_FundingProposalID];
