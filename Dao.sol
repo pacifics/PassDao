@@ -239,7 +239,7 @@ contract DAO {
     ) payable returns (uint) {
 
         if (_inflationRate > 1000
-            || _amount <=0) throw;
+            || _amount <= 0) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
