@@ -72,7 +72,7 @@ contract AccountManager is Token {
     modifier onlyPublicTokenCreation {if (!FundingRules.publicTokenCreation) throw; _;}
 
     event TokensCreated(address indexed sender, address indexed tokenHolder, uint quantity);
-    event FundingRulesSet(address indexed mainPartner, uint startTime);
+    event FundingRulesSet(address indexed mainPartner, uint indexed startTime);
     event FundingFueled(uint indexed contractorProposalID);
     event TokenTransferable();
 
