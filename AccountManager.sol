@@ -64,7 +64,7 @@ contract AccountManager is Token {
     bool public transferable;
 
     // Map of addresses blocked. The address points to the date when the address can be unblocked
-    mapping (address => uint) blocked; 
+    mapping (address => uint) blockedDeadLine; 
 
     // Modifier that allows only the cient to manage the account manager
     modifier onlyClient {if (msg.sender != client) throw; _;}
@@ -133,24 +133,6 @@ contract AccountManager is Token {
 
     }
      
-    /// @notice Function to unblock a tokenHolder address
-    /// @param _tokenHolder The address of the tokenHolder
-    /// @return Whether the tokenholder address is blocked (not allowed to transfer tokens) or not.
-    function unblockAccount(address _tokenHolder) returns (bool) {
-    
-        uint _deadLine = blocked[_tokenHolder];
-        
-        if (_deadLine == 0) return false;
-        
-        if (now > _deadLine) {
-            blocked[_tokenHolder] = 0;
-            return false;
-        } else {
-            return true;
-        }
-        
-    }
-
     /// @return True if the sender is the creator
     function IsCreator(address _sender) constant external returns (bool) {
         if (creator == _sender) return true;
@@ -292,17 +274,17 @@ contract AccountManager is Token {
 
     /// @param _tokenHolder The address of a token holder
     /// @return When a tokenHolder address can be unblocked
-    function blockedAccountDeadLine(address _tokenHolder) constant external returns (uint) {
+    function blockedTransferDeadLine(address _tokenHolder) constant external returns (uint) {
         
-        return blocked[_tokenHolder];
+        return blockedDeadLine[_tokenHolder];
 
     }
     
     /// @dev Function used by the client to block tokens transfer of from a tokenholder
     /// @param _tokenHolder The address of the token holder
     /// @param _deadLine When the account can be unblocked
-    function blockAccount(address _tokenHolder, uint _deadLine) external onlyClient {
-        blocked[_tokenHolder] = _deadLine;
+    function blockTransfer(address _tokenHolder, uint _deadLine) external onlyClient {
+        blockedDeadLine[_tokenHolder] = _deadLine;
     }
     
     /// @dev Function used by the client to able the transfer of tokens
@@ -350,8 +332,8 @@ contract AccountManager is Token {
         ) returns (bool success) {  
 
         if (transferable
-            && blocked[msg.sender] == 0
-            && blocked[_to] == 0
+            && (blockedDeadLine[msg.sender] == 0 || blockedDeadLine[msg.sender] < now)
+            && (blockedDeadLine[_to] == 0 || blockedDeadLine[_to] < now)
             && _to != address(this)
             && super.transfer(_to, _value)) {
                 return true;
@@ -369,8 +351,8 @@ contract AccountManager is Token {
         ) returns (bool success) {
         
         if (transferable
-            && blocked[_from] == 0
-            && blocked[_to] == 0
+            && (blockedDeadLine[_from] == 0 || blockedDeadLine[_from] < now)
+            && (blockedDeadLine[_to] == 0 || blockedDeadLine[_to] < now)
             && _to != address(this)
             && super.transferFrom(_from, _to, _value)) {
             return true;
