@@ -223,7 +223,10 @@ contract AccountManager is Token {
 
         FundingRules.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         FundingRules.maxAmountToFund = _maxAmountToFund;
+
         FundingRules.maxTotalSupply = totalSupply + _maxAmountToFund*FundingRules.initialTokenPriceMultiplier;
+        if (FundingRules.maxTotalSupply < totalSupply) throw;
+        
         FundingRules.inflationRate = _inflationRate;  
         
         FundingRulesSet(_mainPartner, FundingRules.startTime);
@@ -310,10 +313,7 @@ contract AccountManager is Token {
         if (totalSupply + _quantity > FundingRules.maxTotalSupply) return;
 
         balances[_tokenHolder] += _quantity;
-        
-        uint _totalSupply = totalSupply;
         totalSupply += _quantity;
-        if (totalSupply < _totalSupply) throw;
 
         TokensCreated(msg.sender, _tokenHolder, _quantity);
         
