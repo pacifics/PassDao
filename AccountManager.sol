@@ -218,7 +218,9 @@ contract AccountManager is Token {
             FundingRules.startTime = FundingRules.closingTime;
         }
 
+        if (_closingTime <= FundingRules.startTime) throw;
         FundingRules.closingTime = _closingTime; 
+
         FundingRules.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         FundingRules.maxAmountToFund = _maxAmountToFund;
         FundingRules.maxTotalSupply = totalSupply + _maxAmountToFund*FundingRules.initialTokenPriceMultiplier;
