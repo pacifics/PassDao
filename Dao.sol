@@ -240,7 +240,8 @@ contract DAO {
 
         if (_inflationRate > 1000
             || _recipient == 0
-            || _amount == 0) throw;
+            || _amount <= 0
+            || (_totalAmountForTokenReward != 0 && _initialTokenPriceMultiplier == 0)) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -275,7 +276,7 @@ contract DAO {
         c.inflationRate = _inflationRate;
 
         c.totalAmountForTokenReward = _totalAmountForTokenReward;
-        if (_totalAmountForTokenReward != 0 && _initialTokenPriceMultiplier != 0) {
+        if (_totalAmountForTokenReward != 0) {
             
             uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
             ContractorAccountManager[c.recipient].setFundingRules(address(this), false, 
@@ -314,6 +315,7 @@ contract DAO {
     ) payable returns (uint) {
 
         if (_minutesFundingPeriod > 45000
+            || (!_publicShareCreation && _mainPartner == 0)
             || _sharePriceMultiplier == 0) throw;
 
         uint _FundingProposalID = FundingProposals.length++;
