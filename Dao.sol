@@ -206,7 +206,7 @@ contract DAO {
         b.executionDeadline = b.votingDeadline + (DaoRules.minutesExecuteProposalPeriod * 1 minutes);
 
         if (b.executionDeadline < now) throw;
-            
+
         b.open = true; 
 
         NewBoardMeetingAdded(_BoardMeetingID, b.setDeadline, b.votingDeadline);
@@ -239,7 +239,7 @@ contract DAO {
     ) payable returns (uint) {
 
         if (_inflationRate > 1000
-            || _amount <= 0) throw;
+            || _recipient == 0) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -274,7 +274,7 @@ contract DAO {
         c.inflationRate = _inflationRate;
 
         c.totalAmountForTokenReward = _totalAmountForTokenReward;
-        if (_totalAmountForTokenReward != 0) {
+        if (_totalAmountForTokenReward != 0 && _initialTokenPriceMultiplier != 0) {
             
             uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
             ContractorAccountManager[c.recipient].setFundingRules(address(this), false, 
@@ -312,9 +312,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_minutesFundingPeriod > 45000
-            || _sharePriceMultiplier == 0
-            || (!_publicShareCreation && _mainPartner == 0)) throw;
+        if (_minutesFundingPeriod > 45000) throw;
 
         uint _FundingProposalID = FundingProposals.length++;
         FundingProposal f = FundingProposals[_FundingProposalID];
@@ -367,10 +365,8 @@ contract DAO {
     
         if (_minQuorumDivisor <= 1
             || _minQuorumDivisor > 10
-            || _minutesSetProposalPeriod > 50000            
-            || _minMinutesDebatePeriod > 50000
-            || _minutesExecuteProposalPeriod < 10
-            || _minutesExecuteProposalPeriod > 100000) throw; 
+            || _minutesSetProposalPeriod + _minMinutesDebatePeriod +  _minutesExecuteProposalPeriod > 150000
+            || _minutesExecuteProposalPeriod < 10) throw; 
         
         uint _DaoRulesProposalID = DaoRulesProposals.length++;
         Rules r = DaoRulesProposals[_DaoRulesProposalID];
