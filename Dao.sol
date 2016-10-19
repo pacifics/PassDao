@@ -350,9 +350,9 @@ contract DAO {
     }
 
     /// @notice Function to make a proposal to change the Dao rules 
-    /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
     /// @param _minQuorumDivisor If 5, the minimum quorum is 20%
     /// @param _minBoardMeetingFees The amount in wei to create o proposal and organize a board meeting
+    /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
     /// @param _minutesExecuteProposalPeriod The period in minutes to execute a decision after a board meeting
     /// @param _transferable True if the Dao tokens are transferable
@@ -369,6 +369,7 @@ contract DAO {
     
         if (_minQuorumDivisor <= 1
             || _minQuorumDivisor > 10
+            || _minMinutesDebatePeriod < 10000
             || _minutesSetProposalPeriod + _minMinutesDebatePeriod +  _minutesExecuteProposalPeriod > 150000
             || _minutesExecuteProposalPeriod < 10) throw; 
         
