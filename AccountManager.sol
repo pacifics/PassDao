@@ -168,20 +168,12 @@ contract AccountManager is Token {
         if (msg.sender != FundingRules.mainPartner) throw;
 
         fundingDate[_contractorProposalID] = now;
+        FundingRules.closingTime = now;
         
         FundingFueled(_contractorProposalID);
 
     }
     
-    /// @notice Function used by a main partner to close the actual funding
-    function closeFunding() external {
-    
-        if (msg.sender != FundingRules.mainPartner) throw;
-
-        FundingRules.closingTime = now;
-        
-    }
-
     /// @param _contractorProposalID The index of the Dao contractor proposal
     /// @return The unix date when the main partner funded the Dao for the contractor
     function fundingDateForContractor(uint _contractorProposalID) constant external returns (uint) {
@@ -199,7 +191,7 @@ contract AccountManager is Token {
 
         uint _date = _saleDate;
         
-        if (_saleDate > FundingRules.closingTime && FundingRules.closingTime != 0) {
+        if (_saleDate > FundingRules.closingTime) {
             _date = FundingRules.closingTime;
         } 
         
@@ -237,10 +229,12 @@ contract AccountManager is Token {
         FundingRules.mainPartner = _mainPartner;
         FundingRules.publicTokenCreation = _publicTokenCreation;
         
-        if (_startTime < FundingRules.closingTime) {
+        if (_startTime < now) FundingRules.startTime = now; 
+        else FundingRules.startTime = _startTime;
+        
+        if (FundingRules.startTime < FundingRules.closingTime) {
             FundingRules.startTime = FundingRules.closingTime;
         }
-        else FundingRules.startTime = _startTime;
 
         FundingRules.closingTime = _closingTime; 
         FundingRules.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
@@ -255,7 +249,7 @@ contract AccountManager is Token {
     /// @return The maximal amount to fund of the actual funding. 0 if there is not any funding at this moment
     function fundingMaxAmount() constant external returns (uint) {
         
-        if ((now > FundingRules.closingTime && FundingRules.closingTime != 0)
+        if ((now > FundingRules.closingTime)
             || now < FundingRules.startTime) {
             return 0;   
         } else {
@@ -328,7 +322,7 @@ contract AccountManager is Token {
         uint _saleDate
     ) internal returns (bool _success) {
 
-        if ((now > FundingRules.closingTime && FundingRules.closingTime !=0) 
+        if ((now > FundingRules.closingTime) 
             || _amount <= 0
             || (now < FundingRules.startTime) ) {
             throw;
