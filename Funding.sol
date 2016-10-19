@@ -152,6 +152,7 @@ contract Funding {
             || limitSet
             || msg.value < minPresaleAmount
             || msg.value > maxPresaleAmount
+            || msg.sender == creator
         ) throw;
         
         if (partnerID[msg.sender] == 0) {
@@ -282,10 +283,10 @@ contract Funding {
             }
 
         }
-        
-        if (!DaoAccountManager.send(_sumAmountToFund)) throw;
-        totalFunded += _sumAmountToFund;
 
+        if (!DaoAccountManager.send(_sumAmountToFund)) throw;
+
+        totalFunded += _sumAmountToFund;
         if (totalFunded >= sumOfFundingAmountLimits) {
             ContractorAccountManager.Fueled(contractorProposalID); 
             DaoAccountManager.Fueled(contractorProposalID); 
@@ -336,9 +337,7 @@ contract Funding {
         if (refundFromPartner > _to || _to > partners.length - 1) throw;
         
         for (uint i = refundFromPartner; i <= _to; i++) {
-            if (partners[i].valid) {
-                if (!refundFor(i)) throw;
-            }
+            if (partners[i].valid) refundFor(i);
         }
 
         refundFromPartner = _to + 1;
