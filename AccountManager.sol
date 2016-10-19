@@ -125,7 +125,7 @@ contract AccountManager is Token {
         address _tokenHolder,
         uint _amount,
         uint _saleDate
-        ) returns (bool _success) {
+        ) returns (bool) {
         
         if (msg.sender != FundingRules.mainPartner) throw;
 
