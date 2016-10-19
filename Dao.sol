@@ -239,7 +239,8 @@ contract DAO {
     ) payable returns (uint) {
 
         if (_inflationRate > 1000
-            || _recipient == 0) throw;
+            || _recipient == 0
+            || _amount == 0) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -312,7 +313,8 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_minutesFundingPeriod > 45000) throw;
+        if (_minutesFundingPeriod > 45000
+            || _sharePriceMultiplier == 0) throw;
 
         uint _FundingProposalID = FundingProposals.length++;
         FundingProposal f = FundingProposals[_FundingProposalID];
