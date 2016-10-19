@@ -143,7 +143,7 @@ contract AccountManager is Token {
         return totalSupply;
     }
     
-    /// @notice Function used by the Dao or a main partner to set a Dao contractor proposal fueled
+    /// @notice Function used by a main partner to set a Dao contractor proposal fueled
     /// @param _contractorProposalID The index of the Dao contractor proposal
     function Fueled(uint _contractorProposalID) external {
     
