@@ -439,12 +439,12 @@ contract DAO {
 
         }
 
-        uint _deadline = DaoAccountManager.blockedAccountDeadLine(msg.sender);
+        uint _deadline = DaoAccountManager.blockedTransferDeadLine(msg.sender);
         if (_deadline == 0) {
-            DaoAccountManager.blockAccount(msg.sender, b.votingDeadline);
+            DaoAccountManager.blockTransfer(msg.sender, b.votingDeadline);
         }
         else if (b.votingDeadline > _deadline) {
-            DaoAccountManager.blockAccount(msg.sender, b.votingDeadline);
+            DaoAccountManager.blockTransfer(msg.sender, b.votingDeadline);
         }
 
     }
