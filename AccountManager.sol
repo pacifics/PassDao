@@ -221,7 +221,7 @@ contract AccountManager is Token {
     /// @param _publicTokenCreation True if public funding
     /// @param _initialTokenPriceMultiplier Price multiplier without considering any inflation rate
     /// @param _maxAmountToFund The maximum amount (in wei) of the funding
-    /// @param _startTime  A unix timestamp, denoting the start time of the funding
+    /// @param _startTime  A unix timestamp, denoting the start time of the funding (not mandatory)
     /// @param _closingTime After this date, the funding is closed
     /// @param _inflationRate If 0, the token price doesn't change during the funding
     function setFundingRules(
