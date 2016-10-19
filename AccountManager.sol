@@ -233,7 +233,7 @@ contract AccountManager is Token {
     /// @return The maximal amount to fund of the actual funding. 0 if there is not any funding at this moment
     function fundingMaxAmount() constant external returns (uint) {
         
-        if ((now > FundingRules.closingTime)
+        if ((now > FundingRules.closingTime && FundingRules.closingTime != 0)
             || now < FundingRules.startTime) {
             return 0;   
         } else {
