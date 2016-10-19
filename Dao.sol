@@ -238,7 +238,8 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000) throw;
+        if (_inflationRate > 1000
+            || _amount <=0) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -290,7 +291,7 @@ contract DAO {
 
     /// @notice Function to make a proposal for a funding of the Dao
     /// @param _publicShareCreation True if crowdfunding
-    /// @param _mainPartner The address of the funding contract if private (not mandatory)
+    /// @param _mainPartner The address of the funding contract if private (not mandatory if public)
     /// @param _maxFundingAmount The maximum amount to fund
     /// @param _sharePriceMultiplier The quantity of created tokens will depend on this multiplier
     /// @param _inflationRate If 0, the token price doesn't change during the funding (not mandatory)
@@ -310,6 +311,10 @@ contract DAO {
         uint _contractorProposalID,
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
+
+        if (_minutesFundingPeriod > 45000
+            || _sharePriceMultiplier == 0
+            || (!_publicShareCreation && _mainPartner == 0)) throw;
 
         uint _FundingProposalID = FundingProposals.length++;
         FundingProposal f = FundingProposals[_FundingProposalID];
