@@ -439,9 +439,7 @@ contract DAO {
 
         }
 
-        if (b.votingDeadline > DaoAccountManager.blockedTransferDeadLine(msg.sender)) {
-            DaoAccountManager.blockTransfer(msg.sender, b.votingDeadline);
-        }
+        DaoAccountManager.blockTransfer(msg.sender, b.votingDeadline);
 
     }
 
