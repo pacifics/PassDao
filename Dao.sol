@@ -261,7 +261,7 @@ contract DAO {
             
             if ((msg.sender != c.recipient 
                 && !ContractorAccountManager[c.recipient].IsCreator(msg.sender))
-                || _initialSupply != 0) throw;
+                || c.initialSupply != 0) throw;
 
         } else {
 
