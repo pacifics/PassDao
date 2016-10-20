@@ -429,10 +429,12 @@ contract DAO {
 
             if (c.fundingProposalID != 0) throw;
             
+            uint _balance = uint(DaoAccountManager.balanceOf(msg.sender));
+            uint _totalSupply = uint(DaoAccountManager.TotalSupply());
+            
             if (c.totalAmountForTokenReward > 0) {
                 
-                uint _amount = c.totalAmountForTokenReward
-                    *DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
+                uint _amount = c.totalAmountForTokenReward*_balance/_totalSupply;
 
                 AccountManager m = ContractorAccountManager[c.recipient];
                 if (!m.rewardToken(msg.sender, _amount, now)) throw;
@@ -441,7 +443,7 @@ contract DAO {
 
             if (b.fees > 0) {
 
-                uint _rewardedamount = b.fees*DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
+                uint _rewardedamount = b.fees*_balance/_totalSupply;
                 b.totalRewardedAmount += _rewardedamount;
                 pendingFeesWithdrawals[msg.sender] += _rewardedamount;
 
