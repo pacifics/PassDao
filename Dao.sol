@@ -557,13 +557,14 @@ contract DAO {
     /// @return Whether the withdraw was successful or not    
     function withdrawBoardMeetingFees() returns (bool) {
 
-        uint amount = pendingFeesWithdrawals[msg.sender];
-
+        uint _amount = pendingFeesWithdrawals[msg.sender];
+        if (_amount <= 0) return true;
+        
         pendingFeesWithdrawals[msg.sender] = 0;
-        if (msg.sender.send(amount)) {
+        if (msg.sender.send(_amount)) {
             return true;
         } else {
-            pendingFeesWithdrawals[msg.sender] = amount;
+            pendingFeesWithdrawals[msg.sender] = _amount;
             return false;
         }
 
@@ -576,6 +577,7 @@ contract DAO {
 
         BoardMeeting b = BoardMeetings[_boardMeetingID];
         uint _amount = b.fees - b.totalRewardedAmount;
+        if (_amount <= 0) return true;
 
         b.totalRewardedAmount = b.fees;
         if (DaoAccountManager.send(_amount)) {
