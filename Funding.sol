@@ -224,7 +224,7 @@ contract Funding {
     /// @notice Function used by the creator to set the funding limits for partners
     /// @param _to The index of the last partner to set
     /// @return Whether the set was successful or not
-    function setPartnersFundingLimits(uint _to) onlyCreator returns (bool _success) {
+    function setPartnersFundingLimits(uint _to) onlyCreator returns (bool) {
         
         if (!limitSet) throw;
 
