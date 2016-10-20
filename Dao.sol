@@ -268,8 +268,6 @@ contract DAO {
         
         lastRecipientProposalId[c.recipient] = _ContractorProposalID;
         
-        c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
-
         c.amount = _amount;
         c.description = _description;
         c.hashOfTheDocument = _hashOfTheDocument; 
@@ -289,6 +287,8 @@ contract DAO {
         
         ContractorProposalAdded(_ContractorProposalID, _recipient, _amount, _description);
         numberOfRecipientOpenedProposals[c.recipient] += 1;
+
+        c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
         
         return _ContractorProposalID;
         
@@ -327,8 +327,6 @@ contract DAO {
         uint _FundingProposalID = FundingProposals.length++;
         FundingProposal f = FundingProposals[_FundingProposalID];
 
-        f.BoardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
-        
         f.mainPartner = _mainPartner;
         f.publicShareCreation = _publicShareCreation;
         f.fundingAmount = _maxFundingAmount;
@@ -353,6 +351,8 @@ contract DAO {
         
         FundingProposalAdded(_FundingProposalID, _publicShareCreation, _maxFundingAmount);
         
+        f.BoardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
+
         return _FundingProposalID;
         
     }
@@ -386,11 +386,12 @@ contract DAO {
 
         r.minQuorumDivisor = _minQuorumDivisor;
         r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID,0, _MinutesDebatingPeriod);      
-        r.minBoardMeetingFees = _minBoardMeetingFees;
         r.minutesSetProposalPeriod = _minutesSetProposalPeriod;
         r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
         r.minutesExecuteProposalPeriod = _minutesExecuteProposalPeriod;
         r.transferable = _transferable;
+
+        r.minBoardMeetingFees = _minBoardMeetingFees;
 
         return _DaoRulesProposalID;
         
