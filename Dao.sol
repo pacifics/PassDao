@@ -435,7 +435,7 @@ contract DAO {
                     *DaoAccountManager.balanceOf(msg.sender)/DaoAccountManager.TotalSupply();
 
                 AccountManager m = ContractorAccountManager[c.recipient];
-                m.rewardToken(msg.sender, _amount, now);
+                if (m.rewardToken(msg.sender, _amount, now)) throw;
 
             }
 
