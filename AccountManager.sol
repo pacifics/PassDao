@@ -105,14 +105,14 @@ contract AccountManager is Token {
 
     /// @notice Function to send ethers to the Dao account manager. Tokens are created 
     /// according to the funding rules with `msg.sender` as the beneficiary in case of public funding
-    function () payable {
+    /// @return Whether the token creation was successful or not
+    function () payable returns (bool) {
 
         if (FundingRules.publicTokenCreation 
             && msg.sender != client) {
-
-            if (!createToken(msg.sender, msg.value, now)) throw;
-
+            return createToken(msg.sender, msg.value, now);
         }
+        else return true;
 
     }
 
