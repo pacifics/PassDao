@@ -253,8 +253,9 @@ contract DAO {
         
         if (lastRecipientProposalId[c.recipient] != 0) {
             
-            if (msg.sender != c.recipient 
-                && !ContractorAccountManager[c.recipient].IsCreator(msg.sender)) throw;
+            if ((msg.sender != c.recipient 
+                && !ContractorAccountManager[c.recipient].IsCreator(msg.sender))
+                || _initialSupply != 0) throw;
 
         } else {
 
