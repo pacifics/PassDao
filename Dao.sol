@@ -413,8 +413,6 @@ contract DAO {
         throw;
         }
 
-        b.hasVoted[msg.sender] = true;
-        
         if (_supportsProposal) {
             b.yea += DaoAccountManager.balanceOf(msg.sender);
         } 
@@ -422,6 +420,8 @@ contract DAO {
             b.nay += DaoAccountManager.balanceOf(msg.sender); 
         }
 
+        b.hasVoted[msg.sender] = true;
+        
         if (b.ContractorProposalID != 0) {
             
             ContractorProposal c = ContractorProposals[b.ContractorProposalID];
