@@ -108,7 +108,8 @@ contract AccountManager is Token {
     function () payable {
 
         if (FundingRules.publicTokenCreation 
-            && msg.sender != client) {
+            && msg.sender != client
+            && msg.sender != FundingRules.mainPartner) {
             createToken(msg.sender, msg.value, now);
         }
 
