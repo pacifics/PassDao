@@ -48,7 +48,9 @@ The smart contract derives to the basic, standardized Token contract Token.sol. 
 
 Main functions are : 
 
-- BuyToken (fallback function for public fundings) and BuyTokenFor (for private fundings by a funding smart contract)
+- Send Eth and BuyToken (fallback function for public fundings) 
+
+- BuyTokenFor (for private fundings by a funding smart contract)
 
 - Transfer (to transfer tokens) and TransferFrom (to transfer tokens)
 
