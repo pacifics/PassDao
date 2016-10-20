@@ -107,6 +107,8 @@ contract AccountManager is Token {
     /// according to the funding rules with `msg.sender` as the beneficiary in case of public funding
     function () payable {
 
+        if (recipient == 0) throw;
+        
         if (FundingRules.publicTokenCreation 
             && msg.sender != client
             && msg.sender != FundingRules.mainPartner) {
