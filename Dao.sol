@@ -148,8 +148,10 @@ contract DAO {
     modifier onlyTokenholders {
         if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
     
-    event NewBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
     event AccountManagerCreated(address recipient, address AccountManagerAddress);
+    event ContractorProposalAdded(uint indexed ContractorProposalID, address _recipient, uint amount, string description);
+    event FundingProposalAdded(uint indexed FundingProposalID, bool publicShareCreation, uint maxFundingAmount);
+    event NewBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
     event BoardMeetingFeesGivenBack(uint indexed boardMeetingID);
     event BoardMeetingClosed(uint indexed boardMeetingID);
     event ProposalTallied(uint indexed boardMeetingID);
@@ -285,6 +287,7 @@ contract DAO {
 
         }
         
+        ContractorProposalAdded(_ContractorProposalID, _recipient, _amount, _description);
         numberOfRecipientOpenedProposals[c.recipient] += 1;
         
         return _ContractorProposalID;
@@ -347,6 +350,8 @@ contract DAO {
             pendingFeesWithdrawals[b.creator] += b.fees;
 
         }
+        
+        FundingProposalAdded(_FundingProposalID, _publicShareCreation, _maxFundingAmount);
         
         return _FundingProposalID;
         
