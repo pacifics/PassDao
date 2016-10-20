@@ -25,13 +25,14 @@ Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a co
 
 Main functions: 
 
-- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services and ask for a voting process called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). The fees go to the voters according to their share in Dao. This will incentivize the Community members to be active members. 
+- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services and ask for a voting process called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). The fees go to the voters according to their share in Dao. Voters can also receive contractor tokens in proportion of their Dao shares. For the PM contractor, this function gives to DAO holders Pass reputation tokens which will be used for the project. 
 
-- Approve a contractor proposal: shareholders can vote for or against a contractor proposal during a board meeting which can last from two to eight weeks (can be updated by voting). If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the contractor proposal is approved and the payment of proposal amount is completed. 
+- Set a funding proposal: the dao sharehoders can propose to fund the Dao with a public or private funding. In case of private funding, the funding rules can be set in a smart contract and the funding can be linked to a contractor proposal that will be executed if the funding is fueled. We use this method for the primary funding with a funding smart contract linked to the first project manager proposal.
 
-- Receive contractor tokens: sending ethers to a contractor gives to DAO voters the right to receive contractor tokens in proportion of their Dao shares. This will allow contractors to reward the shareholder according to the contractor proposal. For the PM contractor, this function gives to DAO holders Pass reputation tokens which will be used for the project. 
+- Set a Dao Rules proposal: the dao shareholders can propose to change the quorum, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period, the maximum period to execute an approved proposal and the date when share can be transferes.
 
-- Able transfer of Dao shares and tokens : the Dao can vote to decide the start date to let their members transfer Dao shares.
+- Approve a proposal: shareholders can vote for or against a proposal during board meeting which can last from two to eight weeks (can be updated by voting). If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
+
 
 Notes :
 
@@ -47,11 +48,7 @@ The smart contract derives to the basic, standardized Token contract Token.sol. 
 
 Main functions are : 
 
-- SendEth (default function). 
-
-- BuyToken (for public fundings) and BuyTokenFor (for private fundings)
-
-- UnblockAccount (tokenholder's accounts are blocked when voting and can be unblocked when the proposal is closed)
+- BuyToken (fallback function for public fundings) and BuyTokenFor (for private fundings by a funding smart contract)
 
 - Transfer (to transfer tokens) and TransferFrom (to transfer tokens)
 
@@ -59,13 +56,13 @@ Main functions are :
 
 =
 
-## The Funding Smart Contract
+## The Primary Funding Smart Contract
 
 Smart contract used for the preliminary funding of the Dao. Each partner has to send an Eth address to be included in the mailing list and become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. 
 
 Main functions: 
 
-- IntentionToFund: default function to send Eth to the Funding smart contract.
+- IntentionToFund: fallback function to send Eth to the Funding smart contract.
 
 - SetPartners: allows the smart contract creator to validate Eth addresses according to the mailing list.
 
