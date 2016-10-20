@@ -250,6 +250,12 @@ contract DAO {
 
         c.recipient = _recipient;       
         c.initialSupply = _initialSupply;
+        c.amount = _amount;
+        c.description = _description;
+        c.hashOfTheDocument = _hashOfTheDocument; 
+        c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
+        c.inflationRate = _inflationRate;
+        c.totalAmountForTokenReward = _totalAmountForTokenReward;
         
         if (lastRecipientProposalId[c.recipient] != 0) {
             
@@ -266,18 +272,9 @@ contract DAO {
             AccountManagerCreated(c.recipient, address(m));
 
         }
-        
         lastRecipientProposalId[c.recipient] = _ContractorProposalID;
         
-        c.amount = _amount;
-        c.description = _description;
-        c.hashOfTheDocument = _hashOfTheDocument; 
-
-        c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
-        c.inflationRate = _inflationRate;
-
-        c.totalAmountForTokenReward = _totalAmountForTokenReward;
-        if (_totalAmountForTokenReward != 0) {
+        if (c.totalAmountForTokenReward != 0) {
             
             uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
             ContractorAccountManager[c.recipient].setFundingRules(address(this), false, 
@@ -286,7 +283,7 @@ contract DAO {
 
         }
         
-        ContractorProposalAdded(_ContractorProposalID, _recipient, _amount, _description);
+        ContractorProposalAdded(_ContractorProposalID, c.recipient, c.amount, c.description);
         numberOfRecipientOpenedProposals[c.recipient] += 1;
 
         c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
