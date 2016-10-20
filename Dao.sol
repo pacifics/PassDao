@@ -274,7 +274,7 @@ contract DAO {
         }
         lastRecipientProposalId[c.recipient] = _ContractorProposalID;
         
-        if (c.totalAmountForTokenReward != 0) {
+        if (c.totalAmountForTokenReward > 0) {
             
             uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
             ContractorAccountManager[c.recipient].setFundingRules(address(this), false, 
@@ -515,7 +515,7 @@ contract DAO {
 
             if (f.contractorProposalID != 0) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
-                if (cf.initialTokenPriceMultiplier != 0) {
+                if (cf.initialTokenPriceMultiplier > 0) {
                     ContractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
                     f.fundingAmount, f.startTime, f.startTime + f.minutesFundingPeriod * 1 minutes, cf.inflationRate);
                 }
