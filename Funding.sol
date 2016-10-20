@@ -149,7 +149,7 @@ contract Funding {
         
         if (msg.value <= 0
             || now < startTime
-            || (now > closingTime && closingTime != 0)
+            || now > closingTime
             || limitSet
             || msg.value < minPresaleAmount
             || msg.value > maxPresaleAmount
