@@ -52,9 +52,9 @@ Main functions are :
 
 - BuyTokenFor (for private fundings by a funding smart contract)
 
-- Transfer (to transfer tokens) and TransferFrom (to transfer tokens)
+- Transfer and TransferFrom (for the transfer of tokens)
 
-- Approve (tokens allowance). 
+- Approve (tokens allowance given by a token owner). 
 
 =
 
