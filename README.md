@@ -29,9 +29,9 @@ Main functions:
 
 - Set a funding proposal: the dao sharehoders can propose to fund the Dao with a public or private funding. In case of private funding, the funding rules can be set in a smart contract and the funding can be linked to a contractor proposal that will be executed if the funding is fueled. We use this method for the primary funding with a funding smart contract linked to the first project manager proposal.
 
-- Set a Dao Rules proposal: the dao share holders can propose to change the quorum, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period, the maximum period to execute an approved proposal and the date when share can be transferes.
+- Set a Dao Rules proposal: the dao share holders can propose to change the quorum, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period, the maximum period to execute an approved proposal and the date when shares can be transfered.
 
-- Approve a proposal: share holders can vote for or against a proposal during board meeting which can last from two to eight weeks (can be updated by voting). If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
+- Approve a proposal: share holders can vote for or against a proposal during a board meeting which can last from two to eight weeks (can be updated by voting). If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
 
 
 Notes :
