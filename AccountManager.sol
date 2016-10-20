@@ -331,8 +331,8 @@ contract AccountManager is Token {
         ) returns (bool success) {  
 
         if (transferable
-            && (blockedDeadLine[msg.sender] == 0 || blockedDeadLine[msg.sender] < now)
-            && (blockedDeadLine[_to] == 0 || blockedDeadLine[_to] < now)
+            && (blockedDeadLine[msg.sender] < now)
+            && (blockedDeadLine[_to] < now)
             && _to != address(this)
             && super.transfer(_to, _value)) {
                 return true;
@@ -350,8 +350,8 @@ contract AccountManager is Token {
         ) returns (bool success) {
         
         if (transferable
-            && (blockedDeadLine[_from] == 0 || blockedDeadLine[_from] < now)
-            && (blockedDeadLine[_to] == 0 || blockedDeadLine[_to] < now)
+            && ( blockedDeadLine[_from] < now)
+            && (blockedDeadLine[_to] < now)
             && _to != address(this)
             && super.transferFrom(_from, _to, _value)) {
             return true;
