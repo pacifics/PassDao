@@ -149,9 +149,9 @@ contract DAO {
         if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
     
     event AccountManagerCreated(address recipient, address AccountManagerAddress);
-    event ContractorProposalAdded(uint indexed ContractorProposalID, address recipient, uint amount, string description);
+    event ContractorProposalAdded(uint indexed ContractorProposalID, string description, uint amount);
     event FundingProposalAdded(uint indexed FundingProposalID, bool publicShareCreation, uint maxFundingAmount);
-    event NewBoardMeetingAdded(uint indexed BoardMeetingID, uint setDeadline, uint votingDeadline);
+    event DaoProposalAdded(uint DaoRulesProposalID);
     event BoardMeetingFeesGivenBack(uint indexed boardMeetingID);
     event BoardMeetingClosed(uint indexed boardMeetingID);
     event ProposalTallied(uint indexed boardMeetingID);
@@ -210,8 +210,6 @@ contract DAO {
         if (b.executionDeadline < now) throw;
 
         b.open = true; 
-
-        NewBoardMeetingAdded(_BoardMeetingID, b.setDeadline, b.votingDeadline);
 
         return _BoardMeetingID;
 
@@ -280,7 +278,7 @@ contract DAO {
 
         }
         
-        ContractorProposalAdded(_ContractorProposalID, c.recipient, c.amount, c.description);
+        ContractorProposalAdded(_ContractorProposalID, c.description, c.amount);
         numberOfRecipientOpenedProposals[c.recipient] += 1;
 
         c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
@@ -313,9 +311,7 @@ contract DAO {
     ) payable returns (uint) {
 
         if (_minutesFundingPeriod > 45000
-            || (!_publicShareCreation && _mainPartner == 0)
-//            || _contractorProposalID > ContractorProposals.length - 1
-            ) {
+            || (!_publicShareCreation && _mainPartner == 0)) {
                 throw;
             }
 
@@ -385,8 +381,10 @@ contract DAO {
         r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
         r.minutesExecuteProposalPeriod = _minutesExecuteProposalPeriod;
         r.transferable = _transferable;
+        
+        DaoProposalAdded(_DaoRulesProposalID);
 
-        r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID,0, _MinutesDebatingPeriod);     
+        r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _MinutesDebatingPeriod);     
 
         return _DaoRulesProposalID;
         
@@ -404,8 +402,6 @@ contract DAO {
         if (b.hasVoted[msg.sender] 
             || now < b.setDeadline
             || now > b.votingDeadline 
-//            || _BoardMeetingID <= 0
-//            || _BoardMeetingID > BoardMeetings.length - 1
         ) {
         throw;
         }
@@ -460,8 +456,6 @@ contract DAO {
 
         if (now <= b.votingDeadline 
             || !b.open
-            || _BoardMeetingID <= 0
-            || _BoardMeetingID > BoardMeetings.length - 1
             ) throw;
         
         uint quorum = b.yea + b.nay;
