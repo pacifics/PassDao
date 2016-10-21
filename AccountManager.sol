@@ -29,6 +29,9 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 
 /// @title Account Manager smart contract of the Pass Decentralized Autonomous Organisation
 contract AccountManager is Token {
+    
+    // Amount of decimals for token display purposes
+    uint8 public decimals;
 
     // Rules for the funding of the account manager
     fundingData public FundingRules;
@@ -91,6 +94,8 @@ contract AccountManager is Token {
         creator = _creator;
         client = _client;
         recipient = _recipient;
+        
+        decimals = 18;
         
         if (_initialSupply > 0) {
 
