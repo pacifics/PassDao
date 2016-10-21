@@ -57,7 +57,9 @@ contract Token is TokenInterface {
     }
 
     function transfer(address _to, uint256 _amount) returns (bool success) {
-        if (balances[msg.sender] >= _amount && _amount > 0) {
+
+        if (balances[msg.sender] >= _amount
+            && balances[_to] + _amount > balances[_to]) {
             balances[msg.sender] -= _amount;
             balances[_to] += _amount;
             Transfer(msg.sender, _to, _amount);
@@ -65,6 +67,7 @@ contract Token is TokenInterface {
         } else {
            return false;
         }
+
     }
 
     function transferFrom(
@@ -75,7 +78,7 @@ contract Token is TokenInterface {
 
         if (balances[_from] >= _amount
             && allowed[_from][msg.sender] >= _amount
-            && _amount > 0) {
+            && balances[_to] + _amount > balances[_to]) {
 
             balances[_to] += _amount;
             balances[_from] -= _amount;
@@ -85,6 +88,7 @@ contract Token is TokenInterface {
         } else {
             return false;
         }
+
     }
 
     function approve(address _spender, uint256 _amount) returns (bool success) {
