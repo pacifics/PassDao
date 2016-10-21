@@ -25,7 +25,7 @@ Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a co
 
 Main functions: 
 
-- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services and ask for a voting process called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). The fees go to the voters according to their share in the Dao. Voters can also receive contractor tokens in proportion of their Dao share. For the PM contractor, this function gives to DAO holders Pass reputation tokens which will be used for the project. 
+- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services and ask for a voting process called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). The fees go to the voters according to their share in the Dao. Voters can also receive contractor tokens in proportion of their Dao share. For the PM contractor, this function gives to DAO share holders Pass reputation tokens which will be used by the couriers for deposit when taking parcels. 
 
 - Set a funding proposal: the dao sharehoders can propose to fund the Dao with a public or private funding. In case of private funding, the funding rules can be set in a separated smart contract and the funding can be linked to a contractor proposal that will be executed if the funding is fueled. We use this method for the primary funding with a funding smart contract linked to the first project manager proposal.
 
