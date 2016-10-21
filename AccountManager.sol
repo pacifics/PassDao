@@ -230,7 +230,6 @@ contract AccountManager is Token {
 
         FundingRules.maxAmountToFund = _maxAmountToFund;
         FundingRules.maxTotalSupply = totalSupply + _maxAmountToFund*FundingRules.initialTokenPriceMultiplier;
-        if (FundingRules.maxTotalSupply <= totalSupply) throw;
 
         FundingRulesSet(_mainPartner, FundingRules.startTime);
 
