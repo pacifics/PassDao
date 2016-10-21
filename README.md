@@ -69,11 +69,11 @@ Main functions:
 
 =
 
-# About Security
+# Notes
 
 - It is necessary to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders, avoid the possibility to fund using "hundreds" addresses and allow to check that partners's addresses are not related to a smart contract. 
 
-- We limit the amount to send to the funding smart contract and if fueled we limit the amount to fund to the Dao for each partner. Our first goal is decentralization and we want everyone to be abe to become a shareholder 
+- We limit the amount to send to the funding smart contract and if fueled we limit the amount to fund to the Dao for each partner. Our first goal is decentralization and we want everyone to be abe to become a shareholder.
 
 - By allowing fundings (public or private) for each step of the project and by limiting the funding amounts, we avoid useless blocked ethers in the Dao. It is possible to link a funding proposal with a contractor proposal and that will be completed only if the funding is fueled during a predefined period, otherwise the Dao is not funded and the contractor proposal not completed. We use this method for the first Project Manager proposal and the primary funding. For the next steps of the project, we can proceed in the same way and with no ether balance in the Dao after the funding.
 
@@ -81,15 +81,17 @@ Main functions:
 
 - If the work of a contractor allows the development of our project, it should increase the value of Pass reputation tokens which belongs to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
 
-- Make a proposal will cost board meeting fees. In case of funding or Dao rules proposals, the fees return to the creator of the proposal if the quorum is reached.
+- Make a proposal will cost board meeting fees. In case of funding or Dao rules proposals, the fees return to the creator of the proposal if the quorum is reached. The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. 
 
 - A period to consider or set the proposal is foreseen before each board meeting. 
-
-- The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. 
 
 - After a vote, the share holder is not able to transfer tokens until the end of the board meeting. The contractor proposal can foresee an inflation rate for the reward of contractor tokens which will incentivize shareholders to vote early.
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares.
+
+=
+
+# About Security
 
 - There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to tokenholders. 
 
