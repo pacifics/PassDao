@@ -230,6 +230,7 @@ contract AccountManager is Token {
 
         FundingRules.maxAmountToFund = _maxAmountToFund;
         FundingRules.maxTotalSupply = totalSupply + _maxAmountToFund*FundingRules.initialTokenPriceMultiplier;
+        if (FundingRules.maxTotalSupply <= totalSupply) throw;
 
         FundingRulesSet(_mainPartner, FundingRules.startTime);
 
@@ -256,7 +257,7 @@ contract AccountManager is Token {
         uint _amount
     ) external onlyClient returns (bool _success) {
     
-        return _recipient.send(_amount);    
+        if (_amount >0) return _recipient.send(_amount);    
 
     }
     
