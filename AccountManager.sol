@@ -30,9 +30,6 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 /// @title Account Manager smart contract of the Pass Decentralized Autonomous Organisation
 contract AccountManager is Token {
     
-    // Amount of decimals for token display purposes
-    uint8 public decimals;
-
     // Rules for the funding of the account manager
     fundingData public FundingRules;
     struct fundingData {
@@ -328,7 +325,10 @@ contract AccountManager is Token {
 
     }
    
-    // Function to transfer tokens to another address
+    /// @notice send `_value` token to `_to` from `msg.sender`
+    /// @param _to The address of the recipient
+    /// @param _value The amount of token to be transferred
+    /// @return Whether the transfer was successful or not
     function transfer(
         address _to, 
         uint256 _value
@@ -346,7 +346,11 @@ contract AccountManager is Token {
 
     }
 
-    // Function to transfer tokens from an address to another address
+    /// @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
+    /// @param _from The address of the sender
+    /// @param _to The address of the recipient
+    /// @param _value The amount of token to be transferred
+    /// @return Whether the transfer was successful or not
     function transferFrom(
         address _from, 
         address _to, 
