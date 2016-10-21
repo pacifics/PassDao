@@ -1,3 +1,5 @@
+pragma solidity ^0.4.2;
+
 /*
 Basic, standardized Token contract with no "premine". Defines the functions to
 check token balances, send tokens, send tokens on behalf of a 3rd party and the
@@ -45,23 +47,16 @@ contract TokenInterface {
     ) constant returns (uint256 remaining);
 
     event Transfer(address indexed _from, address indexed _to, uint256 _amount);
-    event Approval(
-        address indexed _owner,
-        address indexed _spender,
-        uint256 _amount
-    );
+    event Approval(address indexed _owner, address indexed _spender, uint256 _amount);
 }
 
 contract Token is TokenInterface {
-    // Protects users by preventing the execution of method calls that
-    // inadvertently also transferred ether
-    modifier noEther() {if (msg.value > 0) throw; _}
 
     function balanceOf(address _owner) constant returns (uint256 balance) {
         return balances[_owner];
     }
 
-    function transfer(address _to, uint256 _amount) noEther returns (bool success) {
+    function transfer(address _to, uint256 _amount) returns (bool success) {
         if (balances[msg.sender] >= _amount && _amount > 0) {
             balances[msg.sender] -= _amount;
             balances[_to] += _amount;
@@ -76,7 +71,7 @@ contract Token is TokenInterface {
         address _from,
         address _to,
         uint256 _amount
-    ) noEther returns (bool success) {
+    ) returns (bool success) {
 
         if (balances[_from] >= _amount
             && allowed[_from][msg.sender] >= _amount
