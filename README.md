@@ -50,11 +50,11 @@ Main functions are :
 
 - Fallback function to send Eth to the Dao account manager and buy shares for public fundings
 
-- BuyTokenFor (for private fundings by a funding smart contract)
+- BuyTokenFor for private fundings by a funding smart contract
 
-- Transfer and TransferFrom (for the transfer of tokens)
+- Transfer and TransferFrom for the transfer of tokens
 
-- Approve (tokens allowance given by a token owner). 
+- Approve tokens allowance given by a token owner. 
 
 =
 
@@ -64,7 +64,7 @@ Smart contract used for the primary funding of the Dao. Each partner has to send
 
 Main functions: 
 
-- IntentionToFund: fallback function to send Eth to the Funding smart contract.
+- Fallback function to send Eth to the Funding smart contract.
 
 - SetPartners: allows the smart contract creator to validate Eth addresses according to the mailing list.
 
