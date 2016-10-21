@@ -80,8 +80,8 @@ contract Token is TokenInterface {
             && allowed[_from][msg.sender] >= _amount
             && balances[_to] + _amount > balances[_to]) {
 
-            balances[_to] += _amount;
             balances[_from] -= _amount;
+            balances[_to] += _amount;
             allowed[_from][msg.sender] -= _amount;
             Transfer(_from, _to, _amount);
             return true;
