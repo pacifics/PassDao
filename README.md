@@ -48,7 +48,7 @@ The smart contract derives to the basic, standardized Token contract Token.sol a
 
 Main functions are : 
 
-- Fallback function Send Eth to the Dao account manager and BuyToken for public fundings
+- Fallback function to send Eth to the Dao account manager and buy shares for public fundings
 
 - BuyTokenFor (for private fundings by a funding smart contract)
 
