@@ -149,8 +149,10 @@ contract DAO {
         if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
     
     event AccountManagerCreated(address Recipient, address AccountManagerAddress);
-    event ContractorProposalAdded(uint indexed BoardMeetingID, uint ContractorProposalID, address indexed recipient, uint Amount);
-    event FundingProposalAdded(uint indexed BoardMeetingID, uint indexed FundingProposalID, uint maxFundingAmount,uint ContractorProposalID);
+    event ContractorProposalAdded(uint indexed BoardMeetingID, uint ContractorProposalID, 
+        address indexed recipient, uint Amount);
+    event FundingProposalAdded(uint indexed BoardMeetingID, uint indexed FundingProposalID, 
+        uint maxFundingAmount,uint ContractorProposalID);
     event DaoProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID);
     event BoardMeetingFeesGivenBack(uint indexed BoardMeetingID);
     event BoardMeetingClosed(uint indexed BoardMeetingID);
