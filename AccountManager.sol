@@ -217,7 +217,7 @@ contract AccountManager is Token {
         if (_startTime < now) FundingRules.startTime = now; 
         else FundingRules.startTime = _startTime;
         
-        if (FundingRules.startTime < FundingRules.closingTime 
+        if (FundingRules.startTime < FundingRules.closingTime && FundingRules.closingTime != 0)
         || _closingTime <= FundingRules.startTime) throw;
 
         FundingRules.closingTime = _closingTime; 
