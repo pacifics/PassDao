@@ -97,5 +97,5 @@ Main functions:
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares.
 
-- There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to tokenholders. 
+- There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to share holders. 
 
