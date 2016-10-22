@@ -199,7 +199,7 @@ contract AccountManager is Token {
     /// @param _initialTokenPriceMultiplier Price multiplier without considering any inflation rate
     /// @param _maxAmountToFund The maximum amount (in wei) of the funding
     /// @param _startTime  A unix timestamp, denoting the start time of the funding (not mandatory)
-    /// @param _closingTime After this date, the funding is closed
+    /// @param _minutesFundingPeriod Period in minutes of the funding
     /// @param _inflationRate If 0, the token price doesn't change during the funding
     function setFundingRules(
         address _mainPartner,
@@ -207,7 +207,7 @@ contract AccountManager is Token {
         uint _initialTokenPriceMultiplier, 
         uint256 _maxAmountToFund, 
         uint _startTime, 
-        uint _closingTime, 
+        uint _minutesFundingPeriod, 
         uint _inflationRate
     ) external onlyClient {
 
@@ -217,10 +217,9 @@ contract AccountManager is Token {
         if (_startTime < now) FundingRules.startTime = now; 
         else FundingRules.startTime = _startTime;
         
-        if ((FundingRules.startTime < FundingRules.closingTime && FundingRules.closingTime != 0)
-        || _closingTime <= FundingRules.startTime) throw;
+        if (FundingRules.startTime < FundingRules.closingTime && FundingRules.closingTime != 0) throw;
 
-        FundingRules.closingTime = _closingTime; 
+        FundingRules.closingTime = FundingRules.startTime + (_minutesFundingPeriod * 1 minutes); 
 
         FundingRules.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         FundingRules.inflationRate = _inflationRate;  
