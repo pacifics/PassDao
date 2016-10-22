@@ -114,7 +114,7 @@ contract AccountManager is Token {
         if (FundingRules.publicTokenCreation 
             && msg.sender != client
             && msg.sender != FundingRules.mainPartner) {
-            createToken(msg.sender, msg.value, now);
+            if (!createToken(msg.sender, msg.value, now)) throw;
         }
 
     }
