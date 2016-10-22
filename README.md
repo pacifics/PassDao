@@ -83,7 +83,9 @@ Main functions:
 
 - A period to consider or set the proposal is foreseen before each board meeting. 
 
-- After a vote, the share holder is not able to transfer tokens until the end of the board meeting. The contractor proposal can foresee an inflation rate for the reward of contractor tokens which will incentivize shareholders to vote early.
+- After a vote, the share holder is not able to transfer tokens until the end of the board meeting. 
+
+- The contractor proposal can foresee an inflation rate for the reward of contractor tokens which will incentivize shareholders to vote early.
 
 =
 
