@@ -15,7 +15,7 @@ contract Token {
     mapping (address => mapping (address => uint256)) allowed;
 
     /* Total amount of tokens */
-    uint256 public totalSupply;
+    uint256 totalSupply;
 
     /* Amount of decimals for token display purposes */
     uint8 public decimals;
