@@ -149,8 +149,8 @@ contract DAO {
         if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
     
     event AccountManagerCreated(address Recipient, address AccountManagerAddress);
-    event ContractorProposalAdded(uint indexed BoardMeetingID, uint ContractorProposalID, 
-        address indexed recipient, uint Amount);
+    event ContractorProposalAdded(uint indexed BoardMeetingID, 
+        uint ContractorProposalID, address indexed recipient, uint Amount);
     event FundingProposalAdded(uint indexed BoardMeetingID, uint FundingProposalID, 
         uint maxFundingAmount,uint ContractorProposalID);
     event DaoRulesProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID);
@@ -242,7 +242,9 @@ contract DAO {
 
         if (_inflationRate > 1000 
             || _recipient == 0
-            || _amount <= 0) throw;
+            || _amount <= 0
+            || _recipient == address(DaoAccountManager)
+            || _recipient == address(this)) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -317,6 +319,7 @@ contract DAO {
 
         if (_minutesFundingPeriod > 45000
             || (!_publicShareCreation && _mainPartner == 0)
+            || _mainPartner == address(this)
             || _sharePriceMultiplier <= 0) {
                 throw;
             }
