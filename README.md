@@ -65,7 +65,7 @@ Main functions:
 
 - FundDaoFor: to send Eth from the Funding smart contract to the Dao according to the set limits (if the funding is fueled).
 
-- Refund: to refund the amount that not funded the Dao.
+- Refund: to refund the amount that did not fund the Dao.
 
 =
 
