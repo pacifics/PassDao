@@ -493,7 +493,7 @@ contract DAO {
             }
         }
         
-        if (b.fees > b.totalRewardedAmount && !takeBoardMeetingFees(_BoardMeetingID)) return;
+        if (!takeBoardMeetingFees(_BoardMeetingID)) return;
         
         b.open = false;
         if (b.ContractorProposalID != 0) numberOfRecipientOpenedProposals[c.recipient] -= 1;
