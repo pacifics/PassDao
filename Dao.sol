@@ -162,7 +162,7 @@ contract DAO {
         DaoAccountManager = new AccountManager(_creator, address(this), 0, 10);
 
         DaoRules.minQuorumDivisor = 5;
-        DaoRules.minutesSetProposalPeriod = 10;
+        DaoRules.minutesSetProposalPeriod = 3;
         DaoRules.minutesExecuteProposalPeriod = 100000;
 
         BoardMeetings.length = 1; 
@@ -238,7 +238,9 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000 || _recipient == 0) throw;
+        if (_inflationRate > 1000 
+            || _recipient == 0
+            || _amount <= 0) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -311,7 +313,8 @@ contract DAO {
     ) payable returns (uint) {
 
         if (_minutesFundingPeriod > 45000
-            || (!_publicShareCreation && _mainPartner == 0)) {
+            || (!_publicShareCreation && _mainPartner == 0)
+            || _sharePriceMultiplier <= 0) {
                 throw;
             }
 
@@ -368,7 +371,7 @@ contract DAO {
     
         if (_minQuorumDivisor <= 1
             || _minQuorumDivisor > 10
-            || _minMinutesDebatePeriod < 10000
+            || _minMinutesDebatePeriod < 2
             || _minutesSetProposalPeriod + _minMinutesDebatePeriod +  _minutesExecuteProposalPeriod > 150000
             || _minutesExecuteProposalPeriod < 10) throw; 
         
