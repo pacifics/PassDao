@@ -238,7 +238,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000
+        if (_inflationRate > 1000 
             || _recipient == 0
             || _amount <= 0) throw;
 
@@ -276,7 +276,7 @@ contract DAO {
             uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
             ContractorAccountManager[c.recipient].setFundingRules(address(this), false, 
                 c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
-                _setDeadLine, _setDeadLine + (_MinutesDebatingPeriod * 1 minutes), c.inflationRate);
+                _setDeadLine, _MinutesDebatingPeriod * 1 minutes, c.inflationRate);
 
         }
         
@@ -297,7 +297,7 @@ contract DAO {
     /// @param _sharePriceMultiplier The quantity of created tokens will depend on this multiplier
     /// @param _inflationRate If 0, the token price doesn't change during the funding (not mandatory)
     /// @param _startTime The start time of the funding
-    /// @param _minutesFundingPeriod Period for the partners to fund the Dao after the execution of the proposal
+    /// @param _minutesFundingPeriod Period in minutes of the funding
     /// @param _contractorProposalID Index of the contractor proposal (not mandatory)
     /// @param _MinutesDebatingPeriod Period in minutes of the board meeting
     /// @return The index of the proposal
@@ -507,13 +507,13 @@ contract DAO {
             FundingProposal f = FundingProposals[b.FundingProposalID];
 
             DaoAccountManager.setFundingRules(f.mainPartner, f.publicShareCreation, f.sharePriceMultiplier, 
-                f.fundingAmount, f.startTime, f.startTime + f.minutesFundingPeriod * 1 minutes, f.inflationRate);
+                f.fundingAmount, f.startTime, f.minutesFundingPeriod * 1 minutes, f.inflationRate);
 
             if (f.contractorProposalID != 0) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
                 if (cf.initialTokenPriceMultiplier != 0) {
                     ContractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
-                    f.fundingAmount, f.startTime, f.startTime + f.minutesFundingPeriod * 1 minutes, cf.inflationRate);
+                    f.fundingAmount, f.startTime, f.minutesFundingPeriod * 1 minutes, cf.inflationRate);
                 }
             }
             
