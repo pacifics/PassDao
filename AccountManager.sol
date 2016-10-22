@@ -64,7 +64,7 @@ contract AccountManager is Token {
     bool public transferable;
 
     // Map of addresses blocked. The address points to the date when the address can be unblocked
-    mapping (address => uint) blockedDeadLine; 
+    mapping (address => uint) public blockedDeadLine; 
 
     // Modifier that allows only the cient to manage the account manager
     modifier onlyClient {if (msg.sender != client) throw; _;}
