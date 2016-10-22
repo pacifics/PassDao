@@ -148,13 +148,13 @@ contract DAO {
     modifier onlyTokenholders {
         if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
     
-    event AccountManagerCreated(address recipient, address AccountManagerAddress);
-    event ContractorProposalAdded(uint indexed ContractorProposalID, uint amount, string description);
-    event FundingProposalAdded(uint indexed FundingProposalID, bool publicShareCreation, uint maxFundingAmount,uint contractorProposalID);
-    event DaoProposalAdded(uint DaoRulesProposalID);
-    event BoardMeetingFeesGivenBack(uint indexed boardMeetingID);
-    event BoardMeetingClosed(uint indexed boardMeetingID);
-    event ProposalTallied(uint indexed boardMeetingID);
+    event AccountManagerCreated(address Recipient, address AccountManagerAddress);
+    event ContractorProposalAdded(uint BoardMeetingID, uint ContractorProposalID, uint Amount, string Description);
+    event FundingProposalAdded(uint indexed BoardMeetingID, uint indexed FundingProposalID, uint maxFundingAmount,uint ContractorProposalID);
+    event DaoProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID);
+    event BoardMeetingFeesGivenBack(uint indexed BoardMeetingID);
+    event BoardMeetingClosed(uint indexed BoardMeetingID);
+    event ProposalTallied(uint indexed BoardMeetingID);
 
     /// @dev The constructor function
     function DAO(address _creator) {
@@ -280,10 +280,11 @@ contract DAO {
 
         }
         
-        ContractorProposalAdded(_ContractorProposalID, c.amount, c.description);
         numberOfRecipientOpenedProposals[c.recipient] += 1;
 
         c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
+
+        ContractorProposalAdded(c.BoardMeetingID, _ContractorProposalID, c.amount, c.description);
         
         return _ContractorProposalID;
         
@@ -343,9 +344,10 @@ contract DAO {
 
         }
         
-        FundingProposalAdded(_FundingProposalID, _publicShareCreation, _maxFundingAmount, _contractorProposalID);
-        
         f.BoardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
+
+        FundingProposalAdded(f.BoardMeetingID, _FundingProposalID, 
+            _maxFundingAmount, _contractorProposalID);
 
         return _FundingProposalID;
         
@@ -385,9 +387,9 @@ contract DAO {
         r.minutesExecuteProposalPeriod = _minutesExecuteProposalPeriod;
         r.transferable = _transferable;
         
-        DaoProposalAdded(_DaoRulesProposalID);
-
         r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _MinutesDebatingPeriod);     
+
+        DaoProposalAdded(r.BoardMeetingID, _DaoRulesProposalID);
 
         return _DaoRulesProposalID;
         
