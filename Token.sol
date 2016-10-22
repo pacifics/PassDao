@@ -20,16 +20,12 @@ contract Token {
     /* Amount of decimals for token display purposes */
     uint8 public decimals;
  
-    event Transfer(address indexed _from, address indexed _to, uint256 _amount);
-    event Approval(address indexed _owner, address indexed _spender, uint256 _amount);
-
     /* Send coins */
     function transfer(address _to, uint256 _value) returns (bool success) {
         if (balances[msg.sender] >= _value
             && balances[_to] + _value > balances[_to]) {
             balances[msg.sender] -= _value;
             balances[_to] += _value;
-            Transfer(msg.sender, _to, _value);
             return true;
         } else {
            return false;
@@ -49,7 +45,6 @@ contract Token {
             balances[_from] -= _value;
             balances[_to] += _value;
             allowed[_from][msg.sender] -= _value;
-            Transfer(_from, _to, _value);
             return true;
         } else {
             return false;
@@ -63,7 +58,6 @@ contract Token {
     /// @return Whether the approval was successful or not
     function approve(address _spender, uint256 _value) returns (bool success) {
         allowed[msg.sender][_spender] = _value;
-        Approval(msg.sender, _spender, _value);
         return true;
     }
 
