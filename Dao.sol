@@ -162,7 +162,7 @@ contract DAO {
         DaoAccountManager = new AccountManager(_creator, address(this), 0, 10);
 
         DaoRules.minQuorumDivisor = 5;
-        DaoRules.minutesSetProposalPeriod = 3;
+        DaoRules.minutesSetProposalPeriod = 10;
         DaoRules.minutesExecuteProposalPeriod = 100000;
 
         BoardMeetings.length = 1; 
@@ -371,7 +371,7 @@ contract DAO {
     
         if (_minQuorumDivisor <= 1
             || _minQuorumDivisor > 10
-            || _minMinutesDebatePeriod < 2
+            || _minMinutesDebatePeriod < 10000
             || _minutesSetProposalPeriod + _minMinutesDebatePeriod +  _minutesExecuteProposalPeriod > 150000
             || _minutesExecuteProposalPeriod < 10) throw; 
         
