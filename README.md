@@ -47,7 +47,7 @@ Main functions are :
 
 - Transfer and TransferFrom for the transfer of tokens
 
-- Approve tokens allowance given by a token owner. 
+- Approve tokens allowance by a token owner to a spender third party. 
 
 =
 
