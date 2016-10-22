@@ -150,7 +150,7 @@ contract DAO {
     
     event AccountManagerCreated(address recipient, address AccountManagerAddress);
     event ContractorProposalAdded(uint indexed ContractorProposalID, uint amount, string description);
-    event FundingProposalAdded(uint indexed FundingProposalID, bool publicShareCreation, uint maxFundingAmount, uint contractorProposalID);
+    event FundingProposalAdded(uint indexed FundingProposalID, bool publicShareCreation, uint maxFundingAmount,uint contractorProposalID);
     event DaoProposalAdded(uint DaoRulesProposalID);
     event BoardMeetingFeesGivenBack(uint indexed boardMeetingID);
     event BoardMeetingClosed(uint indexed boardMeetingID);
@@ -238,7 +238,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000 
+        if (_inflationRate > 1000
             || _recipient == 0
             || _amount <= 0) throw;
 
