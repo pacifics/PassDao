@@ -83,9 +83,9 @@ Main functions:
 
 - A period to consider or set the proposal is foreseen before each board meeting. 
 
-- After a vote, the share holders are not able to transfer tokens until the end of the board meeting. 
+- The contractor proposal can foresee an inflation rate for the reward of contractor tokens to voters which will incentivize shareholders to vote early.
 
-- The contractor proposal can foresee an inflation rate for the reward of contractor tokens which will incentivize shareholders to vote early.
+- After a vote, the share holders are not able to transfer tokens until the end of the board meeting. 
 
 =
 
@@ -93,9 +93,9 @@ Main functions:
 
 - It is necessary to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders, avoid the possibility to fund using "hundreds" addresses and allow to check that partners's addresses are not related to a smart contract. 
 
+- Refund from the funding smart contract will be before the closing time of the primary funding for the valid adresses and after the closing time of the primary funding for the invalid adresses.
+
 - Only the Dao shareholders can decide by vote to allow the transfer of shares.
 
 - There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to tokenholders. 
-
-- Refund from the funding smart contract will be before the closing time of the primary funding for the valid adresses and after the closing time of the primary funding for the invalid adresses.
 
