@@ -153,7 +153,7 @@ contract DAO {
         address indexed recipient, uint Amount);
     event FundingProposalAdded(uint indexed BoardMeetingID, uint FundingProposalID, 
         uint maxFundingAmount,uint ContractorProposalID);
-    event DaoProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID);
+    event DaoRulesProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID);
     event BoardMeetingFeesGivenBack(uint indexed BoardMeetingID);
     event BoardMeetingClosed(uint indexed BoardMeetingID);
     event ProposalTallied(uint indexed BoardMeetingID);
@@ -391,7 +391,7 @@ contract DAO {
         
         r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _MinutesDebatingPeriod);     
 
-        DaoProposalAdded(r.BoardMeetingID, _DaoRulesProposalID);
+        DaoRulesProposalAdded(r.BoardMeetingID, _DaoRulesProposalID);
 
         return _DaoRulesProposalID;
         
