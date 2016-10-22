@@ -151,7 +151,7 @@ contract DAO {
     event AccountManagerCreated(address Recipient, address AccountManagerAddress);
     event ContractorProposalAdded(uint indexed BoardMeetingID, uint ContractorProposalID, 
         address indexed recipient, uint Amount);
-    event FundingProposalAdded(uint indexed BoardMeetingID, uint indexed FundingProposalID, 
+    event FundingProposalAdded(uint indexed BoardMeetingID, uint FundingProposalID, 
         uint maxFundingAmount,uint ContractorProposalID);
     event DaoProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID);
     event BoardMeetingFeesGivenBack(uint indexed BoardMeetingID);
