@@ -150,7 +150,7 @@ contract DAO {
     
     event AccountManagerCreated(address recipient, address AccountManagerAddress);
     event ContractorProposalAdded(uint indexed ContractorProposalID, uint amount, string description);
-    event FundingProposalAdded(uint indexed FundingProposalID, bool publicShareCreation, uint maxFundingAmount);
+    event FundingProposalAdded(uint indexed FundingProposalID, bool publicShareCreation, uint maxFundingAmount, uint contractorProposalID);
     event DaoProposalAdded(uint DaoRulesProposalID);
     event BoardMeetingFeesGivenBack(uint indexed boardMeetingID);
     event BoardMeetingClosed(uint indexed boardMeetingID);
@@ -343,7 +343,7 @@ contract DAO {
 
         }
         
-        FundingProposalAdded(_FundingProposalID, _publicShareCreation, _maxFundingAmount);
+        FundingProposalAdded(_FundingProposalID, _publicShareCreation, _maxFundingAmount, _contractorProposalID);
         
         f.BoardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
 
