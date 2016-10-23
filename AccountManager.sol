@@ -71,9 +71,9 @@ contract AccountManager is Token {
     // Modifier that allows public to buy tokens only in case of crowdfunding
     modifier onlyPublicTokenCreation {if (!FundingRules.publicTokenCreation) throw; _;}
 
-    event TokensCreated(address indexed sender, address indexed tokenHolder, uint quantity);
-    event FundingRulesSet(address indexed mainPartner, uint indexed startTime);
-    event FundingFueled(uint indexed contractorProposalID);
+    event TokensCreated(address indexed Sender, address indexed TokenHolder, uint Quantity);
+    event FundingRulesSet(address indexed MainPartner, uint indexed StartTime);
+    event FundingFueled(uint FundedAmount, uint indexed ContractorProposalID);
     event TokenTransferable();
 
     /// @dev The constructor function
@@ -149,15 +149,17 @@ contract AccountManager is Token {
     }
     
     /// @notice Function used by a main partner to set a Dao contractor proposal fueled
+    /// @param _fundedAmount The funded amount of the funding
     /// @param _contractorProposalID The index of the Dao contractor proposal
-    function Fueled(uint _contractorProposalID) external {
+    function Fueled(uint _fundedAmount, uint _contractorProposalID) external {
     
         if (msg.sender != FundingRules.mainPartner) throw;
 
         fundingDate[_contractorProposalID] = now;
+        FundingRules.fundedAmount = _fundedAmount;
         FundingRules.closingTime = now;
         
-        FundingFueled(_contractorProposalID);
+        FundingFueled(_fundedAmount, _contractorProposalID);
 
     }
     
@@ -310,7 +312,7 @@ contract AccountManager is Token {
         
         if (FundingRules.fundedAmount == FundingRules.maxAmountToFund) {
             FundingRules.closingTime = now;
-            FundingFueled(0);
+            FundingFueled(FundingRules.fundedAmount, 0);
         }
 
     }
