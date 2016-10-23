@@ -240,7 +240,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000 
+        if (_inflationRate > 600000 
             || _recipient == 0
             || _amount <= 0
             || _totalAmountForTokenReward > _amount
@@ -301,7 +301,7 @@ contract DAO {
     /// @param _maxFundingAmount The maximum amount to fund
     /// @param _sharePriceMultiplier The quantity of created tokens will depend on this multiplier
     /// @param _inflationRate If 0, the token price doesn't change during the funding (not mandatory)
-    /// @param _startTime The start time of the funding
+    /// @param _startTime The start time of the funding (not mandatory)
     /// @param _minutesFundingPeriod Period in minutes of the funding
     /// @param _contractorProposalID Index of the contractor proposal (not mandatory)
     /// @param _MinutesDebatingPeriod Period in minutes of the board meeting
@@ -320,6 +320,8 @@ contract DAO {
 
         if (_minutesFundingPeriod > 45000
             || (!_publicShareCreation && _mainPartner == 0)
+            || _maxFundingAmount <= 0
+            || _minutesFundingPeriod <= 0
             || _mainPartner == address(this)
             || _mainPartner == address(DaoAccountManager)
             || _sharePriceMultiplier <= 0) {
@@ -380,7 +382,7 @@ contract DAO {
     
         if (_minQuorumDivisor <= 1
             || _minQuorumDivisor > 10
-            || _minMinutesDebatePeriod < 10000
+            || _minMinutesDebatePeriod < 2
             || _minutesSetProposalPeriod + _minMinutesDebatePeriod +  _minutesExecuteProposalPeriod > 150000
             || _minutesExecuteProposalPeriod < 10) throw; 
         
