@@ -39,8 +39,8 @@ contract AccountManager is Token {
         bool publicTokenCreation; 
         // The maximum amount (in wei) of the funding
         uint maxAmountToFund;
-        // Maximum quantity of tokens to create
-        uint256 maxTotalSupply; 
+        // The funded amount (in wei) of the funding
+        uint fundedAmount;
         // A unix timestamp, denoting the start time of the funding
         uint startTime; 
         // A unix timestamp, denoting the closing time of the funding
@@ -114,7 +114,9 @@ contract AccountManager is Token {
         if (FundingRules.publicTokenCreation 
             && msg.sender != client
             && msg.sender != FundingRules.mainPartner) {
-            if (!createToken(msg.sender, msg.value, now)) throw;
+                
+            createToken(msg.sender, msg.value, now);
+
         }
 
     }
@@ -132,7 +134,7 @@ contract AccountManager is Token {
         
         if (msg.sender != FundingRules.mainPartner) throw;
 
-        return createToken(_tokenHolder, _amount, _saleDate);
+        createToken(_tokenHolder, _amount, _saleDate);
 
     }
      
@@ -163,11 +165,6 @@ contract AccountManager is Token {
     /// @return The unix date when the main partner funded the Dao for the contractor
     function fundingDateForContractor(uint _contractorProposalID) constant external returns (uint) {
         return fundingDate[_contractorProposalID];
-    }
-
-    /// @return The maximum quqantity of tokens after the funding
-    function MaxTotalSupply() constant external returns (uint) {
-        return (FundingRules.maxTotalSupply);
     }
 
     /// @param _saleDate in case of presale, the date of the presale
@@ -224,16 +221,15 @@ contract AccountManager is Token {
         FundingRules.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         FundingRules.inflationRate = _inflationRate;  
 
+        FundingRules.fundedAmount = 0;
         FundingRules.maxAmountToFund = _maxAmountToFund;
-        FundingRules.maxTotalSupply = totalSupply + _maxAmountToFund*FundingRules.initialTokenPriceMultiplier;
-        if (FundingRules.maxTotalSupply <= totalSupply) throw;
 
         FundingRulesSet(_mainPartner, FundingRules.startTime);
 
     } 
     
     /// @return The maximal amount to fund of the actual funding. 0 if there is not any funding at this moment
-    function fundingMaxAmount() constant external returns (uint) {
+    function fundingMaxAmount() constant returns (uint) {
         
         if ((now > FundingRules.closingTime)
             || now < FundingRules.startTime) {
@@ -272,7 +268,7 @@ contract AccountManager is Token {
             throw;
         }
         
-        return createToken(_tokenHolder, _amount, _date);
+        createToken(_tokenHolder, _amount, _date);
 
     }
 
@@ -295,32 +291,26 @@ contract AccountManager is Token {
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
     /// @param _saleDate in case of presale, the date of the presale
-    /// @return Whether the token creation was successful or not
     function createToken(
         address _tokenHolder, 
         uint _amount,
         uint _saleDate
-    ) internal returns (bool _success) {
+    ) internal {
 
-        if ((now > FundingRules.closingTime) 
-            || _amount <= 0
-            || (now < FundingRules.startTime) ) {
-            throw;
-            }
+        if (FundingRules.fundedAmount + _amount > fundingMaxAmount()) throw;
 
         uint _quantity = 100*_amount*FundingRules.initialTokenPriceMultiplier/tokenPriceDivisor(_saleDate);
-        if (totalSupply + _quantity > FundingRules.maxTotalSupply) return;
+        if (totalSupply + _quantity <= totalSupply) throw;
 
         balances[_tokenHolder] += _quantity;
         totalSupply += _quantity;
+        FundingRules.fundedAmount += _amount;
 
         TokensCreated(msg.sender, _tokenHolder, _quantity);
         
-        if (totalSupply == FundingRules.maxTotalSupply) {
+        if (FundingRules.fundedAmount == fundingMaxAmount()) {
             FundingRules.closingTime = now;
         }
-        
-        return true;
 
     }
    
