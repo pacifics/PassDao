@@ -105,22 +105,23 @@ contract AccountManager is Token {
         
    }
 
-    /// @notice Function to send ethers to the Dao account manager. Tokens are created 
-    /// according to the funding rules with `msg.sender` as the beneficiary in case of public funding
-    function () payable {
-
-        if (msg.value <= 0 || recipient != 0) throw;
-        
-        if (FundingRules.publicTokenCreation 
-            && msg.sender != client
-            && msg.sender != FundingRules.mainPartner) {
-                
-            createToken(msg.sender, msg.value, now);
-
-        }
-
+    /// @notice Function to send ethers to the Dao account manager. 
+    function () payable{
+        if (recipient != 0) throw;
     }
 
+    /// @notice Function to buy Dao shares according to the funding rules 
+    /// with `msg.sender` as the beneficiary in case of public funding
+    function buyToken() payable {
+
+        if (recipient != 0
+            || !FundingRules.publicTokenCreation 
+            || !createToken(msg.sender, msg.value, now)) {
+            throw;
+        }
+        
+    } 
+    
     /// @notice Create tokens with `_tokenHolder` as the beneficiary
     /// @param _tokenHolder the beneficiary of the created tokens
     /// @param _amount the amount funded by the main partner
@@ -134,7 +135,7 @@ contract AccountManager is Token {
         
         if (msg.sender != FundingRules.mainPartner) throw;
 
-        createToken(_tokenHolder, _amount, _saleDate);
+        if (!createToken(_tokenHolder, _amount, _saleDate)) throw;
 
     }
      
@@ -158,7 +159,7 @@ contract AccountManager is Token {
         fundingDate[_contractorProposalID] = now;
         FundingRules.fundedAmount = _fundedAmount;
         FundingRules.closingTime = now;
-        
+
         FundingFueled(_fundedAmount, _contractorProposalID);
 
     }
@@ -270,7 +271,7 @@ contract AccountManager is Token {
             throw;
         }
         
-        createToken(_tokenHolder, _amount, _date);
+        if (!createToken(_tokenHolder, _amount, _date)) throw;
 
     }
 
@@ -293,16 +294,17 @@ contract AccountManager is Token {
     /// @param _tokenHolder The address of the token holder
     /// @param _amount The funded amount (in wei)
     /// @param _saleDate in case of presale, the date of the presale
+    /// @return Whether the creation was successful or not
     function createToken(
         address _tokenHolder, 
         uint _amount,
         uint _saleDate
-    ) internal {
+    ) internal returns (bool) {
 
-        if (FundingRules.fundedAmount + _amount > fundingMaxAmount()) throw;
+        if (FundingRules.fundedAmount + _amount > fundingMaxAmount()) return;
 
         uint _quantity = 100*_amount*FundingRules.initialTokenPriceMultiplier/tokenPriceDivisor(_saleDate);
-        if (totalSupply + _quantity <= totalSupply) throw;
+        if (totalSupply + _quantity <= totalSupply) return;
 
         balances[_tokenHolder] += _quantity;
         totalSupply += _quantity;
@@ -314,6 +316,8 @@ contract AccountManager is Token {
             FundingRules.closingTime = now;
             FundingFueled(FundingRules.fundedAmount, 0);
         }
+        
+        return true;
 
     }
    
