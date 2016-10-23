@@ -240,7 +240,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000
+        if (_inflationRate > 1000 
             || _recipient == 0
             || _amount <= 0
             || _recipient == address(DaoAccountManager)
@@ -440,7 +440,7 @@ contract DAO {
                 uint _amount = c.totalAmountForTokenReward*_balance/_totalSupply;
 
                 AccountManager m = ContractorAccountManager[c.recipient];
-                if (!m.rewardToken(msg.sender, _amount, now)) throw;
+                m.rewardToken(msg.sender, _amount, now);
 
             }
 
