@@ -262,7 +262,7 @@ contract AccountManager is Token {
         address _tokenHolder, 
         uint _amount,
         uint _date
-        ) external returns (bool _success) {
+        ) external {
         
         if (msg.sender != client && msg.sender != FundingRules.mainPartner) {
             throw;
