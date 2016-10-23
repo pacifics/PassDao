@@ -149,7 +149,7 @@ contract Funding {
         
         if (msg.value <= 0
             || now < startTime
-            || now > closingTime
+            || (now > closingTime && closingTime != 0)
             || limitSet
             || msg.value < minPresaleAmount
             || msg.value > maxPresaleAmount
@@ -224,7 +224,7 @@ contract Funding {
     /// @notice Function used by the creator to set the funding limits for partners
     /// @param _to The index of the last partner to set
     /// @return Whether the set was successful or not
-    function setPartnersFundingLimits(uint _to) onlyCreator returns (bool) {
+    function setPartnersFundingLimits(uint _to) onlyCreator returns (bool _success) {
         
         if (!limitSet) throw;
 
@@ -278,10 +278,8 @@ contract Funding {
         
             if (_amountToFund > 0) {
                 partners[i].fundedAmount += _amountToFund;
-                if (!DaoAccountManager.buyTokenFor(_partner, _amountToFund, partners[i].presaleDate)
-                    || !ContractorAccountManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate)) {
-                    throw;
-                }
+                DaoAccountManager.buyTokenFor(_partner, _amountToFund, partners[i].presaleDate);
+                ContractorAccountManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
                 _sumAmountToFund += _amountToFund;
             }
 
@@ -291,8 +289,8 @@ contract Funding {
 
         totalFunded += _sumAmountToFund;
         if (totalFunded >= sumOfFundingAmountLimits) {
-            ContractorAccountManager.Fueled(contractorProposalID); 
-            DaoAccountManager.Fueled(contractorProposalID); 
+            ContractorAccountManager.Fueled(sumOfFundingAmountLimits, contractorProposalID); 
+            DaoAccountManager.Fueled(sumOfFundingAmountLimits, contractorProposalID); 
         }
 
     }
