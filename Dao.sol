@@ -240,7 +240,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000 
+        if (_inflationRate > 1000
             || _recipient == 0
             || _amount <= 0
             || _recipient == address(DaoAccountManager)
@@ -320,6 +320,7 @@ contract DAO {
         if (_minutesFundingPeriod > 45000
             || (!_publicShareCreation && _mainPartner == 0)
             || _mainPartner == address(this)
+            || _mainPartner == address(DaoAccountManager)
             || _sharePriceMultiplier <= 0) {
                 throw;
             }
