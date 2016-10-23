@@ -106,7 +106,7 @@ contract AccountManager is Token {
    }
 
     /// @notice Function to send ethers to the Dao account manager. 
-    function () payable{
+    function () payable {
         if (recipient != 0) throw;
     }
 
