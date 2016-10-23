@@ -240,7 +240,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 600000 
+        if (_inflationRate > 1000 
             || _recipient == 0
             || _amount <= 0
             || _totalAmountForTokenReward > _amount
@@ -382,7 +382,7 @@ contract DAO {
     
         if (_minQuorumDivisor <= 1
             || _minQuorumDivisor > 10
-            || _minMinutesDebatePeriod < 2
+            || _minMinutesDebatePeriod < 10000
             || _minutesSetProposalPeriod + _minMinutesDebatePeriod +  _minutesExecuteProposalPeriod > 150000
             || _minutesExecuteProposalPeriod < 10) throw; 
         
