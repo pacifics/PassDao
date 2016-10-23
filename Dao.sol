@@ -465,7 +465,7 @@ contract DAO {
 
         BoardMeeting b = BoardMeetings[_BoardMeetingID];
 
-        if (now <= b.votingDeadline 
+        if (now < b.votingDeadline 
             || !b.open
             ) throw;
         
