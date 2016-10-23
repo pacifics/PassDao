@@ -308,7 +308,7 @@ contract AccountManager is Token {
 
         TokensCreated(msg.sender, _tokenHolder, _quantity);
         
-        if (FundingRules.fundedAmount == fundingMaxAmount()) {
+        if (FundingRules.fundedAmount == FundingRules.maxAmountToFund) {
             FundingRules.closingTime = now;
         }
 
