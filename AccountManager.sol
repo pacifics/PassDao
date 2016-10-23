@@ -310,6 +310,7 @@ contract AccountManager is Token {
         
         if (FundingRules.fundedAmount == FundingRules.maxAmountToFund) {
             FundingRules.closingTime = now;
+            FundingFueled(0);
         }
 
     }
