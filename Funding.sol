@@ -335,7 +335,7 @@ contract Funding {
 
     /// @notice Function to refund for valid partners
     /// @param _to The index of the last partner
-    function refundForPartners(uint _to) onlyCreator {
+    function refundForPartners(uint _to) {
 
         if (refundFromPartner > _to || _to > partners.length - 1) throw;
         
