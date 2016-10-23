@@ -243,6 +243,7 @@ contract DAO {
         if (_inflationRate > 1000 
             || _recipient == 0
             || _amount <= 0
+            || _totalAmountForTokenReward > _amount
             || _recipient == address(DaoAccountManager)
             || _recipient == address(this)) throw;
 
