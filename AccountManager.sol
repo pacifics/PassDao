@@ -113,28 +113,37 @@ contract AccountManager is Token {
     /// @notice Function to buy Dao shares according to the funding rules 
     /// with `msg.sender` as the beneficiary in case of public funding
     function buyToken() payable {
-
+        buyTokenFor(msg.sender);
+    } 
+    
+    /// @notice Function to buy Dao shares according to the funding rules 
+    /// @param _tokenHolder the beneficiary of the created tokens
+    function buyTokenFor(address _tokenHolder) payable {
+        
         if (recipient != 0
             || !FundingRules.publicTokenCreation 
-            || !createToken(msg.sender, msg.value, now)) {
+            || !createToken(_tokenHolder, msg.value, now)) {
+            throw;
+        }
+
+    }
+    
+    /// @notice Function used by the Dao or a main partner to reward tokens
+    /// @param _tokenHolder The address of the token holder
+    /// @param _amount The amount in Wei to calculate the quantity to create
+    /// @param _date The date to consider for the token price calculation
+    /// @return Whether the transfer was successful or not
+    function rewardToken(
+        address _tokenHolder, 
+        uint _amount,
+        uint _date
+        ) external {
+        
+        if (msg.sender != client && msg.sender != FundingRules.mainPartner) {
             throw;
         }
         
-    } 
-    
-    /// @notice Create tokens with `_tokenHolder` as the beneficiary
-    /// @param _tokenHolder the beneficiary of the created tokens
-    /// @param _amount the amount funded by the main partner
-    /// @param _saleDate in case of presale, the date of the presale
-    function buyTokenFor(
-        address _tokenHolder,
-        uint _amount,
-        uint _saleDate
-        ) {
-        
-        if (msg.sender != FundingRules.mainPartner) throw;
-
-        if (!createToken(_tokenHolder, _amount, _saleDate)) throw;
+        if (!createToken(_tokenHolder, _amount, _date)) throw;
 
     }
      
@@ -252,25 +261,6 @@ contract AccountManager is Token {
     ) external onlyClient returns (bool _success) {
     
         if (_amount >0) return _recipient.send(_amount);    
-
-    }
-    
-    /// @notice Function used by the Dao or a main partner to reward tokens
-    /// @param _tokenHolder The address of the token holder
-    /// @param _amount The amount in Wei to calculate the quantity to create
-    /// @param _date The date to consider for the token price calculation
-    /// @return Whether the transfer was successful or not
-    function rewardToken(
-        address _tokenHolder, 
-        uint _amount,
-        uint _date
-        ) external {
-        
-        if (msg.sender != client && msg.sender != FundingRules.mainPartner) {
-            throw;
-        }
-        
-        if (!createToken(_tokenHolder, _amount, _date)) throw;
 
     }
 
