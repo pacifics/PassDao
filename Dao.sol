@@ -240,7 +240,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000 
+        if (_inflationRate > 1000
             || _recipient == 0
             || _amount <= 0
             || _totalAmountForTokenReward > _amount
@@ -491,7 +491,9 @@ contract DAO {
                 if (DaoAccountManager.fundingDateForContractor(b.ContractorProposalID) != 0) {
                 _contractorProposalFueled = true;    
                 }
-                if (now < b.executionDeadline && !_contractorProposalFueled) {
+                if (now < b.executionDeadline 
+                    && !_contractorProposalFueled 
+                    && BoardMeetings[FundingProposals[c.fundingProposalID].BoardMeetingID].open) {
                     return; 
                 }
             }
@@ -555,7 +557,7 @@ contract DAO {
         return true;
         
     }
-
+    
     /// @notice Function to withdraw the rewarded board meeting fees 
     /// @return Whether the withdraw was successful or not    
     function withdrawBoardMeetingFees() returns (bool) {
