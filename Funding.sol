@@ -278,7 +278,7 @@ contract Funding {
         
             if (_amountToFund > 0) {
                 partners[i].fundedAmount += _amountToFund;
-                DaoAccountManager.buyTokenFor(_partner, _amountToFund, partners[i].presaleDate);
+                DaoAccountManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
                 ContractorAccountManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
                 _sumAmountToFund += _amountToFund;
             }
