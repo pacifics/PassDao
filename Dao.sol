@@ -154,7 +154,7 @@ contract DAO {
     event FundingProposalAdded(uint indexed BoardMeetingID, uint FundingProposalID, 
         uint maxFundingAmount,uint ContractorProposalID);
     event DaoRulesProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID);
-    event BoardMeetingClosed(uint indexed BoardMeetingID, uint BoardMeetingFeesGivenBack);
+    event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack);
     event ProposalTallied(uint indexed BoardMeetingID);
 
     /// @dev The constructor function
@@ -472,14 +472,14 @@ contract DAO {
             ) throw;
         
         uint _quorum = b.yea + b.nay;
-        uint _boardMeetingFeesGivenBack;
+        uint _feesGivenBack = 0;
 
         if (b.FundingProposalID != 0 || b.DaoRulesProposalID != 0) {
                 if (b.fees > 0 && _quorum >= minQuorum()  
                 ) {
-                    _boardMeetingFeesGivenBack = b.fees;
+                    _feesGivenBack = b.fees;
                     b.fees = 0;
-                    pendingFeesWithdrawals[b.creator] += _boardMeetingFeesGivenBack;
+                    pendingFeesWithdrawals[b.creator] += _feesGivenBack;
                 }
         }        
 
@@ -501,7 +501,7 @@ contract DAO {
         
         b.open = false;
         if (b.ContractorProposalID != 0) numberOfRecipientOpenedProposals[c.recipient] -= 1;
-        BoardMeetingClosed(_BoardMeetingID, _boardMeetingFeesGivenBack);
+        BoardMeetingClosed(_BoardMeetingID, feesGivenBack);
 
         if (!takeBoardMeetingFees(_BoardMeetingID)) return;
         
