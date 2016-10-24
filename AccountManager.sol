@@ -126,12 +126,11 @@ contract AccountManager is Token {
     /// @param _tokenHolder the beneficiary of the created tokens
     /// @param _amount the amount funded by the main partner
     /// @param _saleDate in case of presale, the date of the presale
-    /// @return Whether the token creation was successful or not
     function buyTokenFor(
         address _tokenHolder,
         uint _amount,
         uint _saleDate
-        ) returns (bool) {
+        ) {
         
         if (msg.sender != FundingRules.mainPartner) throw;
 
