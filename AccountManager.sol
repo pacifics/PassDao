@@ -111,7 +111,7 @@ contract AccountManager is Token {
     }
 
     /// @notice Function to buy Dao shares according to the funding rules 
-    /// with `msg.sender` as the beneficiary in case of public funding
+    /// with `msg.sender` as the beneficiary
     function buyToken() payable {
         buyTokenFor(msg.sender);
     } 
