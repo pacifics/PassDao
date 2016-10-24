@@ -238,7 +238,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000 
+        if (_inflationRate >  1000
             || _recipient == 0
             || _amount <= 0
             || _totalAmountForTokenReward > _amount
@@ -492,7 +492,8 @@ contract DAO {
                 }
                 if (now < b.executionDeadline 
                     && !_contractorProposalFueled 
-                    && BoardMeetings[FundingProposals[c.fundingProposalID].BoardMeetingID].open) {
+                    && (BoardMeetings[FundingProposals[c.fundingProposalID].BoardMeetingID].open
+                        || BoardMeetings[FundingProposals[c.fundingProposalID].BoardMeetingID].dateOfExecution != 0)) {
                     return; 
                 }
             }
