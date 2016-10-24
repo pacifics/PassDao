@@ -150,10 +150,10 @@ contract DAO {
     
     event AccountManagerCreated(address Recipient, address AccountManagerAddress);
     event ContractorProposalAdded(uint indexed BoardMeetingID, 
-        uint ContractorProposalID, address indexed recipient, uint Amount, uint BoardMeetingRewards);
+        uint ContractorProposalID, address indexed recipient, uint Amount);
     event FundingProposalAdded(uint indexed BoardMeetingID, uint FundingProposalID, 
-        uint maxFundingAmount,uint ContractorProposalID, uint BoardMeetingFees);
-    event DaoRulesProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID, uint BoardMeetingFees);
+        uint maxFundingAmount,uint ContractorProposalID);
+    event DaoRulesProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint BoardMeetingFeesGivenBack);
     event ProposalTallied(uint indexed BoardMeetingID);
 
@@ -239,7 +239,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000 
+        if (_inflationRate > 1000
             || _recipient == 0
             || _amount <= 0
             || _totalAmountForTokenReward > _amount
@@ -288,7 +288,7 @@ contract DAO {
 
         c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
 
-        ContractorProposalAdded(c.BoardMeetingID, _ContractorProposalID, c.recipient, c.amount, msg.value);
+        ContractorProposalAdded(c.BoardMeetingID, _ContractorProposalID, c.recipient, c.amount);
         
         return _ContractorProposalID;
         
@@ -355,7 +355,7 @@ contract DAO {
         f.BoardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
 
         FundingProposalAdded(f.BoardMeetingID, _FundingProposalID, 
-            _maxFundingAmount, _contractorProposalID, msg.value);
+            _maxFundingAmount, _contractorProposalID);
 
         return _FundingProposalID;
         
@@ -397,7 +397,7 @@ contract DAO {
         
         r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _MinutesDebatingPeriod);     
 
-        DaoRulesProposalAdded(r.BoardMeetingID, _DaoRulesProposalID, msg.value);
+        DaoRulesProposalAdded(r.BoardMeetingID, _DaoRulesProposalID);
 
         return _DaoRulesProposalID;
         
@@ -502,15 +502,15 @@ contract DAO {
         b.open = false;
         if (b.ContractorProposalID != 0) numberOfRecipientOpenedProposals[c.recipient] -= 1;
         BoardMeetingClosed(_BoardMeetingID, _boardMeetingFeesGivenBack);
-        
-        if (!takeBoardMeetingFees(_BoardMeetingID)) return;
 
+        if (!takeBoardMeetingFees(_BoardMeetingID)) return;
+        
         if (now > b.executionDeadline 
             || ((_quorum < minQuorum() || b.yea <= b.nay) && !_contractorProposalFueled)
             ) {
             return;
         }
-        
+
         b.dateOfExecution = now;
 
         if (b.FundingProposalID != 0) {
