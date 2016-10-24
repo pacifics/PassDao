@@ -150,10 +150,10 @@ contract DAO {
     
     event AccountManagerCreated(address Recipient, address AccountManagerAddress);
     event ContractorProposalAdded(uint indexed BoardMeetingID, 
-        uint ContractorProposalID, address indexed recipient, uint Amount);
+        uint ContractorProposalID, address indexed recipient, uint Amount, uint BoardMeetingRewards);
     event FundingProposalAdded(uint indexed BoardMeetingID, uint FundingProposalID, 
-        uint maxFundingAmount,uint ContractorProposalID);
-    event DaoRulesProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID);
+        uint maxFundingAmount,uint ContractorProposalID, uint BoardMeetingRewards);
+    event DaoRulesProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID, uint BoardMeetingRewards);
     event BoardMeetingFeesGivenBack(uint indexed BoardMeetingID);
     event BoardMeetingClosed(uint indexed BoardMeetingID);
     event ProposalTallied(uint indexed BoardMeetingID);
@@ -289,7 +289,7 @@ contract DAO {
 
         c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
 
-        ContractorProposalAdded(c.BoardMeetingID, _ContractorProposalID, c.recipient, c.amount);
+        ContractorProposalAdded(c.BoardMeetingID, _ContractorProposalID, c.recipient, c.amount, msg.value);
         
         return _ContractorProposalID;
         
@@ -348,15 +348,15 @@ contract DAO {
 
             cf.fundingProposalID = _FundingProposalID;
 
-            b.fees = 0;
             pendingFeesWithdrawals[b.creator] += b.fees;
+            b.fees = 0;
 
         }
         
         f.BoardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
 
         FundingProposalAdded(f.BoardMeetingID, _FundingProposalID, 
-            _maxFundingAmount, _contractorProposalID);
+            _maxFundingAmount, _contractorProposalID, msg.value);
 
         return _FundingProposalID;
         
@@ -398,7 +398,7 @@ contract DAO {
         
         r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _MinutesDebatingPeriod);     
 
-        DaoRulesProposalAdded(r.BoardMeetingID, _DaoRulesProposalID);
+        DaoRulesProposalAdded(r.BoardMeetingID, _DaoRulesProposalID, msg.value);
 
         return _DaoRulesProposalID;
         
