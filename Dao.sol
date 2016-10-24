@@ -152,10 +152,9 @@ contract DAO {
     event ContractorProposalAdded(uint indexed BoardMeetingID, 
         uint ContractorProposalID, address indexed recipient, uint Amount, uint BoardMeetingRewards);
     event FundingProposalAdded(uint indexed BoardMeetingID, uint FundingProposalID, 
-        uint maxFundingAmount,uint ContractorProposalID, uint BoardMeetingRewards);
-    event DaoRulesProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID, uint BoardMeetingRewards);
-    event BoardMeetingFeesGivenBack(uint indexed BoardMeetingID);
-    event BoardMeetingClosed(uint indexed BoardMeetingID);
+        uint maxFundingAmount,uint ContractorProposalID, uint BoardMeetingFees);
+    event DaoRulesProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID, uint BoardMeetingFees);
+    event BoardMeetingClosed(uint indexed BoardMeetingID, uint BoardMeetingFeesGivenBack);
     event ProposalTallied(uint indexed BoardMeetingID);
 
     /// @dev The constructor function
@@ -472,14 +471,15 @@ contract DAO {
             || !b.open
             ) throw;
         
-        uint quorum = b.yea + b.nay;
+        uint _quorum = b.yea + b.nay;
+        uint _boardMeetingFeesGivenBack;
 
         if (b.FundingProposalID != 0 || b.DaoRulesProposalID != 0) {
-                if (b.fees > 0 && quorum >= minQuorum()  
+                if (b.fees > 0 && _quorum >= minQuorum()  
                 ) {
-                    pendingFeesWithdrawals[b.creator] += b.fees;
+                    _boardMeetingFeesGivenBack = b.fees;
                     b.fees = 0;
-                    BoardMeetingFeesGivenBack(_BoardMeetingID);
+                    pendingFeesWithdrawals[b.creator] += _boardMeetingFeesGivenBack;
                 }
         }        
 
@@ -503,10 +503,10 @@ contract DAO {
         
         b.open = false;
         if (b.ContractorProposalID != 0) numberOfRecipientOpenedProposals[c.recipient] -= 1;
-        BoardMeetingClosed(_BoardMeetingID);
+        BoardMeetingClosed(_BoardMeetingID, _boardMeetingFeesGivenBack);
         
         if (now > b.executionDeadline 
-            || ((quorum < minQuorum() || b.yea <= b.nay) && !_contractorProposalFueled)
+            || ((_quorum < minQuorum() || b.yea <= b.nay) && !_contractorProposalFueled)
             ) {
             return;
         }
