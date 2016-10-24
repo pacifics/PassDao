@@ -289,8 +289,8 @@ contract Funding {
 
         totalFunded += _sumAmountToFund;
         if (totalFunded >= sumOfFundingAmountLimits) {
-            ContractorAccountManager.Fueled(sumOfFundingAmountLimits, contractorProposalID); 
-            DaoAccountManager.Fueled(sumOfFundingAmountLimits, contractorProposalID); 
+            ContractorAccountManager.Fueled(); 
+            DaoAccountManager.Fueled(); 
         }
 
     }
