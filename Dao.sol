@@ -154,8 +154,7 @@ contract DAO {
     event FundingProposalAdded(uint indexed BoardMeetingID, uint FundingProposalID, 
         uint maxFundingAmount,uint ContractorProposalID);
     event DaoRulesProposalAdded(uint indexed BoardMeetingID, uint DaoRulesProposalID);
-    event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack);
-    event ProposalTallied(uint indexed BoardMeetingID);
+    event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
     function DAO(address _creator) {
@@ -239,7 +238,7 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000
+        if (_inflationRate > 1000 
             || _recipient == 0
             || _amount <= 0
             || _totalAmountForTokenReward > _amount
@@ -498,16 +497,16 @@ contract DAO {
                 }
             }
         }
+
+        if (!takeBoardMeetingFees(_BoardMeetingID)) throw;
         
         b.open = false;
         if (b.ContractorProposalID != 0) numberOfRecipientOpenedProposals[c.recipient] -= 1;
-        BoardMeetingClosed(_BoardMeetingID, _feesGivenBack);
-
-        if (!takeBoardMeetingFees(_BoardMeetingID)) return;
         
         if (now > b.executionDeadline 
             || ((_quorum < minQuorum() || b.yea <= b.nay) && !_contractorProposalFueled)
             ) {
+            BoardMeetingClosed(_BoardMeetingID, _feesGivenBack, false);
             return;
         }
 
@@ -552,7 +551,7 @@ contract DAO {
             if (!DaoAccountManager.sendTo(c.recipient, c.amount)) throw;
         }
 
-        ProposalTallied(_BoardMeetingID);
+        BoardMeetingClosed(_BoardMeetingID, _feesGivenBack, true);
 
         return true;
         
