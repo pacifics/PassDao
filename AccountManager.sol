@@ -49,6 +49,8 @@ contract AccountManager is Token {
         uint initialTokenPriceMultiplier;
         // Rate per year applied to the token price 
         uint inflationRate; 
+        // Index of the contractor proposal (not mandatory)
+        uint contractorProposalID;
     } 
 
     // Address of the creator
@@ -158,17 +160,14 @@ contract AccountManager is Token {
     }
     
     /// @notice Function used by a main partner to set a Dao contractor proposal fueled
-    /// @param _fundedAmount The funded amount of the funding
-    /// @param _contractorProposalID The index of the Dao contractor proposal
-    function Fueled(uint _fundedAmount, uint _contractorProposalID) external {
+    function Fueled() external {
     
         if (msg.sender != FundingRules.mainPartner) throw;
 
-        fundingDate[_contractorProposalID] = now;
-        FundingRules.fundedAmount = _fundedAmount;
+        fundingDate[FundingRules.contractorProposalID] = now;
         FundingRules.closingTime = now;
 
-        FundingFueled(_fundedAmount, _contractorProposalID);
+        FundingFueled(FundingRules.fundedAmount, FundingRules.contractorProposalID);
 
     }
     
@@ -209,6 +208,7 @@ contract AccountManager is Token {
     /// @param _startTime  A unix timestamp, denoting the start time of the funding (not mandatory)
     /// @param _minutesFundingPeriod Period in minutes of the funding
     /// @param _inflationRate If 0, the token price doesn't change during the funding
+    /// @param _contractorProposalID Index of the contractor proposal (not mandatory)
     function setFundingRules(
         address _mainPartner,
         bool _publicTokenCreation, 
@@ -216,7 +216,8 @@ contract AccountManager is Token {
         uint256 _maxAmountToFund, 
         uint _startTime, 
         uint _minutesFundingPeriod, 
-        uint _inflationRate
+        uint _inflationRate,
+        uint _contractorProposalID
     ) external onlyClient {
 
         FundingRules.mainPartner = _mainPartner;
@@ -234,6 +235,8 @@ contract AccountManager is Token {
 
         FundingRules.fundedAmount = 0;
         FundingRules.maxAmountToFund = _maxAmountToFund;
+
+        FundingRules.contractorProposalID = _contractorProposalID;
 
         FundingRulesSet(_mainPartner, FundingRules.startTime);
 
@@ -302,8 +305,9 @@ contract AccountManager is Token {
         TokensCreated(msg.sender, _tokenHolder, _quantity);
         
         if (FundingRules.fundedAmount == FundingRules.maxAmountToFund) {
+            fundingDate[FundingRules.contractorProposalID] = now;
             FundingRules.closingTime = now;
-            FundingFueled(FundingRules.fundedAmount, 0);
+            FundingFueled(FundingRules.fundedAmount, FundingRules.contractorProposalID);
         }
         
         return true;
