@@ -499,18 +499,18 @@ contract DAO {
             }
         }
         
-        if (!takeBoardMeetingFees(_BoardMeetingID)) return;
-        
         b.open = false;
         if (b.ContractorProposalID != 0) numberOfRecipientOpenedProposals[c.recipient] -= 1;
         BoardMeetingClosed(_BoardMeetingID, _boardMeetingFeesGivenBack);
         
+        if (!takeBoardMeetingFees(_BoardMeetingID)) return;
+
         if (now > b.executionDeadline 
             || ((_quorum < minQuorum() || b.yea <= b.nay) && !_contractorProposalFueled)
             ) {
             return;
         }
-
+        
         b.dateOfExecution = now;
 
         if (b.FundingProposalID != 0) {
