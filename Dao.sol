@@ -148,7 +148,7 @@ contract DAO {
     modifier onlyTokenholders {
         if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
     
-    event AccountManagerCreated(address Recipient, address AccountManagerAddress);
+    event AccountManagerCreated(address indexed Recipient, address AccountManagerAddress);
     event ContractorProposalAdded(uint indexed BoardMeetingID, 
         uint ContractorProposalID, address indexed recipient, uint Amount);
     event FundingProposalAdded(uint indexed BoardMeetingID, uint FundingProposalID, 
@@ -169,7 +169,7 @@ contract DAO {
         ContractorProposals.length = 1;
         FundingProposals.length = 1;
         DaoRulesProposals.length = 1;
-
+        
     }
     
     /// @dev Internal function to create a board meeting
@@ -471,14 +471,14 @@ contract DAO {
             ) throw;
         
         uint _quorum = b.yea + b.nay;
-        uint _feesGivenBack = 0;
+        uint _fees = 0;
 
         if (b.FundingProposalID != 0 || b.DaoRulesProposalID != 0) {
                 if (b.fees > 0 && _quorum >= minQuorum()  
                 ) {
-                    _feesGivenBack = b.fees;
+                    _fees = b.fees;
                     b.fees = 0;
-                    pendingFeesWithdrawals[b.creator] += _feesGivenBack;
+                    pendingFeesWithdrawals[b.creator] += _fees;
                 }
         }        
 
@@ -506,7 +506,7 @@ contract DAO {
         if (now > b.executionDeadline 
             || ((_quorum < minQuorum() || b.yea <= b.nay) && !_contractorProposalFueled)
             ) {
-            BoardMeetingClosed(_BoardMeetingID, _feesGivenBack, false);
+            BoardMeetingClosed(_BoardMeetingID, _fees, false);
             return;
         }
 
@@ -551,7 +551,7 @@ contract DAO {
             if (!DaoAccountManager.sendTo(c.recipient, c.amount)) throw;
         }
 
-        BoardMeetingClosed(_BoardMeetingID, _feesGivenBack, true);
+        BoardMeetingClosed(_BoardMeetingID, _fees, true);
 
         return true;
         
