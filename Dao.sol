@@ -501,7 +501,7 @@ contract DAO {
         
         b.open = false;
         if (b.ContractorProposalID != 0) numberOfRecipientOpenedProposals[c.recipient] -= 1;
-        BoardMeetingClosed(_BoardMeetingID, feesGivenBack);
+        BoardMeetingClosed(_BoardMeetingID, _feesGivenBack);
 
         if (!takeBoardMeetingFees(_BoardMeetingID)) return;
         
@@ -520,7 +520,7 @@ contract DAO {
             DaoAccountManager.setFundingRules(f.mainPartner, f.publicShareCreation, f.sharePriceMultiplier, 
                 f.fundingAmount, f.startTime, f.minutesFundingPeriod, f.inflationRate, f.contractorProposalID);
 
-            if (f.contractorProposalID != 0) {
+            if (f.contractorProposalID != 0 && !f.publicShareCreation) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
                 if (cf.initialTokenPriceMultiplier != 0) {
                     ContractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
