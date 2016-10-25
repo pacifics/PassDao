@@ -96,7 +96,7 @@ contract Funding {
     event PartnersNotSet(uint sumOfFundingAmountLimits);
     event AllPartnersSet(uint fundingAmount);
     event Fueled();
-    event AllPartnersRefunded();
+    event FundingClosed();
 
     /// @dev Constructor function
     /// @param _creator The creator of the smart contract
@@ -291,6 +291,7 @@ contract Funding {
         if (totalFunded >= sumOfFundingAmountLimits) {
             ContractorAccountManager.Fueled(); 
             DaoAccountManager.Fueled(); 
+            Fueled();
         }
 
     }
@@ -317,6 +318,7 @@ contract Funding {
 
         t.presaleAmount = _amountnotToRefund;
         if (t.partnerAddress.send(_amountToRefund)) {
+            Refund(t.partnerAddress, _amountToRefund);
             return true;
         } else {
             t.presaleAmount = _amountnotToRefund + _amountToRefund;
@@ -349,7 +351,7 @@ contract Funding {
             refundFromPartner = 1;
             if (totalFunded >= sumOfFundingAmountLimits && allSet) {
                 closingTime = now; 
-                AllPartnersRefunded(); 
+                FundingClosed(); 
             }
         }
         
