@@ -32,11 +32,11 @@ contract DAO {
         // Address who created the board meeting for a proposal
         address creator;  
         // Index to identify the proposal to pay a contractor
-        uint ContractorProposalID;
+        uint contractorProposalID;
         // Index to identify the proposal to update the Dao rules 
-        uint DaoRulesProposalID; 
+        uint daoRulesProposalID; 
         // Index to identify the proposal for a funding of the Dao
-        uint FundingProposalID;
+        uint fundingProposalID;
         // unix timestamp, denoting the end of the set period of a proposal before the board meeting 
         uint setDeadline;
         // Fees (in wei) paid by the creator of the board meeting
@@ -61,7 +61,7 @@ contract DAO {
 
     struct ContractorProposal {
         // Index to identify the board meeting of the proposal
-        uint BoardMeetingID;
+        uint boardMeetingID;
         // The address of the proposal recipient where the `amount` will go to if the proposal is accepted
         address recipient;
         // The amount (in wei) to transfer to `recipient` if the proposal is accepted.
@@ -85,7 +85,7 @@ contract DAO {
     
     struct FundingProposal {
         // Index to identify the board meeting of the proposal
-        uint BoardMeetingID;
+        uint boardMeetingID;
         // The address which set partners in case of private funding (not mandatory)
         address mainPartner;
         // True if crowdfunding
@@ -106,7 +106,7 @@ contract DAO {
 
     struct Rules {
         // Index to identify the board meeting that decided to apply the rules
-        uint BoardMeetingID;  
+        uint boardMeetingID;  
         // The quorum needed for each proposal is calculated by totalSupply / minQuorumDivisor
         uint minQuorumDivisor;  
         // Minimal fees (in wei) to create a proposal
@@ -122,7 +122,7 @@ contract DAO {
     } 
 
     // The Dao account manager smart contract
-    AccountManager public DaoAccountManager;
+    AccountManager public daoAccountManager;
     
     // Map to allow to withdraw board meeting fees
     mapping (address => uint) public pendingFeesWithdrawals;
@@ -131,7 +131,7 @@ contract DAO {
     // Map to to know the last contractor proposal of a recipient
     mapping (address => uint) public lastRecipientProposalId; 
     // Map to know the account management smart contracts of contractors
-    mapping (address => AccountManager) public ContractorAccountManager; 
+    mapping (address => AccountManager) public contractorAccountManager; 
 
     // Board meetings to vote for or against a proposal
     BoardMeeting[] public BoardMeetings; 
@@ -146,18 +146,18 @@ contract DAO {
     
     // Modifier that allows only shareholders to vote
     modifier onlyTokenholders {
-        if (DaoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
+        if (daoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
     
     event AccountManagerCreated(address indexed Recipient, address AccountManagerAddress);
-    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed recipient, uint Amount);
-    event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint maxFundingAmount);
+    event ContractorProposalAdded(uint indexed ContractorProposalID, address Recipient, uint Amount);
+    event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
     function DAO(address _creator) {
 
-        DaoAccountManager = new AccountManager(_creator, address(this), 0, 10);
+        daoAccountManager = new AccountManager(_creator, address(this), 0, 10);
 
         DaoRules.minQuorumDivisor = 5;
         DaoRules.minutesSetProposalPeriod = 10;
@@ -195,9 +195,9 @@ contract DAO {
 
         b.creator = msg.sender;
 
-        b.ContractorProposalID = _ContractorProposalID;
-        b.DaoRulesProposalID = _DaoRulesProposalID;
-        b.FundingProposalID = _FundingProposalID;
+        b.contractorProposalID = _ContractorProposalID;
+        b.daoRulesProposalID = _DaoRulesProposalID;
+        b.fundingProposalID = _FundingProposalID;
 
         b.fees = msg.value;
         
@@ -240,7 +240,7 @@ contract DAO {
             || _recipient == 0
             || _amount <= 0
             || _totalAmountForTokenReward > _amount
-            || _recipient == address(DaoAccountManager)
+            || _recipient == address(daoAccountManager)
             || _recipient == address(this)) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
@@ -258,14 +258,14 @@ contract DAO {
         if (lastRecipientProposalId[c.recipient] != 0) {
             
             if ((msg.sender != c.recipient 
-                && !ContractorAccountManager[c.recipient].IsCreator(msg.sender))
+                && !contractorAccountManager[c.recipient].IsCreator(msg.sender))
                 || c.initialSupply != 0) throw;
 
         } else {
 
             AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
                 
-            ContractorAccountManager[c.recipient] = m;
+            contractorAccountManager[c.recipient] = m;
             m.TransferAble();
             AccountManagerCreated(c.recipient, address(m));
 
@@ -275,7 +275,7 @@ contract DAO {
         if (c.totalAmountForTokenReward != 0) {
             
             uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
-            ContractorAccountManager[c.recipient].setFundingRules(address(this), false, 
+            contractorAccountManager[c.recipient].setFundingRules(address(this), false, 
                 c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
                 _setDeadLine, _MinutesDebatingPeriod, c.inflationRate, _ContractorProposalID);
 
@@ -283,7 +283,7 @@ contract DAO {
         
         numberOfRecipientOpenedProposals[c.recipient] += 1;
 
-        c.BoardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
+        c.boardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
 
         ContractorProposalAdded(_ContractorProposalID, c.recipient, c.amount);
         
@@ -319,7 +319,7 @@ contract DAO {
             || _maxFundingAmount <= 0
             || _minutesFundingPeriod <= 0
             || _mainPartner == address(this)
-            || _mainPartner == address(DaoAccountManager)
+            || _mainPartner == address(daoAccountManager)
             || _sharePriceMultiplier <= 0) {
                 throw;
             }
@@ -339,7 +339,7 @@ contract DAO {
         if (_contractorProposalID != 0) {
 
             ContractorProposal cf = ContractorProposals[_contractorProposalID];
-            BoardMeeting b = BoardMeetings[cf.BoardMeetingID];
+            BoardMeeting b = BoardMeetings[cf.boardMeetingID];
             if (now > b.setDeadline || b.creator != msg.sender) throw;
 
             cf.fundingProposalID = _FundingProposalID;
@@ -349,7 +349,7 @@ contract DAO {
 
         }
         
-        f.BoardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
+        f.boardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
 
         FundingProposalAdded(_FundingProposalID, _contractorProposalID, _maxFundingAmount);
 
@@ -391,7 +391,7 @@ contract DAO {
         r.minutesExecuteProposalPeriod = _minutesExecuteProposalPeriod;
         r.transferable = _transferable;
         
-        r.BoardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _MinutesDebatingPeriod);     
+        r.boardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _MinutesDebatingPeriod);     
 
         DaoRulesProposalAdded(_DaoRulesProposalID);
 
@@ -418,26 +418,26 @@ contract DAO {
         b.hasVoted[msg.sender] = true;
         
         if (_supportsProposal) {
-            b.yea += DaoAccountManager.balanceOf(msg.sender);
+            b.yea += daoAccountManager.balanceOf(msg.sender);
         } 
         else {
-            b.nay += DaoAccountManager.balanceOf(msg.sender); 
+            b.nay += daoAccountManager.balanceOf(msg.sender); 
         }
 
-        if (b.ContractorProposalID != 0) {
+        if (b.contractorProposalID != 0) {
             
-            ContractorProposal c = ContractorProposals[b.ContractorProposalID];
+            ContractorProposal c = ContractorProposals[b.contractorProposalID];
 
             if (c.fundingProposalID != 0) throw;
             
-            uint _balance = uint(DaoAccountManager.balanceOf(msg.sender));
-            uint _totalSupply = uint(DaoAccountManager.TotalSupply());
+            uint _balance = uint(daoAccountManager.balanceOf(msg.sender));
+            uint _totalSupply = uint(daoAccountManager.TotalSupply());
             
             if (c.totalAmountForTokenReward > 0) {
                 
                 uint _amount = c.totalAmountForTokenReward*_balance/_totalSupply;
 
-                AccountManager m = ContractorAccountManager[c.recipient];
+                AccountManager m = contractorAccountManager[c.recipient];
                 m.rewardToken(msg.sender, _amount, now);
 
             }
@@ -452,7 +452,7 @@ contract DAO {
 
         }
 
-        DaoAccountManager.blockTransfer(msg.sender, b.votingDeadline);
+        daoAccountManager.blockTransfer(msg.sender, b.votingDeadline);
 
     }
 
@@ -470,7 +470,7 @@ contract DAO {
         uint _quorum = b.yea + b.nay;
         uint _fees = 0;
 
-        if (b.FundingProposalID != 0 || b.DaoRulesProposalID != 0) {
+        if (b.fundingProposalID != 0 || b.daoRulesProposalID != 0) {
                 if (b.fees > 0 && _quorum >= minQuorum()  
                 ) {
                     _fees = b.fees;
@@ -481,16 +481,16 @@ contract DAO {
 
         bool _contractorProposalFueled;
 
-        if (b.ContractorProposalID != 0) {
-            ContractorProposal c = ContractorProposals[b.ContractorProposalID];
+        if (b.contractorProposalID != 0) {
+            ContractorProposal c = ContractorProposals[b.contractorProposalID];
             if (c.fundingProposalID != 0) {
-                if (DaoAccountManager.fundingDateForContractor(b.ContractorProposalID) != 0) {
+                if (daoAccountManager.fundingDateForContractor(b.contractorProposalID) != 0) {
                 _contractorProposalFueled = true;    
                 }
                 if (now < b.executionDeadline 
                     && !_contractorProposalFueled 
-                    && (BoardMeetings[FundingProposals[c.fundingProposalID].BoardMeetingID].open
-                        || BoardMeetings[FundingProposals[c.fundingProposalID].BoardMeetingID].dateOfExecution != 0)) {
+                    && (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].open
+                        || BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution != 0)) {
                     return; 
                 }
             }
@@ -499,7 +499,7 @@ contract DAO {
         if (!takeBoardMeetingFees(_BoardMeetingID)) throw;
         
         b.open = false;
-        if (b.ContractorProposalID != 0) numberOfRecipientOpenedProposals[c.recipient] -= 1;
+        if (b.contractorProposalID != 0) numberOfRecipientOpenedProposals[c.recipient] -= 1;
         
         if (now > b.executionDeadline 
             || ((_quorum < minQuorum() || b.yea <= b.nay) && !_contractorProposalFueled)
@@ -510,27 +510,27 @@ contract DAO {
 
         b.dateOfExecution = now;
 
-        if (b.FundingProposalID != 0) {
+        if (b.fundingProposalID != 0) {
 
-            FundingProposal f = FundingProposals[b.FundingProposalID];
+            FundingProposal f = FundingProposals[b.fundingProposalID];
 
-            DaoAccountManager.setFundingRules(f.mainPartner, f.publicShareCreation, f.sharePriceMultiplier, 
+            daoAccountManager.setFundingRules(f.mainPartner, f.publicShareCreation, f.sharePriceMultiplier, 
                 f.fundingAmount, f.startTime, f.minutesFundingPeriod, f.inflationRate, f.contractorProposalID);
 
             if (f.contractorProposalID != 0 && !f.publicShareCreation) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
                 if (cf.initialTokenPriceMultiplier != 0) {
-                    ContractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
+                    contractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
                     f.fundingAmount, f.startTime, f.minutesFundingPeriod, cf.inflationRate, f.contractorProposalID);
                 }
             }
             
         }
         
-        if (b.DaoRulesProposalID != 0) {
+        if (b.daoRulesProposalID != 0) {
 
-            Rules r = DaoRulesProposals[b.DaoRulesProposalID];
-            DaoRules.BoardMeetingID = r.BoardMeetingID;
+            Rules r = DaoRulesProposals[b.daoRulesProposalID];
+            DaoRules.boardMeetingID = r.boardMeetingID;
 
             DaoRules.minQuorumDivisor = r.minQuorumDivisor;
             DaoRules.minMinutesDebatePeriod = r.minMinutesDebatePeriod;
@@ -540,13 +540,13 @@ contract DAO {
 
             if (r.transferable) {
                 DaoRules.transferable = true;
-                DaoAccountManager.TransferAble();
+                daoAccountManager.TransferAble();
             }
             
         }
             
-        if (b.ContractorProposalID != 0) {
-            if (!DaoAccountManager.sendTo(c.recipient, c.amount)) throw;
+        if (b.contractorProposalID != 0) {
+            if (!daoAccountManager.sendTo(c.recipient, c.amount)) throw;
         }
 
         BoardMeetingClosed(_BoardMeetingID, _fees, true);
@@ -582,7 +582,7 @@ contract DAO {
         if (_amount <= 0) return true;
 
         b.totalRewardedAmount = b.fees;
-        if (DaoAccountManager.send(_amount)) {
+        if (daoAccountManager.send(_amount)) {
             return true;
         } else {
             b.totalRewardedAmount = b.fees - _amount;
@@ -598,7 +598,7 @@ contract DAO {
         
     /// @return The minimum quorum for a proposal to pass 
     function minQuorum() constant returns (uint) {
-        return uint(DaoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
+        return uint(daoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
     }
     
 }
