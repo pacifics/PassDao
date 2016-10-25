@@ -163,6 +163,7 @@ contract DAO {
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
+    /// @param _creator The address of the creator of the Dao
     /// @param _maxInflationRate The maximum inflation rate for contractor proposals
     /// @param _maxMinutesFundingPeriod The maximum funding period in minutes for funding proposals
     /// @param _maxMinutesProposalPeriod The maximum period in minutes for proposals (set+debate+execution)
