@@ -121,6 +121,8 @@ contract DAO {
         bool transferable;
     } 
 
+    // The minimum periods in minutes 
+    uint minMinutesPeriods;
     // The maximum period in minutes for proposals (set+debate+execution)
     uint public maxMinutesProposalPeriod;
     // The minimum funding period in minutes for funding proposals
@@ -167,6 +169,7 @@ contract DAO {
     function DAO(
         address _creator,
         uint _maxInflationRate,
+        uint _minMinutesPeriods,
         uint _maxMinutesFundingPeriod,
         uint _maxMinutesProposalPeriod
         ) {
@@ -174,11 +177,12 @@ contract DAO {
         daoAccountManager = new AccountManager(_creator, address(this), 0, 10);
 
         maxInflationRate = _maxInflationRate;
+        minMinutesPeriods = _minMinutesPeriods;
         maxMinutesFundingPeriod = _maxMinutesFundingPeriod;
         maxMinutesProposalPeriod = _maxMinutesProposalPeriod;
         
         DaoRules.minQuorumDivisor = 5;
-        DaoRules.minutesExecuteProposalPeriod = 10;
+        DaoRules.minutesExecuteProposalPeriod = minMinutesPeriods;
 
         BoardMeetings.length = 1; 
         ContractorProposals.length = 1;
@@ -256,7 +260,6 @@ contract DAO {
 
         if (_inflationRate > maxInflationRate
             || _recipient == 0
-            || _amount <= 0
             || _totalAmountForTokenReward > _amount) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
@@ -331,7 +334,7 @@ contract DAO {
 
         if (_minutesFundingPeriod > maxMinutesFundingPeriod
             || (!_publicShareCreation && _mainPartner == 0)
-            || _minutesFundingPeriod < 10
+            || _minutesFundingPeriod < minMinutesPeriods
             || _mainPartner == address(this)
             ) {
                 throw;
@@ -390,8 +393,8 @@ contract DAO {
     
         if (_minQuorumDivisor <= 1
             || _minQuorumDivisor > 10
-            || _minMinutesDebatePeriod < 10
-            || _minutesExecuteProposalPeriod < 10
+            || _minMinutesDebatePeriod < minMinutesPeriods
+            || _minutesExecuteProposalPeriod < minMinutesPeriods
             || _minutesSetProposalPeriod + _minMinutesDebatePeriod +  _minutesExecuteProposalPeriod > maxMinutesProposalPeriod
             ) throw; 
         
@@ -620,12 +623,14 @@ contract DAO {
 contract DAOCreator {
     event NewDao(address creator, address newDao);
     function createDAO(
+        uint _minMinutesPeriods,
         uint _maxInflationRate,
         uint _maxMinutesFundingPeriod,
         uint _maxMinutesProposalPeriod
         ) returns (DAO) {
         DAO _newDao = new DAO(
             msg.sender,
+            _minMinutesPeriods,
             _maxInflationRate,
             _maxMinutesFundingPeriod,
             _maxMinutesProposalPeriod
