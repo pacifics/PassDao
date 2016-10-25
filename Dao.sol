@@ -148,8 +148,7 @@ contract DAO {
     modifier onlyTokenholders {
         if (daoAccountManager.balanceOf(msg.sender) == 0) throw; _;}
     
-    event AccountManagerCreated(address indexed Recipient, address AccountManagerAddress);
-    event ContractorProposalAdded(uint indexed ContractorProposalID, address Recipient, uint Amount);
+    event ContractorProposalAdded(uint indexed ContractorProposalID, address Recipient, address AccountManagerAddress, uint Amount);
     event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
@@ -255,19 +254,21 @@ contract DAO {
         c.inflationRate = _inflationRate;
         c.totalAmountForTokenReward = _totalAmountForTokenReward;
         
+        AccountManager m;
         if (lastRecipientProposalId[c.recipient] != 0) {
             
             if ((msg.sender != c.recipient 
                 && !contractorAccountManager[c.recipient].IsCreator(msg.sender))
                 || c.initialSupply != 0) throw;
+                
+            m = contractorAccountManager[c.recipient];
 
         } else {
 
-            AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
+            m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
                 
             contractorAccountManager[c.recipient] = m;
             m.TransferAble();
-            AccountManagerCreated(c.recipient, address(m));
 
         }
         lastRecipientProposalId[c.recipient] = _ContractorProposalID;
@@ -285,7 +286,7 @@ contract DAO {
 
         c.boardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
 
-        ContractorProposalAdded(_ContractorProposalID, c.recipient, c.amount);
+        ContractorProposalAdded(_ContractorProposalID, c.recipient, address(m), c.amount);
         
         return _ContractorProposalID;
         
