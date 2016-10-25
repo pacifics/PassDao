@@ -121,6 +121,13 @@ contract DAO {
         bool transferable;
     } 
 
+    // The maximum period in minutes for proposals (set+debate+execution)
+    uint maxMinutesProposalPeriod;
+    // The minimum funding period in minutes for funding proposals
+    uint maxMinutesFundingPeriod;
+    // The maximum inflation rate for contractor proposals
+    uint maxInflationRate;
+
     // The Dao account manager smart contract
     AccountManager public daoAccountManager;
     
@@ -154,10 +161,22 @@ contract DAO {
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
-    function DAO(address _creator) {
+    /// @param _maxInflationRate The maximum inflation rate for contractor proposals
+    /// @param _maxMinutesFundingPeriod The maximum funding period in minutes for funding proposals
+    /// @param _maxMinutesProposalPeriod The maximum period in minutes for proposals (set+debate+execution)
+    function DAO(
+        address _creator,
+        uint _maxInflationRate,
+        uint _maxMinutesFundingPeriod,
+        uint _maxMinutesProposalPeriod
+        ) {
 
         daoAccountManager = new AccountManager(_creator, address(this), 0, 10);
 
+        maxInflationRate = _maxInflationRate;
+        maxMinutesFundingPeriod = _maxMinutesFundingPeriod;
+        maxMinutesProposalPeriod = _maxMinutesProposalPeriod;
+        
         DaoRules.minQuorumDivisor = 5;
         DaoRules.minutesSetProposalPeriod = 10;
         DaoRules.minutesExecuteProposalPeriod = 100000;
@@ -183,7 +202,8 @@ contract DAO {
     ) internal returns (uint) {
 
         if (msg.value < DaoRules.minBoardMeetingFees
-            || _MinutesDebatingPeriod > 100000 
+            || DaoRules.minutesSetProposalPeriod + _MinutesDebatingPeriod + DaoRules.minutesExecuteProposalPeriod
+                > maxMinutesProposalPeriod
             || _MinutesDebatingPeriod < DaoRules.minMinutesDebatePeriod
             || msg.sender == address(this)) {
             throw;
@@ -235,12 +255,10 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > 1000
+        if (_inflationRate > maxInflationRate
             || _recipient == 0
             || _amount <= 0
-            || _totalAmountForTokenReward > _amount
-            || _recipient == address(daoAccountManager)
-            || _recipient == address(this)) throw;
+            || _totalAmountForTokenReward > _amount) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -254,18 +272,15 @@ contract DAO {
         c.inflationRate = _inflationRate;
         c.totalAmountForTokenReward = _totalAmountForTokenReward;
         
-        AccountManager m;
         if (lastRecipientProposalId[c.recipient] != 0) {
             
             if ((msg.sender != c.recipient 
                 && !contractorAccountManager[c.recipient].IsCreator(msg.sender))
                 || c.initialSupply != 0) throw;
                 
-            m = contractorAccountManager[c.recipient];
+            } else {
 
-        } else {
-
-            m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
+            AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
                 
             contractorAccountManager[c.recipient] = m;
             m.TransferAble();
@@ -286,7 +301,7 @@ contract DAO {
 
         c.boardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
 
-        ContractorProposalAdded(_ContractorProposalID, c.recipient, address(m), c.amount);
+        ContractorProposalAdded(_ContractorProposalID, c.recipient, address(contractorAccountManager[c.recipient]), c.amount);
         
         return _ContractorProposalID;
         
@@ -315,12 +330,11 @@ contract DAO {
         uint _MinutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_minutesFundingPeriod > 45000
+        if (_minutesFundingPeriod > maxMinutesFundingPeriod
             || (!_publicShareCreation && _mainPartner == 0)
             || _maxFundingAmount <= 0
             || _minutesFundingPeriod <= 0
             || _mainPartner == address(this)
-            || _mainPartner == address(daoAccountManager)
             || _sharePriceMultiplier <= 0) {
                 throw;
             }
@@ -378,9 +392,10 @@ contract DAO {
     
         if (_minQuorumDivisor <= 1
             || _minQuorumDivisor > 10
-            || _minMinutesDebatePeriod < 10000
-            || _minutesSetProposalPeriod + _minMinutesDebatePeriod +  _minutesExecuteProposalPeriod > 150000
-            || _minutesExecuteProposalPeriod < 10) throw; 
+            || _minMinutesDebatePeriod < 10
+            || _minutesExecuteProposalPeriod < 10
+            || _minutesSetProposalPeriod + _minMinutesDebatePeriod +  _minutesExecuteProposalPeriod > maxMinutesProposalPeriod
+            ) throw; 
         
         uint _DaoRulesProposalID = DaoRulesProposals.length++;
         Rules r = DaoRulesProposals[_DaoRulesProposalID];
@@ -606,8 +621,17 @@ contract DAO {
 
 contract DAOCreator {
     event NewDao(address creator, address newDao);
-    function createDAO() returns (DAO) {
-        DAO _newDao = new DAO(msg.sender);
+    function createDAO(
+        uint _maxInflationRate,
+        uint _maxMinutesFundingPeriod,
+        uint _maxMinutesProposalPeriod
+        ) returns (DAO) {
+        DAO _newDao = new DAO(
+            msg.sender,
+            _maxInflationRate,
+            _maxMinutesFundingPeriod,
+            _maxMinutesProposalPeriod
+        );
         NewDao(msg.sender, address(_newDao));
         return _newDao;
     }
