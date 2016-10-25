@@ -122,7 +122,7 @@ contract DAO {
     } 
 
     // The minimum periods in minutes 
-    uint minMinutesPeriods;
+    uint public minMinutesPeriods;
     // The maximum period in minutes for proposals (set+debate+execution)
     uint public maxMinutesProposalPeriod;
     // The minimum funding period in minutes for funding proposals
@@ -334,7 +334,6 @@ contract DAO {
 
         if (_minutesFundingPeriod > maxMinutesFundingPeriod
             || (!_publicShareCreation && _mainPartner == 0)
-            || _minutesFundingPeriod < minMinutesPeriods
             || _mainPartner == address(this)
             ) {
                 throw;
@@ -607,12 +606,7 @@ contract DAO {
         }
 
     }
-        
-    /// @return the number of meetings (passed or current)
-    function numberOfMeetings() constant external returns (uint) {
-        return BoardMeetings.length - 1;
-    }
-        
+
     /// @return The minimum quorum for a proposal to pass 
     function minQuorum() constant returns (uint) {
         return uint(daoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
@@ -623,15 +617,15 @@ contract DAO {
 contract DAOCreator {
     event NewDao(address creator, address newDao);
     function createDAO(
-        uint _minMinutesPeriods,
         uint _maxInflationRate,
+        uint _minMinutesPeriods,
         uint _maxMinutesFundingPeriod,
         uint _maxMinutesProposalPeriod
         ) returns (DAO) {
         DAO _newDao = new DAO(
             msg.sender,
-            _minMinutesPeriods,
             _maxInflationRate,
+            _minMinutesPeriods,
             _maxMinutesFundingPeriod,
             _maxMinutesProposalPeriod
         );
