@@ -122,11 +122,11 @@ contract DAO {
     } 
 
     // The maximum period in minutes for proposals (set+debate+execution)
-    uint maxMinutesProposalPeriod;
+    uint public maxMinutesProposalPeriod;
     // The minimum funding period in minutes for funding proposals
-    uint maxMinutesFundingPeriod;
+    uint public maxMinutesFundingPeriod;
     // The maximum inflation rate for contractor proposals
-    uint maxInflationRate;
+    uint public maxInflationRate;
 
     // The Dao account manager smart contract
     AccountManager public daoAccountManager;
@@ -178,8 +178,7 @@ contract DAO {
         maxMinutesProposalPeriod = _maxMinutesProposalPeriod;
         
         DaoRules.minQuorumDivisor = 5;
-        DaoRules.minutesSetProposalPeriod = 10;
-        DaoRules.minutesExecuteProposalPeriod = 100000;
+        DaoRules.minutesExecuteProposalPeriod = 10;
 
         BoardMeetings.length = 1; 
         ContractorProposals.length = 1;
@@ -332,10 +331,9 @@ contract DAO {
 
         if (_minutesFundingPeriod > maxMinutesFundingPeriod
             || (!_publicShareCreation && _mainPartner == 0)
-            || _maxFundingAmount <= 0
-            || _minutesFundingPeriod <= 0
+            || _minutesFundingPeriod < 10
             || _mainPartner == address(this)
-            || _sharePriceMultiplier <= 0) {
+            ) {
                 throw;
             }
 
