@@ -167,7 +167,7 @@ contract PassDAO {
     /// @param _maxInflationRate The maximum inflation rate for contractor proposals
     /// @param _maxMinutesFundingPeriod The maximum funding period in minutes for funding proposals
     /// @param _maxMinutesProposalPeriod The maximum period in minutes for proposals (set+debate+execution)
-    function DAO(
+    function PassDAO(
         address _creator,
         uint _maxInflationRate,
         uint _minMinutesPeriods,
@@ -622,8 +622,8 @@ contract PassDAOCreator {
         uint _minMinutesPeriods,
         uint _maxMinutesFundingPeriod,
         uint _maxMinutesProposalPeriod
-        ) returns (DAO) {
-        DAO _newDao = new DAO(
+        ) returns (PassDAO) {
+        PassDAO _newDao = new PassDAO(
             msg.sender,
             _maxInflationRate,
             _minMinutesPeriods,
