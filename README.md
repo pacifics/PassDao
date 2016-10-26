@@ -13,11 +13,6 @@ Our DAO is open source and used for our project to put together a transparent or
 
 =
 
-## Note
-This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
-
-= 
-
 ## Verified smart contracts on Testnet
 
 Create Dao : https://testnet.etherscan.io/address/0xCea25B3538FD9579fccFF953f1b367C86A24e501#code
@@ -77,6 +72,8 @@ Main functions:
 =
 
 # Notes
+
+- This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
 
 - We limit the amount to send to the funding smart contract and if fueled we limit the amount to fund to the Dao for each partner. Our first goal is decentralization and we want everyone to be able to become a share holder.
 
