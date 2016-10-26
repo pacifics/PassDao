@@ -26,7 +26,7 @@ to automate organizational governance and decision-making.
 */
 
 /// @title Pass Decentralized Autonomous Organisation
-contract DAO {
+contract PassDAO {
 
     struct BoardMeeting {        
         // Address who created the board meeting for a proposal
@@ -163,7 +163,7 @@ contract DAO {
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
-    /// @param _creator The address of the creator of the Dao
+    /// @param _creator THe address of the creator of the Dao
     /// @param _maxInflationRate The maximum inflation rate for contractor proposals
     /// @param _maxMinutesFundingPeriod The maximum funding period in minutes for funding proposals
     /// @param _maxMinutesProposalPeriod The maximum period in minutes for proposals (set+debate+execution)
@@ -615,7 +615,7 @@ contract DAO {
     
 }
 
-contract DAOCreator {
+contract PassDAOCreator {
     event NewDao(address creator, address newDao);
     function createDAO(
         uint _maxInflationRate,
