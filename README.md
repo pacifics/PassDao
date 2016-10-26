@@ -15,9 +15,9 @@ Our DAO is open source and used for our project to put together a transparent or
 
 ## Verified smart contracts on Testnet
 
-Create Dao : https://testnet.etherscan.io/address/0xCea25B3538FD9579fccFF953f1b367C86A24e501#code
+Dao and Account Manager : https://testnet.etherscan.io/address/0xCea25B3538FD9579fccFF953f1b367C86A24e501#code
 
-Create Funding : https://testnet.etherscan.io/address/0x697c8fc8C34d8EdC668031b155DA656F20661027#code
+Funding : https://testnet.etherscan.io/address/0x697c8fc8C34d8EdC668031b155DA656F20661027#code
 
 =
 
