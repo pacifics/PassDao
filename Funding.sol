@@ -25,7 +25,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @title Primary Funding smart contract for the Pass Decentralized Autonomous Organisation
-contract Funding {
+contract PassDaoFunding {
 
     struct Partner {
         // The Ethereum address of the partner
@@ -106,7 +106,7 @@ contract Funding {
     /// @param _minAmount Minimum amount to fund (in wei)
     /// @param _startTime The unix start time of the presale
     /// @param _closingTime The unix closing time of the presale
-    function Funding (
+    function PassDaoFunding (
         address _creator,
         address _DaoAccountManager,
         address _contractorAccountManager,
@@ -447,7 +447,7 @@ contract Funding {
 
 }
 
-contract FundingCreator {
+contract PassDaoFundingCreator {
     event NewFunding(address creator, address newFunding);
     function createFunding(
         address _DaoAccountManager,
@@ -456,8 +456,8 @@ contract FundingCreator {
         uint _minAmount,
         uint _startTime,
         uint _closingTime
-        ) returns (Funding) {
-        Funding _newFunding = new Funding(
+        ) returns (PassDaoFunding) {
+        PassDaoFunding _newFunding = new PassDaoFunding(
             msg.sender,
             _DaoAccountManager,
             _contractorAccountManager,        
