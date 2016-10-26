@@ -21,6 +21,7 @@ This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Et
 ## Verified smart contracts on Testnet
 
 Create Dao : https://testnet.etherscan.io/address/0xCea25B3538FD9579fccFF953f1b367C86A24e501#code
+
 Create Funding : https://testnet.etherscan.io/address/0x697c8fc8C34d8EdC668031b155DA656F20661027#code
 
 =
