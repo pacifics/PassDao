@@ -23,9 +23,9 @@ Funding address for the presale : 0x418b92CA3f82C8b7451aefe8db2668bA1122848E
 
 DAO address : 0xC9127A276A0EA84B94B93FcD5Afa0f62c83daaD3
 
-Pass shares address (conform to the ERC20, will be mint when closing the presale) : 0x727ffAF6c14615CDb36A19D7F17A1d3cD3C038Fd  
+Pass shares address (conform to the ERC20, will be mint during the closing of the presale and the funding the Dao) : 0x727ffAF6c14615CDb36A19D7F17A1d3cD3C038Fd  
 
-Pass Reputation tokens address (conform to the ERC20, will be mint when closing the presale) : 0xe28641fF4dA9a5404B31cFdE83844F3794d4191C
+Pass Reputation tokens address (conform to the ERC20, will be mint during the closing of the presale and the funding the Dao) : 0xe28641fF4dA9a5404B31cFdE83844F3794d4191C
 
 =
 
