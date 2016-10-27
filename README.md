@@ -47,7 +47,7 @@ Main functions are :
 
 - BuyToken and BuyTokenFor to buy shares in case of public fundings
 
-- RewardToken to voters by the Dao smart contract or for private fundings by a funding smart contract
+- RewardToken to voters by the Dao smart contract or to funders for private fundings by the funding smart contract
 
 - Transfer and TransferFrom for the transfer of tokens
 
