@@ -13,7 +13,7 @@ Our DAO is open source and used for our project to put together a transparent or
 
 =
 
-## Smart contracts on Testnet
+## The Primary Funding on Testnet (for test purpose from 28 October until 18 November 2016)
 
 Verified Dao and Account Manager contracts : https://testnet.etherscan.io/address/0xCea25B3538FD9579fccFF953f1b367C86A24e501#code
 
