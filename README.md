@@ -71,7 +71,7 @@ Main functions:
 
 - Fallback function to send Eth to the Funding smart contract.
 
-- SetPartners: allows the smart contract creator to validate Eth addresses according to the mailing list.
+- SetPartners: allows the smart contract creator to validate Eth account addresses according to the mailing list.
 
 - SetLimits and SetFundingLimits: allows the smart contract creator to set the funding limits (amounts and percentage of ether balance share) for all partners.
 
