@@ -19,13 +19,13 @@ Verified Dao and Account Manager contracts : https://testnet.etherscan.io/addres
 
 Verified Funding contract : https://testnet.etherscan.io/address/0x697c8fc8C34d8EdC668031b155DA656F20661027#code
 
-Funding address for the presale : 0x418b92CA3f82C8b7451aefe8db2668bA1122848E
+Funding address for the presale : 
 
-DAO address : 0xC9127A276A0EA84B94B93FcD5Afa0f62c83daaD3
+DAO address : 
 
-Pass shares address (conform to the ERC20, will be mint during the closing of the presale and the funding of the Dao) : 0x727ffAF6c14615CDb36A19D7F17A1d3cD3C038Fd  
+Pass shares address (conform to the ERC20, will be mint during the closing of the presale and the funding of the Dao) :  
 
-Pass Reputation tokens address (conform to the ERC20, will be mint during the closing of the presale and the funding of the Dao) : 0xe28641fF4dA9a5404B31cFdE83844F3794d4191C
+Pass Reputation tokens address (conform to the ERC20, will be mint during the closing of the presale and the funding of the Dao) : 
 
 =
 
