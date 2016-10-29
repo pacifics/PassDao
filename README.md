@@ -93,7 +93,9 @@ Main functions:
 
 - If the work of a contractor allows the development of our project, it should increase the value of Pass reputation tokens which belongs to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
 
-- Make a proposal will cost board meeting fees. In case of funding or Dao rules proposals, the fees return to the creator of the proposal if the quorum is reached. The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. 
+- Make a proposal will cost board meeting fees. In case of funding or Dao rules proposals, the fees return to the creator of the proposal if the quorum is reached. 
+
+- The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees and contractor tokens. 
 
 - A period to consider or set the proposal is foreseen before each board meeting. 
 
