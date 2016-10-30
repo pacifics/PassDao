@@ -16,7 +16,7 @@ Our DAO is open source and used for our project to put together a transparent or
 
 ## The Dao Smart Contract
 
-Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period, and during a debate period. Approved proposal can be executed during a period predefined in the Dao rules.
+Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period called board meeting.
 
 Main functions: 
 
@@ -24,7 +24,7 @@ Main functions:
 
 - Set a funding proposal: the dao sharehoders can propose to fund the Dao with a public or private funding. In case of private funding, the funding rules can be set in a separated smart contract and the funding can be linked to a contractor proposal that will be executed if the funding is fueled. We use this method for the primary funding with a funding smart contract linked to the first project manager proposal.
 
-- Set a Dao Rules proposal: the dao share holders can propose to change the minimum quorum for proposals, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period, the maximum period to execute an approved proposal and the date when shares can be transfered.
+- Set a Dao Rules proposal: the dao share holders can propose to change the minimum quorum for proposals, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period and the date when shares can be transfered.
 
 - Approve a proposal: share holders can vote for or against a proposal. If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
 
