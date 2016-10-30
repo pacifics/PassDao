@@ -13,21 +13,6 @@ Our DAO is open source and used for our project to put together a transparent or
 
 =
 
-## The Primary Funding on Testnet (for test purpose from 28 October until 18 November 2016)
-
-Verified Dao and Account Manager contracts : https://testnet.etherscan.io/address/0xCea25B3538FD9579fccFF953f1b367C86A24e501#code
-
-Verified Funding contract : https://testnet.etherscan.io/address/0x697c8fc8C34d8EdC668031b155DA656F20661027#code
-
-Funding address for the presale : 
-
-DAO address : 
-
-Pass shares address (conform to the ERC20, will be mint during the closing of the presale and the funding of the Dao) :  
-
-Pass Reputation tokens address (conform to the ERC20, will be mint during the closing of the presale and the funding of the Dao) : 
-
-=
 
 ## The Dao Smart Contract
 
