@@ -21,14 +21,14 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 
 
 /*
- * Smart contract used for the primary funding of the Dao.
+ * Smart contract used for the funding of the Dao.
 */
 
-/// @title Primary Funding smart contract for the Pass Decentralized Autonomous Organisation
-contract PassDAOFunding {
+/// @title Funding smart contract for the Pass Decentralized Autonomous Organisation
+contract PassFunding {
 
     struct Partner {
-        // The Ethereum address of the partner
+        // The address of the partner
         address partnerAddress; 
         // The amount (in wei) that the partner wish to fund
         uint256 presaleAmount;
@@ -36,7 +36,7 @@ contract PassDAOFunding {
         uint presaleDate;
         // The funding amount (in wei) according to the set limits
         uint fundingAmountLimit;
-        // the amount (in wei) that the partner funded to the Dao
+        // The amount (in wei) that the partner funded to the Dao
         uint fundedAmount;
         // True if the partner can fund the dao
         bool valid;
@@ -46,10 +46,8 @@ contract PassDAOFunding {
     address public creator;
     // The account manager smart contract to fund
     AccountManager public DaoAccountManager;
-    // The account manager smart contract for the reward of contractor tokens
-    AccountManager public ContractorAccountManager;
-    // The index of the Dao contractor proposal
-    uint public contractorProposalID;
+    // Address of the account manager smart contract for the reward of contractor tokens
+    address public contractorAccountManager;
     // Minimum amount (in wei) to fund
     uint public minAmount;
     // Maximum amount (in wei) to fund
@@ -60,7 +58,7 @@ contract PassDAOFunding {
     uint public maxPresaleAmount;
     // The unix start time of the presale
     uint public startTime;
-    // The unix closing time of the presale
+    // The unix closing time of the funding
     uint public closingTime;
     /// The amount (in wei) below this limit can fund the dao
     uint minAmountLimit;
@@ -72,7 +70,7 @@ contract PassDAOFunding {
     bool public limitSet;
     // True if all the partners are set by the creator and the funding can be completed 
     bool public allSet;
-    // Array of partners which wish to fund the dao
+    // Array of partners who wish to fund the dao
     Partner[] public partners;
     // Map with the indexes of the partners
     mapping (address => uint) public partnerID; 
@@ -101,16 +99,15 @@ contract PassDAOFunding {
     /// @dev Constructor function
     /// @param _creator The creator of the smart contract
     /// @param _DaoAccountManager The Dao account manager smart contract
-    /// @param _contractorAccountManager The contractor account manager smart contract for the reward of tokens
-    /// @param _contractorProposalID The index of the Dao contractor proposal
-    /// @param _minAmount Minimum amount to fund (in wei)
+    /// @param _contractorAccountManager The address of the contractor account manager smart contract  
+    /// for the reward of tokens (not mandatory)
+    /// @param _minAmount Minimum amount (in wei) of the funding to be fueled 
     /// @param _startTime The unix start time of the presale
-    /// @param _closingTime The unix closing time of the presale
-    function PassDAOFunding (
+    /// @param _closingTime The unix closing time of the funding
+    function PassFunding (
         address _creator,
         address _DaoAccountManager,
         address _contractorAccountManager,
-        uint _contractorProposalID, 
         uint _minAmount,
         uint _startTime,
         uint _closingTime
@@ -118,8 +115,7 @@ contract PassDAOFunding {
             
         creator = _creator;
         DaoAccountManager = AccountManager(_DaoAccountManager);
-        ContractorAccountManager = AccountManager(_contractorAccountManager);
-        contractorProposalID = _contractorProposalID;
+        contractorAccountManager = _contractorAccountManager;
 
         minAmount = _minAmount;
 
@@ -157,26 +153,30 @@ contract PassDAOFunding {
         ) throw;
         
         if (partnerID[msg.sender] == 0) {
+
             uint _partnerID = partners.length++;
             Partner t = partners[_partnerID];
              
             partnerID[msg.sender] = _partnerID;
-            
             t.partnerAddress = msg.sender;
+            
             t.presaleAmount += msg.value;
             t.presaleDate = now;
-        }
-        else {
+
+        } else {
+
             Partner p = partners[partnerID[msg.sender]];
             if (p.presaleAmount + msg.value > maxPresaleAmount) throw;
+
             p.presaleDate = (p.presaleDate*p.presaleAmount + now*msg.value)/(p.presaleAmount + msg.value);
             p.presaleAmount += msg.value;
+
         }    
         
         IntentionToFund(msg.sender, msg.value);
     }
     
-    /// @notice Function used by the creator to set valid partners that can fund the dao
+    /// @notice Function used by the creator to set addresses that can fund the dao
     /// @param _valid True if the address can fund the Dao
     /// @param _from The index of the first partner to set
     /// @param _to The index of the last partner to set
@@ -198,10 +198,9 @@ contract PassDAOFunding {
     }
 
     /// @notice Function used by the creator to set the funding limits for the funding
-    /// @param _minAmountLimit The amount below this limit can fund the dao
-    /// @param _maxAmountLimit Limit in amount a partner can fund
-    /// @param _divisorBalanceLimit The partner can fund 
-    /// below a defined percentage of his ether balance 
+    /// @param _minAmountLimit The amount below this limit (in wei) can fund the dao
+    /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
+    /// @param _divisorBalanceLimit The creator can set a limit in percentage of Eth balance (not mandatory) 
     function setFundingLimits(
             uint _minAmountLimit,
             uint _maxAmountLimit, 
@@ -277,10 +276,17 @@ contract PassDAOFunding {
             _amountToFund = partners[i].fundingAmountLimit - partners[i].fundedAmount;
         
             if (_amountToFund > 0) {
+
                 partners[i].fundedAmount += _amountToFund;
-                DaoAccountManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
-                ContractorAccountManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
                 _sumAmountToFund += _amountToFund;
+
+                DaoAccountManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
+
+                if (contractorAccountManager != 0) {
+                    AccountManager(contractorAccountManager).rewardToken(_partner, _amountToFund, 
+                        partners[i].presaleDate);
+                }
+
             }
 
         }
@@ -288,10 +294,14 @@ contract PassDAOFunding {
         if (!DaoAccountManager.send(_sumAmountToFund)) throw;
 
         totalFunded += _sumAmountToFund;
+
         if (totalFunded >= sumOfFundingAmountLimits) {
-            ContractorAccountManager.Fueled(); 
+            
             DaoAccountManager.Fueled(); 
+            if (contractorAccountManager != 0) AccountManager(contractorAccountManager).Fueled(); 
+
             Fueled();
+
         }
 
     }
@@ -361,7 +371,7 @@ contract PassDAOFunding {
     /// @param _minAmountLimit The amount (in wei) below this limit can fund the dao
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
     /// @param _divisorBalanceLimit The partner can fund 
-    /// only under a defined percentage of their ether balance 
+    /// only under a defined percentage of his ether balance 
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
     /// @return The result of the funding procedure (in wei) at present time
@@ -389,7 +399,7 @@ contract PassDAOFunding {
     /// @param _minAmountLimit The amount (in wei) below this limit can fund the dao
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
     /// @param _divisorBalanceLimit The partner can fund 
-    /// only under a defined percentage of their ether balance 
+    /// only under a defined percentage of his ether balance 
     /// @return The maximum amount (in wei) a partner can fund
     function partnerFundingLimit(
         uint _index, 
@@ -447,21 +457,19 @@ contract PassDAOFunding {
 
 }
 
-contract PassDAOFundingCreator {
+contract PassFundingCreator {
     event NewFunding(address creator, address newFunding);
     function createFunding(
         address _DaoAccountManager,
         address _contractorAccountManager,
-        uint _contractorProposalID, 
         uint _minAmount,
         uint _startTime,
         uint _closingTime
-        ) returns (PassDAOFunding) {
-        PassDAOFunding _newFunding = new PassDAOFunding(
+        ) returns (PassFunding) {
+        PassFunding _newFunding = new PassFunding(
             msg.sender,
             _DaoAccountManager,
             _contractorAccountManager,        
-            _contractorProposalID, 
             _minAmount,
             _startTime,
             _closingTime
