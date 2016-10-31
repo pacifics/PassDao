@@ -364,7 +364,7 @@ contract PassFunding {
         
         if (refundFromPartner >= partners.length) {
             refundFromPartner = 1;
-            if (totalFunded >= sumOfFundingAmountLimits && allSet) {
+            if (totalFunded >= sumOfFundingAmountLimits && allSet && closingTime > now) {
                 closingTime = now; 
                 FundingClosed(); 
             }
