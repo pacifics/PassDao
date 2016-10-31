@@ -304,8 +304,10 @@ contract PassFunding {
             if (contractorAccountManager != 0) AccountManager(contractorAccountManager).Fueled(); 
 
             Fueled();
-
+            
         }
+        
+        return true;
 
     }
 
