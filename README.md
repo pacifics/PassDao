@@ -96,9 +96,12 @@ Main functions:
 
 - Refund from the funding smart contract will be before the closing time of the primary funding for the valid adresses and after the closing time of the primary funding for the invalid adresses.
 
-- By allowing fundings (public or private) for each step of the project and by limiting the funding amounts, we avoid useless blocked ethers in the Dao.
+- By allowing fundings (public or private) for each step of the project and by limiting the funding amounts, we limit the amount of money "at risk" and avoid useless blocked ethers in the Dao.
+
+- In case of bugs or improvements, we can reward to share holders "new" shares in a new Dao account manager and with a new Dao smart contract as client.
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares.
 
 - There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to share holders. 
 
+- 
