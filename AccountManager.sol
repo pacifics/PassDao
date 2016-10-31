@@ -156,19 +156,19 @@ contract AccountManager is Token {
         return totalSupply;
     }
 
-    /// @notice Internal function to set the actual funding fueled
-    function setFundingFueled() internal {
+    /// @notice Internal function to close the actual funding
+    function closeFunding() internal {
         
         fundingDate[FundingRules.fundingProposalID] = now;
         FundingRules.closingTime = now;
-        FundingFueled(FundingRules.fundingProposalID, FundingRules.fundedAmount);
 
     }
     
     /// @notice Function used by the main partner to set the funding fueled
     function Fueled() external {
         if (msg.sender != FundingRules.mainPartner || now > FundingRules.closingTime) throw;
-        setFundingFueled();
+        closeFunding();
+        FundingFueled(FundingRules.fundingProposalID, FundingRules.fundedAmount);
     }
     
     /// @param _fundingProposalID The index of the Dao funding proposal
@@ -302,7 +302,7 @@ contract AccountManager is Token {
 
         TokensCreated(msg.sender, _recipient, _quantity);
         
-        if (FundingRules.fundedAmount == FundingRules.maxAmountToFund) setFundingFueled();
+        if (FundingRules.fundedAmount == FundingRules.maxAmountToFund) closeFunding();
         
         return true;
 
