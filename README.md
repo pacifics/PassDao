@@ -98,7 +98,7 @@ Main functions:
 
 - By allowing fundings (public or private) for each step of the project and by limiting the presale and funding amounts, we limit the amount of money "at risk" and avoid useless blocked ethers in the Dao.
 
-- In case of any bug or exploit during the primary funding, the project manager will do his best to complete the work foreseen in his proposal without asking for additional funds.
+- In case of any bug or exploit during the primary funding, the project manager promises to do his best to complete the work foreseen in his proposal without asking for additional funds.
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares.
 
