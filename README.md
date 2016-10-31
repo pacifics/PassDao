@@ -92,7 +92,7 @@ Main functions:
 
 # About Security
 
-- It is necessary to be included in the mailing list in order to participate in the first funding. It will help communicating with shareholders, avoid the possibility to fund using "hundreds" addresses and allow to check that partners's addresses are not related to a smart contract. 
+- It is necessary to be included in the mailing list in order to participate in the first funding. It will avoid the possibility to fund using "hundreds" addresses and allow to check that partners's addresses are not related to a smart contract. 
 
 - Refund from the funding smart contract will be before the closing time of the primary funding for the valid adresses and after the closing time of the primary funding for the invalid adresses.
 
