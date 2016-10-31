@@ -257,10 +257,11 @@ contract PassFunding {
     /// @notice Function for the funding of the Dao by a group of partners
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
+    /// @return Whether the Dao was funded or not
     function fundDaoFor(
             uint _from,
             uint _to
-        ) {
+        ) returns (bool) {
 
         if (!allSet) throw;
         
@@ -291,6 +292,8 @@ contract PassFunding {
 
         }
 
+        if (_sumAmountToFund == 0) return;
+        
         if (!DaoAccountManager.send(_sumAmountToFund)) throw;
 
         totalFunded += _sumAmountToFund;
