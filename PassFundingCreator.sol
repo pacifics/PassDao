@@ -140,9 +140,15 @@ contract PassFunding {
 
         }
 
-    /// @notice Function to participate in the presale of the funding
+    /// @dev Fallback function
     function () payable {
-        
+        if (!presale()) throw;
+    }
+
+    /// @notice Function to participate in the presale of the funding
+    /// @return Whether the presale was successful or not
+    function presale() payable returns (bool) {
+
         if (msg.value <= 0
             || now < startTime
             || (now > closingTime && closingTime != 0)
@@ -174,6 +180,9 @@ contract PassFunding {
         }    
         
         IntentionToFund(msg.sender, msg.value);
+        
+        return true;
+        
     }
     
     /// @notice Function used by the creator to set addresses that can fund the dao
@@ -309,6 +318,12 @@ contract PassFunding {
         
         return true;
 
+    }
+    
+    /// @notice Function to fund the Dao with 'msg.sender' as 'beneficiary'
+    /// @return Whether the Dao was funded or not 
+    function fundDao() returns (bool) {
+        return fundDaoFor(partnerID[msg.sender], partnerID[msg.sender]);
     }
 
     /// @notice Function to refund for a partner
