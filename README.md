@@ -36,7 +36,7 @@ The smart contract derives to the token contract Token.sol and is used for the m
 
 Main functions are : 
 
-- Fallback function to send Eth to the Dao account manager (from the couriers).
+- Fallback function to receive Eth from the couriers (for the Dao account manager only).
 
 - BuyToken and BuyTokenFor to buy shares in case of public fundings.
 
