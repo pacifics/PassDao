@@ -96,7 +96,9 @@ Main functions:
 
 - Refund from the funding smart contract will be before the closing time of the primary funding for the valid adresses and after the closing time of the primary funding for the invalid adresses.
 
-- By allowing fundings (public or private) for each step of the project and by limiting the funding amounts, we limit the amount of money "at risk" and avoid useless blocked ethers in the Dao.
+- By allowing fundings (public or private) for each step of the project and by limiting the presale and funding amounts, we limit the amount of money "at risk" and avoid useless blocked ethers in the Dao.
+
+- In case of any bug or exploit during the primary funding, the project manager will do his best to complete the work foreseen in his proposal without asking for additional funds.
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares.
 
