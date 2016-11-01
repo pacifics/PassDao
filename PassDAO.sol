@@ -153,18 +153,20 @@ contract PassDAO {
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
+    /// @param _creator The creator of the Dao
     /// @param _maxInflationRate The maximum inflation rate for contractor and funding proposals
     /// @param _minMinutesPeriods The minimum periods in minutes
     /// @param _maxMinutesFundingPeriod The maximum funding period in minutes for funding proposals
     /// @param _maxMinutesProposalPeriod The maximum period in minutes for proposals (set+debate)
     function PassDAO(
+        address _creator,
         uint _maxInflationRate,
         uint _minMinutesPeriods,
         uint _maxMinutesFundingPeriod,
         uint _maxMinutesProposalPeriod
         ) {
 
-        daoAccountManager = new AccountManager(msg.sender, address(this), 0, 10);
+        daoAccountManager = new AccountManager(_creator, address(this), 0, 10);
 
         maxInflationRate = _maxInflationRate;
         minMinutesPeriods = _minMinutesPeriods;
@@ -548,7 +550,7 @@ contract PassDAO {
         }
             
         if (b.contractorProposalID != 0) {
-            if (!daoAccountManager.sendTo(c.recipient, c.amount)) throw;
+            if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], c.amount)) throw;
         }
 
         BoardMeetingClosed(_BoardMeetingID, _fees, true);
@@ -600,3 +602,22 @@ contract PassDAO {
     
 }
 
+contract PassDAOCreator {
+    event NewPassDao(address creator, address newPassDao);
+    function createDAO(
+        uint _maxInflationRate,
+        uint _minMinutesPeriods,
+        uint _maxMinutesFundingPeriod,
+        uint _maxMinutesProposalPeriod
+        ) returns (PassDAO) {
+        PassDAO _newPassDao = new PassDAO(
+            msg.sender,
+            _maxInflationRate,
+            _minMinutesPeriods,
+            _maxMinutesFundingPeriod,
+            _maxMinutesProposalPeriod
+        );
+        NewPassDao(msg.sender, address(_newPassDao));
+        return _newPassDao;
+    }
+}
