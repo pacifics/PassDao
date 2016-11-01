@@ -32,13 +32,13 @@ Main functions:
 
 ## The Account Manager Smart Contract
 
-The Dao Account Manager contains the Eth balance of the Dao. An account manager smart contract is also created for each contractor. The smart contract derives to the token contract Token.sol and is used for the management of tokens by a client smart contract (the dao). The smart contract is conform to ERC20.
+The Dao Account Manager contains the Eth balance of the Dao. An account manager smart contract is also created for each contractor with the payments in ethers by the Dao. The smart contract derives to the token contract Token.sol and is used for the management of Dao shares or contractor tokens by the Dao. The smart contract is conform to ERC20.
 
 Main functions are : 
 
 - Fallback function to receive Eth.
 
-- BuyToken and BuyTokenFor to buy shares in case of public fundings.
+- BuyToken and BuyTokenFor to buy Dao shares in case of public fundings.
 
 - RewardToken to voters by the Dao smart contract or to funders for private fundings by the funding smart contract.
 
