@@ -22,8 +22,7 @@ along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
 
 /*
  * The Account Manager smart contract is used for the management of ether accounts.
- * The contract derives to the Token Manager smart contract for
- * the management of tokens by a client smart contract (the Dao).
+ * The contract derives to the Token Manager smart contract for the management of tokens.
  * Allows to receive or withdraw ethers and to buy Dao shares.
  * Recipient is 0 for the Dao account manager and the address of
  * contractor's recipient for the account managers of contractors.
