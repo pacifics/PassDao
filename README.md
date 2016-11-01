@@ -104,4 +104,4 @@ Main functions:
 
 - There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern for the reward of board meeting fees to share holders.
 
-- In case of bugs or improvements, we can make a contractor proposal to "transfer" the Dao balance, shares and reputation tokens (technically creating new shares and tokens) to new Dao and Project Manager account managers and with a new Dao smart contract as client.
+- In case of bugs or improvements, we can make a contractor proposal to send the Dao balance to an Upgrade smart contract. This will "transfer" the Dao balance, shares and reputation tokens (technically creating new shares and tokens) to new Dao and Project Manager account managers and with a new Dao smart contract as client.
