@@ -2,7 +2,7 @@ pragma solidity ^0.4.2;
 
 /*
  * The Token Manager smart contract is used for the management of tokens
- * by a client smart contract (the Dao). Defines the functions to set funding rules
+ * by a client smart contract (the Dao). Defines the functions to set new funding rules,
  * create or reward tokens, check token balances, send tokens and send
  * tokens on behalf of a 3rd party and the corresponding approval process.
 */
