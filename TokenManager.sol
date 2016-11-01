@@ -7,8 +7,6 @@ pragma solidity ^0.4.2;
  * send tokens on behalf of a 3rd party and the corresponding approval process.
 */
 
-pragma solidity ^0.4.2;
-
 /// @title Token Manager smart contract of the Pass Decentralized Autonomous Organisation
 contract TokenManager {
     
