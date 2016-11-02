@@ -227,7 +227,7 @@ contract PassDAO {
     /// @param _amount The amount (in wei) to be sent if the proposal is approved
     /// @param _description String describing the proposal
     /// @param _hashOfTheDocument The hash of the proposal document
-    /// @param _tokenRewardToVoters True if the proposal foresees to reward contractor tokens to voters
+    /// @param _tokenRewardToVoters True if the proposal foresees to reward contractor tokens to voters (not mandatory)  
     /// @param _initialTokenPriceMultiplier The initial price multiplier of contractor tokens (not mandatory)    
     /// @param _inflationRate If 0, the contractor token price doesn't change during the funding (not mandatory)
     /// @param _initialSupply If the recipient asks for an initial supply of contractor tokens (not mandatory)
