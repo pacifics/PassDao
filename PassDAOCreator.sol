@@ -3,22 +3,21 @@ import "AccountManager.sol";
 pragma solidity ^0.4.2;
 
 /*
-This file is part of the DAO.
+This file is part of Pass DAO.
 
-The DAO is free software: you can redistribute it and/or modify
+Pass DAO is free software: you can redistribute it and/or modify
 it under the terms of the GNU lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-The DAO is distributed in the hope that it will be useful,
+Pass DAO is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU lesser General Public License for more details.
 
 You should have received a copy of the GNU lesser General Public License
-along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
+along with Pass DAO.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 
 /*
 Smart contract for a Decentralized Autonomous Organization (DAO)
@@ -252,7 +251,10 @@ contract PassDAO {
             || _recipient == address(this)
             || _recipient == address(daoAccountManager)
             || _amount == 0
-            || _totalAmountForTokenReward > _amount) throw;
+            || (lastRecipientProposalId[_recipient] != 0 
+                && (_totalAmountForTokenReward != 0 
+                    || (msg.sender != c.recipient && !contractorAccountManager[c.recipient].IsCreator(msg.sender))
+                    || c.initialSupply != 0))) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
@@ -266,30 +268,24 @@ contract PassDAO {
         c.inflationRate = _inflationRate;
         c.totalAmountForTokenReward = _totalAmountForTokenReward;
         
-        if (lastRecipientProposalId[c.recipient] != 0) {
+        if (lastRecipientProposalId[c.recipient] == 0) {
             
-            if ((msg.sender != c.recipient 
-                && !contractorAccountManager[c.recipient].IsCreator(msg.sender))
-                || c.initialSupply != 0) throw;
-                
-            } else {
-
             AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
-                
             contractorAccountManager[c.recipient] = m;
+
+            if (c.totalAmountForTokenReward != 0) {
+            
+                uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
+                m.setFundingRules(address(this), false, c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
+                    _setDeadLine, _MinutesDebatingPeriod, c.inflationRate, 0);
+
+            }
+
             m.TransferAble();
 
         }
-        lastRecipientProposalId[c.recipient] = _ContractorProposalID;
-        
-        if (c.totalAmountForTokenReward != 0) {
-            
-            uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
-            contractorAccountManager[c.recipient].setFundingRules(address(this), false, 
-                c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
-                _setDeadLine, _MinutesDebatingPeriod, c.inflationRate, 0);
 
-        }
+        lastRecipientProposalId[c.recipient] = _ContractorProposalID;
         
         numberOfRecipientOpenedProposals[c.recipient] += 1;
 
