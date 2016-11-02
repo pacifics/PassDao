@@ -266,7 +266,7 @@ contract TokenManager {
         }
     }
     
-    /// @dev Internal function to send `_value` token to `_to` from `msg.sender`
+    /// @dev Internal function to send `_value` token to `_to` from `_From`
     /// @param _from The address of the sender
     /// @param _to The address of the recipient
     /// @param _value The quantity of shares or tokens to be transferred
