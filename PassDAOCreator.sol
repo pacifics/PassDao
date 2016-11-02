@@ -252,7 +252,7 @@ contract PassDAO {
             || _recipient == address(daoAccountManager)
             || _amount == 0
             || (lastRecipientProposalId[_recipient] != 0 
-                && (_totalAmountForTokenReward != 0 
+                && ((contractorAccountManager[_recipient].TotalSupply() != 0 && c.totalAmountForTokenReward != 0)
                     || (msg.sender != c.recipient && !contractorAccountManager[c.recipient].IsCreator(msg.sender))
                     || c.initialSupply != 0))) throw;
 
