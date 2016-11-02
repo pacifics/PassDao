@@ -75,9 +75,8 @@ contract PassDAO {
         uint256 initialSupply;
         // The index of the funding proposal if linked to the contractor proposal
         uint fundingProposalID;
-        // Total amount for the reward of tokens to voters
-        uint totalAmountForTokenReward;
-
+        // True if the proposal foresees to reward contractor tokens to voters
+        bool tokenRewardToVoters;
     }
     
     struct FundingProposal {
@@ -88,7 +87,7 @@ contract PassDAO {
         // The address which set partners and manage the funding in case of private funding
         address mainPartner;
         // The maximum amount (in wei) to fund
-        uint fundingAmount; 
+        uint maxFundingAmount; 
         // The initial price multiplier of Dao shares
         uint initialSharePriceMultiplier; 
         // The inflation rate to calculate the actual contractor share price
@@ -228,7 +227,7 @@ contract PassDAO {
     /// @param _amount The amount (in wei) to be sent if the proposal is approved
     /// @param _description String describing the proposal
     /// @param _hashOfTheDocument The hash of the proposal document
-    /// @param _totalAmountForTokenReward Total amount of tokens to reward to voters (not mandatory)
+    /// @param _tokenRewardToVoters True if the proposal foresees to reward contractor tokens to voters
     /// @param _initialTokenPriceMultiplier The initial price multiplier of contractor tokens (not mandatory)    
     /// @param _inflationRate If 0, the contractor token price doesn't change during the funding (not mandatory)
     /// @param _initialSupply If the recipient asks for an initial supply of contractor tokens (not mandatory)
@@ -239,7 +238,7 @@ contract PassDAO {
         uint _amount, 
         string _description, 
         bytes32 _hashOfTheDocument,
-        uint _totalAmountForTokenReward,
+        bool _tokenRewardToVoters,
         uint _initialTokenPriceMultiplier, 
         uint _inflationRate,
         uint256 _initialSupply,
@@ -252,7 +251,7 @@ contract PassDAO {
             || _recipient == address(daoAccountManager)
             || _amount == 0
             || (lastRecipientProposalId[_recipient] != 0 
-                && ((contractorAccountManager[_recipient].TotalSupply() != 0 && _totalAmountForTokenReward != 0)
+                && ((contractorAccountManager[_recipient].TotalSupply() != 0 && _tokenRewardToVoters)
                     || (msg.sender != _recipient && !contractorAccountManager[_recipient].IsCreator(msg.sender))
                     || _initialSupply != 0))) throw;
 
@@ -266,18 +265,18 @@ contract PassDAO {
         c.hashOfTheDocument = _hashOfTheDocument; 
         c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         c.inflationRate = _inflationRate;
-        c.totalAmountForTokenReward = _totalAmountForTokenReward;
-        
+        c.tokenRewardToVoters = _tokenRewardToVoters;
+
         if (lastRecipientProposalId[c.recipient] == 0) {
             AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
             contractorAccountManager[c.recipient] = m;
             m.TransferAble();
         }
 
-        if (c.totalAmountForTokenReward != 0) {
+        if (_tokenRewardToVoters) {
             uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
             contractorAccountManager[c.recipient].setFundingRules(address(this), false, c.initialTokenPriceMultiplier, 
-                c.totalAmountForTokenReward, _setDeadLine, _MinutesDebatingPeriod, c.inflationRate, 0);
+                c.amount, _setDeadLine, _MinutesDebatingPeriod, c.inflationRate, 0);
         }
 
         lastRecipientProposalId[c.recipient] = _ContractorProposalID;
@@ -330,7 +329,7 @@ contract PassDAO {
 
         f.mainPartner = _mainPartner;
         f.publicShareCreation = _publicShareCreation;
-        f.fundingAmount = _maxFundingAmount;
+        f.maxFundingAmount = _maxFundingAmount;
         f.initialSharePriceMultiplier = _initialSharePriceMultiplier;
         f.inflationRate = _inflationRate;
         f.contractorProposalID = _contractorProposalID;
@@ -430,9 +429,9 @@ contract PassDAO {
             uint _balance = uint(daoAccountManager.balanceOf(msg.sender));
             uint _totalSupply = uint(daoAccountManager.TotalSupply());
             
-            if (c.totalAmountForTokenReward > 0) {
+            if (c.tokenRewardToVoters) {
                 
-                uint _amount = c.totalAmountForTokenReward*_balance/_totalSupply;
+                uint _amount = c.amount*_balance/_totalSupply;
 
                 AccountManager m = contractorAccountManager[c.recipient];
                 m.rewardToken(msg.sender, _amount, now);
@@ -465,9 +464,9 @@ contract PassDAO {
             || !b.open
             ) throw;
         
-        uint _fees = 0;
-        bool _contractorProposalFueled = false;
-        
+        uint _fees;
+        uint _fundedAmount;
+
         if (b.fundingProposalID != 0 || b.daoRulesProposalID != 0) {
                 if (b.fees > 0 && b.yea + b.nay >= minQuorum()) {
                     _fees = b.fees;
@@ -476,22 +475,23 @@ contract PassDAO {
                 }
         }        
         else {
+            
             ContractorProposal c = ContractorProposals[b.contractorProposalID];
+            
             if (c.fundingProposalID != 0) {
-                if (daoAccountManager.FundingDate(c.fundingProposalID) != 0) {
-                    _contractorProposalFueled = true;    
+
+                _fundedAmount = daoAccountManager.FundedAmount(c.fundingProposalID);
+                
+                if (_fundedAmount < c.amount 
+                    && (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].open
+                        || (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution != 0
+                            && now < BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution 
+                            + (FundingProposals[c.fundingProposalID].minutesFundingPeriod * 1 minutes)))) {
+                    return;
                 }
-                else { 
-                    if (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].open) return;
-                    
-                    if (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution != 0
-                        && now < BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution 
-                            + (FundingProposals[c.fundingProposalID].minutesFundingPeriod * 1 minutes)) {
-                                
-                                return;
-                    }
-                }
+                            
             }
+            
         }
 
         if (!takeBoardMeetingFees(_BoardMeetingID)) throw;
@@ -499,7 +499,7 @@ contract PassDAO {
         b.open = false;
         if (b.contractorProposalID != 0) numberOfRecipientOpenedProposals[c.recipient] -= 1;
         
-        if ((b.yea + b.nay < minQuorum() || b.yea <= b.nay) && !_contractorProposalFueled) {
+        if ((b.yea + b.nay < minQuorum() || b.yea <= b.nay) && (_fundedAmount < c.amount || c.fundingProposalID == 0)) {
             BoardMeetingClosed(_BoardMeetingID, _fees, false);
             return;
         }
@@ -511,13 +511,13 @@ contract PassDAO {
             FundingProposal f = FundingProposals[b.fundingProposalID];
 
             daoAccountManager.setFundingRules(f.mainPartner, f.publicShareCreation, f.initialSharePriceMultiplier, 
-                f.fundingAmount, now, f.minutesFundingPeriod, f.inflationRate, b.fundingProposalID);
+                f.maxFundingAmount, now, f.minutesFundingPeriod, f.inflationRate, b.fundingProposalID);
 
             if (f.contractorProposalID != 0 && !f.publicShareCreation) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
                 if (cf.initialTokenPriceMultiplier != 0) {
                     contractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
-                    f.fundingAmount, now, f.minutesFundingPeriod, cf.inflationRate, b.fundingProposalID);
+                    f.maxFundingAmount, now, f.minutesFundingPeriod, cf.inflationRate, b.fundingProposalID);
                 }
             }
             
@@ -541,7 +541,11 @@ contract PassDAO {
         }
             
         if (b.contractorProposalID != 0) {
-            if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], c.amount)) throw;
+            if (c.fundingProposalID != 0) {
+                if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], _fundedAmount)) throw;
+            } else {
+                if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], c.amount)) throw;
+            }
         }
 
         BoardMeetingClosed(_BoardMeetingID, _fees, true);
