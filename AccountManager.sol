@@ -3,30 +3,14 @@ import "TokenManager.sol";
 pragma solidity ^0.4.2;
 
 /*
-This file is part of the DAO.
-
-The DAO is free software: you can redistribute it and/or modify
-it under the terms of the GNU lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-The DAO is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU lesser General Public License for more details.
-
-You should have received a copy of the GNU lesser General Public License
-along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
-/*
+ * This file is part of Pass DAO.
+ 
  * The Account Manager smart contract is used for the management of ether accounts.
  * The contract derives to the Token Manager smart contract for the management of tokens.
  * Allows to receive or withdraw ethers and to buy Dao shares.
+ 
  * Recipient is 0 for the Dao account manager and the address of
  * contractor's recipient for the account managers of contractors.
- *  
 */
 
 /// @title Account Manager smart contract of the Pass Decentralized Autonomous Organisation
@@ -34,11 +18,13 @@ contract AccountManager is TokenManager {
     
     // Address of the creator or this smart contract
     address public creator;
+    // Address of the account manager recipient;
+    address public recipient;
 
     /// @dev The constructor function
     /// @param _creator The address of the creator
     /// @param _client The address of the Dao
-    /// @param _recipient The address of the recipient. 0 for the Dao.
+    /// @param _recipient The address of the recipient. 0 for the Dao
     /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
     function AccountManager(
         address _creator,
@@ -52,6 +38,7 @@ contract AccountManager is TokenManager {
         _initialSupply) {
         
         creator = _creator;
+        recipient = _recipient;
 
    }
 
