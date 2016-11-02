@@ -286,7 +286,7 @@ contract TokenManager {
             balances[_to] += _value;
             return true;
         } else {
-            return false;
+            throw;
         }
         
     }
@@ -315,7 +315,7 @@ contract TokenManager {
             allowed[_from][msg.sender] -= _value;
             return true;
         } else {
-            return false;
+            throw;
         }
         
     }
