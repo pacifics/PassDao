@@ -85,7 +85,7 @@ contract AccountManager is TokenManager {
     /// @notice Function to allow contractors to withdraw ethers from their account manager
     /// @param _amount The amount (in wei) to withdraw
     function withdraw(uint _amount) {
-        if (msg.sender != recipient
+        if ((msg.sender != recipient && msg.sender != creator)
             || recipient == 0
             || !recipient.send(_amount)) throw;
     }
