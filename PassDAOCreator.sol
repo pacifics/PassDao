@@ -254,7 +254,7 @@ contract PassDAO {
             || (lastRecipientProposalId[_recipient] != 0 
                 && ((contractorAccountManager[_recipient].TotalSupply() != 0 && _totalAmountForTokenReward != 0)
                     || (msg.sender != _recipient && !contractorAccountManager[_recipient].IsCreator(msg.sender))
-                    || c.initialSupply != 0))) throw;
+                    || _initialSupply != 0))) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_ContractorProposalID];
