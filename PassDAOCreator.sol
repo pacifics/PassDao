@@ -269,20 +269,15 @@ contract PassDAO {
         c.totalAmountForTokenReward = _totalAmountForTokenReward;
         
         if (lastRecipientProposalId[c.recipient] == 0) {
-            
             AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
             contractorAccountManager[c.recipient] = m;
-
-            if (c.totalAmountForTokenReward != 0) {
-            
-                uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
-                m.setFundingRules(address(this), false, c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
-                    _setDeadLine, _MinutesDebatingPeriod, c.inflationRate, 0);
-
-            }
-
             m.TransferAble();
+        }
 
+        if (c.totalAmountForTokenReward != 0) {
+            uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
+            m.setFundingRules(address(this), false, c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
+                _setDeadLine, _MinutesDebatingPeriod, c.inflationRate, 0);
         }
 
         lastRecipientProposalId[c.recipient] = _ContractorProposalID;
