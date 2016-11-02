@@ -276,8 +276,8 @@ contract PassDAO {
 
         if (c.totalAmountForTokenReward != 0) {
             uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
-            m.setFundingRules(address(this), false, c.initialTokenPriceMultiplier, c.totalAmountForTokenReward, 
-                _setDeadLine, _MinutesDebatingPeriod, c.inflationRate, 0);
+            contractorAccountManager[c.recipient].setFundingRules(address(this), false, c.initialTokenPriceMultiplier, 
+                c.totalAmountForTokenReward, _setDeadLine, _MinutesDebatingPeriod, c.inflationRate, 0);
         }
 
         lastRecipientProposalId[c.recipient] = _ContractorProposalID;
