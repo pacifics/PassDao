@@ -75,8 +75,6 @@ contract PassDAO {
         uint256 initialSupply;
         // The index of the funding proposal if linked to the contractor proposal
         uint fundingProposalID;
-        // True if the proposal foresees to reward contractor tokens to voters
-        bool tokenRewardToVoters;
     }
     
     struct FundingProposal {
@@ -227,10 +225,9 @@ contract PassDAO {
     /// @param _amount The amount (in wei) to be sent if the proposal is approved
     /// @param _description String describing the proposal
     /// @param _hashOfTheDocument The hash of the proposal document
-    /// @param _tokenRewardToVoters True if the proposal foresees to reward contractor tokens to voters (not mandatory)  
     /// @param _initialTokenPriceMultiplier The initial price multiplier of contractor tokens (not mandatory)    
     /// @param _inflationRate If 0, the contractor token price doesn't change during the funding (not mandatory)
-    /// @param _initialSupply If the recipient asks for an initial supply of contractor tokens (not mandatory)
+    /// @param _initialSupply If the contractor asks for an initial supply of contractor tokens (not mandatory)
     /// @param _MinutesDebatingPeriod Proposed period in minutes of the board meeting to vote on the proposal
     /// @return The index of the proposal
     function newContractorProposal(
@@ -238,7 +235,6 @@ contract PassDAO {
         uint _amount, 
         string _description, 
         bytes32 _hashOfTheDocument,
-        bool _tokenRewardToVoters,
         uint _initialTokenPriceMultiplier, 
         uint _inflationRate,
         uint256 _initialSupply,
@@ -251,8 +247,7 @@ contract PassDAO {
             || _recipient == address(daoAccountManager)
             || _amount == 0
             || (lastRecipientProposalId[_recipient] != 0 
-                && ((contractorAccountManager[_recipient].TotalSupply() != 0 && _tokenRewardToVoters)
-                    || (msg.sender != _recipient && !contractorAccountManager[_recipient].IsCreator(msg.sender))
+                && ((msg.sender != _recipient && !contractorAccountManager[_recipient].IsCreator(msg.sender))
                     || _initialSupply != 0))) throw;
 
         uint _ContractorProposalID = ContractorProposals.length++;
@@ -265,18 +260,11 @@ contract PassDAO {
         c.hashOfTheDocument = _hashOfTheDocument; 
         c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         c.inflationRate = _inflationRate;
-        c.tokenRewardToVoters = _tokenRewardToVoters;
 
         if (lastRecipientProposalId[c.recipient] == 0) {
             AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
             contractorAccountManager[c.recipient] = m;
             m.TransferAble();
-        }
-
-        if (_tokenRewardToVoters) {
-            uint _setDeadLine = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);
-            contractorAccountManager[c.recipient].setFundingRules(address(this), false, c.initialTokenPriceMultiplier, 
-                c.amount, _setDeadLine, _MinutesDebatingPeriod, c.inflationRate, 0);
         }
 
         lastRecipientProposalId[c.recipient] = _ContractorProposalID;
@@ -346,7 +334,7 @@ contract PassDAO {
             uint _fees = b.fees;
             b.fees = 0;
             pendingFeesWithdrawals[b.creator] += _fees;
-
+            
         }
         
         f.boardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
@@ -429,15 +417,6 @@ contract PassDAO {
             uint _balance = uint(daoAccountManager.balanceOf(msg.sender));
             uint _totalSupply = uint(daoAccountManager.TotalSupply());
             
-            if (c.tokenRewardToVoters) {
-                
-                uint _amount = c.amount*_balance/_totalSupply;
-
-                AccountManager m = contractorAccountManager[c.recipient];
-                m.rewardToken(msg.sender, _amount, now);
-
-            }
-
             if (b.fees > 0) {
 
                 uint _rewardedamount = b.fees*_balance/_totalSupply;
@@ -515,6 +494,7 @@ contract PassDAO {
 
             if (f.contractorProposalID != 0 && !f.publicShareCreation) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
+
                 if (cf.initialTokenPriceMultiplier != 0) {
                     contractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
                     f.maxFundingAmount, now, f.minutesFundingPeriod, cf.inflationRate, b.fundingProposalID);
