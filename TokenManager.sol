@@ -7,6 +7,7 @@ pragma solidity ^0.4.2;
  * tokens on behalf of a 3rd party and the corresponding approval process.
 */
 
+
 /// @title Token Manager smart contract of the Pass Decentralized Autonomous Organisation
 contract TokenManager {
     
@@ -270,48 +271,54 @@ contract TokenManager {
     /// @notice send `_value` token to `_to` from `msg.sender`
     /// @param _to The address of the recipient
     /// @param _value The quantity of shares or tokens to be transferred
+    /// @return Whether the function was successful or not 
     function transfer(
         address _to, 
         uint256 _value
-        ) {  
+        ) returns (bool success) {  
 
-        if (!transferable
-            || blockedDeadLine[msg.sender] > now
-            || blockedDeadLine[_to] > now
-            || _to == address(this)
-            || balances[msg.sender] < _value
-            || balances[_to] + _value <= balances[_to]) {
-            throw;
-            }
-            
-        balances[msg.sender] -= _value;
-        balances[_to] += _value;
-
+        if (transferable
+            && now > blockedDeadLine[msg.sender]
+            && now > blockedDeadLine[_to]
+            && _to != address(this)
+            && balances[msg.sender] >= _value
+            && balances[_to] + _value > balances[_to]
+        ) {
+            balances[msg.sender] -= _value;
+            balances[_to] += _value;
+            return true;
+        } else {
+            return false;
+        }
+        
     }
 
     /// @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
     /// @param _from The address of the sender
     /// @param _to The address of the recipient
     /// @param _value The quantity of shares or tokens to be transferred
+    /// @return Whether the function was successful or not 
     function transferFrom(
         address _from, 
         address _to, 
         uint256 _value
-        ) {
+        ) returns (bool success) { 
         
-        if (!transferable
-            || blockedDeadLine[_from] > now
-            || blockedDeadLine[_to] > now
-            || _to == address(this)
-            || balances[_from] < _value
-            || allowed[_from][msg.sender] < _value
-            || balances[_to] + _value <= balances[_to]) {
-            throw;
-        }            
-            
-        balances[_from] -= _value;
-        balances[_to] += _value;
-        allowed[_from][msg.sender] -= _value;
+        if (transferable
+            && now > blockedDeadLine[_from]
+            && now > blockedDeadLine[_to]
+            && _to != address(this)
+            && balances[_from] >= _value
+            && allowed[_from][msg.sender] >= _value
+            && balances[_to] + _value > balances[_to]
+        ) {
+            balances[_from] -= _value;
+            balances[_to] += _value;
+            allowed[_from][msg.sender] -= _value;
+            return true;
+        } else {
+            return false;
+        }
         
     }
 
