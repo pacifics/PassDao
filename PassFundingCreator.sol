@@ -3,25 +3,9 @@ import "AccountManager.sol";
 pragma solidity ^0.4.2;
 
 /*
-This file is part of the DAO.
+ * This file is part of the DAO.
 
-The DAO is free software: you can redistribute it and/or modify
-it under the terms of the GNU lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-The DAO is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU lesser General Public License for more details.
-
-You should have received a copy of the GNU lesser General Public License
-along with the DAO.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
-/*
- * Smart contract used for the funding of the Dao.
+ * Smart contract used for the funding of Pass Dao.
 */
 
 /// @title Funding smart contract for the Pass Decentralized Autonomous Organisation
@@ -66,6 +50,8 @@ contract PassFunding {
     uint maxAmountLimit; 
     /// The partner can fund below the minimum amount limit or a set percentage of his ether balance 
     uint divisorBalanceLimit;
+    /// The partner can fund below the minimum amount limit or a set percentage of his shares balance in the Dao 
+    uint divisorSharesLimit;
     // True if the amount and divisor balance limits for the funding are set
     bool public limitSet;
     // True if all the partners are set by the creator and the funding can be completed 
@@ -90,7 +76,7 @@ contract PassFunding {
     event IntentionToFund(address partner, uint amount);
     event Fund(address partner, uint amount);
     event Refund(address partner, uint amount);
-    event LimitSet(uint minAmountLimit, uint maxAmountLimit, uint divisorBalanceLimit);
+    event LimitSet(uint minAmountLimit, uint maxAmountLimit, uint divisorBalanceLimit, uint divisorSharesLimit);
     event PartnersNotSet(uint sumOfFundingAmountLimits);
     event AllPartnersSet(uint fundingAmount);
     event Fueled();
@@ -201,7 +187,8 @@ contract PassFunding {
         
         for (uint i = _from; i <= _to; i++) {
             Partner t = partners[i];
-            t.valid = _valid;
+            if (DaoAccountManager.balanceOf(t.partnerAddress) != 0) t.valid = true;
+            else t.valid = _valid;
         }
         
     }
@@ -210,10 +197,12 @@ contract PassFunding {
     /// @param _minAmountLimit The amount below this limit (in wei) can fund the dao
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
     /// @param _divisorBalanceLimit The creator can set a limit in percentage of Eth balance (not mandatory) 
+    /// @param _divisorSharesLimit The creator can set a limit in percentage of shares balance in the Dao (not mandatory) 
     function setFundingLimits(
             uint _minAmountLimit,
             uint _maxAmountLimit, 
-            uint _divisorBalanceLimit
+            uint _divisorBalanceLimit,
+            uint _divisorSharesLimit
     ) onlyCreator {
         
         if (limitSet) throw;
@@ -222,10 +211,11 @@ contract PassFunding {
         minAmountLimit = _minAmountLimit;
         maxAmountLimit = _maxAmountLimit;
         divisorBalanceLimit = _divisorBalanceLimit;
+        divisorSharesLimit = _divisorSharesLimit;
 
         limitSet = true;
         
-        LimitSet(_minAmountLimit, _maxAmountLimit, _divisorBalanceLimit);
+        LimitSet(_minAmountLimit, _maxAmountLimit, _divisorBalanceLimit, _divisorSharesLimit);
     
     }
 
@@ -241,7 +231,8 @@ contract PassFunding {
         if (setFromPartner == 1) sumOfFundingAmountLimits = 0;
         
         for (uint i = setFromPartner; i <= _to; i++) {
-            partners[i].fundingAmountLimit = partnerFundingLimit(i, minAmountLimit, maxAmountLimit, divisorBalanceLimit);
+            partners[i].fundingAmountLimit = partnerFundingLimit(i, minAmountLimit, maxAmountLimit, 
+                divisorBalanceLimit, divisorSharesLimit);
             sumOfFundingAmountLimits += partners[i].fundingAmountLimit;
         }
         
@@ -392,6 +383,8 @@ contract PassFunding {
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
     /// @param _divisorBalanceLimit The partner can fund 
     /// only under a defined percentage of his ether balance 
+    /// @param _divisorSharesLimit The partner can fund 
+    /// only under a defined percentage of his shares balance in the Dao 
     /// @param _from The index of the first partner
     /// @param _to The index of the last partner
     /// @return The result of the funding procedure (in wei) at present time
@@ -399,6 +392,7 @@ contract PassFunding {
         uint _minAmountLimit,
         uint _maxAmountLimit, 
         uint _divisorBalanceLimit,
+        uint _divisorSharesLimit,
         uint _from,
         uint _to
         ) constant external returns (uint) {
@@ -408,7 +402,7 @@ contract PassFunding {
         uint _total = 0;
         
         for (uint i = _from; i <= _to; i++) {
-            _total += partnerFundingLimit(i, _minAmountLimit, _maxAmountLimit, _divisorBalanceLimit);
+            _total += partnerFundingLimit(i, _minAmountLimit, _maxAmountLimit, _divisorBalanceLimit, _divisorSharesLimit);
         }
 
         return _total;
@@ -420,22 +414,34 @@ contract PassFunding {
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
     /// @param _divisorBalanceLimit The partner can fund 
     /// only under a defined percentage of his ether balance 
+    /// @param _divisorSharesLimit The partner can fund 
+    /// only under a defined percentage of his shares balance in the Dao 
     /// @return The maximum amount (in wei) a partner can fund
     function partnerFundingLimit(
         uint _index, 
         uint _minAmountLimit,
         uint _maxAmountLimit, 
-        uint _divisorBalanceLimit
+        uint _divisorBalanceLimit,
+        uint _divisorSharesLimit
         ) internal returns (uint) {
 
-        uint _amount = 0;
+        uint _amount;
+        uint _amount1;
 
         Partner t = partners[_index];
             
         if (t.valid) {
 
+            _amount = t.presaleAmount;
+            
             if (_divisorBalanceLimit > 0) {
-                _amount = uint(t.partnerAddress.balance)/uint(_divisorBalanceLimit);
+                _amount1 = uint(t.partnerAddress.balance)/uint(_divisorBalanceLimit);
+                if (_amount > _amount1) _amount = _amount1; 
+                }
+
+            if (_divisorSharesLimit > 0) {
+                _amount1 = uint(DaoAccountManager.balanceOf(t.partnerAddress))/uint(_divisorSharesLimit);
+                if (_amount > _amount1) _amount = _amount1; 
                 }
 
             if (_amount > _maxAmountLimit) _amount = _maxAmountLimit;
