@@ -266,58 +266,55 @@ contract TokenManager {
         }
     }
     
-    /// @notice send `_value` token to `_to` from `msg.sender`
+    /// @dev Internal function to send `_value` token to `_to` from `msg.sender`
+    /// @param _from The address of the sender
     /// @param _to The address of the recipient
     /// @param _value The quantity of shares or tokens to be transferred
     /// @return Whether the function was successful or not 
-    function transfer(
+    function transferFromTo(
+        address _from,
         address _to, 
         uint256 _value
-        ) returns (bool success) {  
+        ) internal returns (bool) {  
 
         if (transferable
             && now > blockedDeadLine[msg.sender]
             && now > blockedDeadLine[_to]
             && _to != address(this)
-            && balances[msg.sender] >= _value
+            && balances[_from] >= _value
             && balances[_to] + _value > balances[_to]
         ) {
-            balances[msg.sender] -= _value;
+            balances[_from] -= _value;
             balances[_to] += _value;
             return true;
         } else {
-            throw;
+            return false;
         }
         
+    }
+
+    /// @notice send `_value` token to `_to` from `msg.sender`
+    /// @param _to The address of the recipient
+    /// @param _value The quantity of shares or tokens to be transferred
+    function transfer(address _to, uint256 _value) {  
+        if (!transferFromTo(msg.sender, _to, _value)) throw;
     }
 
     /// @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
     /// @param _from The address of the sender
     /// @param _to The address of the recipient
     /// @param _value The quantity of shares or tokens to be transferred
-    /// @return Whether the function was successful or not 
     function transferFrom(
         address _from, 
         address _to, 
         uint256 _value
         ) returns (bool success) { 
         
-        if (transferable
-            && now > blockedDeadLine[_from]
-            && now > blockedDeadLine[_to]
-            && _to != address(this)
-            && balances[_from] >= _value
-            && allowed[_from][msg.sender] >= _value
-            && balances[_to] + _value > balances[_to]
-        ) {
-            balances[_from] -= _value;
-            balances[_to] += _value;
-            allowed[_from][msg.sender] -= _value;
-            return true;
-        } else {
-            throw;
-        }
-        
+        if (allowed[_from][msg.sender] < _value
+            || !transferFromTo(_from, _to, _value)) throw;
+            
+        allowed[_from][msg.sender] -= _value;
+
     }
 
     /// @notice `msg.sender` approves `_spender` to spend `_amount` tokens on its behalf
