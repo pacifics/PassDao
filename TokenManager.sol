@@ -1,12 +1,13 @@
 pragma solidity ^0.4.2;
 
 /*
+ * This file is part of Pass DAO.
+ 
  * The Token Manager smart contract is used for the management of tokens
  * by a client smart contract (the Dao). Defines the functions to set new funding rules,
  * create or reward tokens, check token balances, send tokens and send
  * tokens on behalf of a 3rd party and the corresponding approval process.
 */
-
 
 /// @title Token Manager smart contract of the Pass Decentralized Autonomous Organisation
 contract TokenManager {
@@ -36,8 +37,6 @@ contract TokenManager {
 
     // Address of the Dao    
     address public client;
-    // Address of the account manager recipient;
-    address public recipient;
     
     /* Array with all balances */
     mapping (address => uint256) balances;
@@ -126,7 +125,7 @@ contract TokenManager {
     /// @dev The constructor function
     /// @param _creator The address of the creator of the smart contract
     /// @param _client The address of the Dao
-    /// @param _recipient The address of the recipient.
+    /// @param _recipient The address of the recipient
     /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
     function TokenManager(
         address _creator,
@@ -136,7 +135,6 @@ contract TokenManager {
     ) {
         
         client = _client;
-        recipient = _recipient;
         
         decimals = 18;
         
