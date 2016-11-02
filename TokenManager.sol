@@ -278,7 +278,7 @@ contract TokenManager {
         ) internal returns (bool) {  
 
         if (transferable
-            && now > blockedDeadLine[msg.sender]
+            && now > blockedDeadLine[_from]
             && now > blockedDeadLine[_to]
             && _to != address(this)
             && balances[_from] >= _value
