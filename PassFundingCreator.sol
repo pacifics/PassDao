@@ -247,12 +247,17 @@ contract PassFunding {
     
     }
 
-    /// @notice Function used to set the funding limits for partners
+    /// @notice Set the funding start time and the funding limits for partners
     /// @param _to The index of the last partner to set
     /// @return Whether the set was successful or not
-    function setPartnersFundingLimits(uint _to) onlyCreator returns (bool _success) {
+    function setFunding(uint _to) onlyCreator returns (bool _success) {
         
         if (!limitSet || DaoAccountManager.fundingMaxAmount() < minAmount) throw;
+
+        DaoAccountManager.setFundingStartTime(startTime);
+        if (contractorAccountManager != 0) {
+            AccountManager(contractorAccountManager).setFundingStartTime(startTime);
+        }
 
         if (setFromPartner > _to || _to > partners.length - 1) throw;
         
