@@ -44,7 +44,7 @@ Main functions are :
 
 - Withdraw function: allows the contractors to withdraw the amounts sent by the Dao.
 
-- RewardToken to voters by the Dao smart contract or to funders for private fundings by the funding smart contract.
+- RewardToken to funders for private fundings by the funding smart contract.
 
 - Transfer and TransferFrom for the transfer of tokens.
 
