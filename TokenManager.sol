@@ -136,7 +136,12 @@ contract TokenManager {
     ) {
         
         client = _client;
-        
+
+        if (_recipient != 0) {
+            transferable = true;
+            TokenTransferable();
+        }
+
         decimals = 18;
         
         if (_initialSupply > 0) {
@@ -257,7 +262,7 @@ contract TokenManager {
         FundingFueled(FundingRules.fundingProposalID, FundingRules.fundedAmount);
     }
     
-    /// @dev Function used by the client to able the transfer of Dao shares or contractor tokens
+    /// @dev Function to able the transfer of Dao shares or contractor tokens
     function TransferAble() external onlyClient {
         transferable = true;
         TokenTransferable();
