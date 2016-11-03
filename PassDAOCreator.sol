@@ -144,7 +144,7 @@ contract PassDAO {
     event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed Recipient, uint Amount);
     event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID);
-    event NewContractorAccountManager(address indexed Recipient, address AccountManagerAddress);
+    event AmountSentToContractor(address indexed Recipient, address AccountManagerAddress, uint Amount);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
@@ -432,7 +432,6 @@ contract PassDAO {
                 AccountManager m = new AccountManager(msg.sender, address(this), _recipient, _initialSupply) ;
                 contractorAccountManager[_recipient] = m;
                 m.TransferAble();
-                NewContractorAccountManager(_recipient, address(m));
     }
     
     
@@ -531,11 +530,11 @@ contract PassDAO {
             if (lastRecipientProposalId[c.recipient] == 0) createContractorAccountManager(c.recipient, c.initialSupply);
             lastRecipientProposalId[c.recipient] = b.contractorProposalID;
 
-            if (c.fundingProposalID != 0) {
-                if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], _fundedAmount)) throw;
-            } else {
-                if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], c.amount)) throw;
-            }
+            if (c.fundingProposalID == 0) _fundedAmount == c.amount;
+                
+            if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], _fundedAmount)) throw;
+
+            AmountSentToContractor(c.recipient, contractorAccountManager[c.recipient], _fundedAmount);
 
         }
 
