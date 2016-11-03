@@ -231,7 +231,7 @@ contract TokenManager {
         uint _date
         ) external {
             
-        if (msg.sender != FundingRules.mainPartner&& !createToken(_recipient, _amount, _date)) throw;
+        if (msg.sender != FundingRules.mainPartner || !createToken(_recipient, _amount, _date)) throw;
 
     }
 
