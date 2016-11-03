@@ -50,7 +50,7 @@ Main functions are :
 
 - RewardToken to funders for private fundings by the funding smart contract.
 
-- Transfer and TransferFrom for the transfer of tokens.
+- Transfer and TransferFrom for the transfer of tokens or shares.
 
 - Approve tokens allowance by a token owner to a spender third party. 
 
