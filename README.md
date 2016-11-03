@@ -64,9 +64,11 @@ Main functions:
 
 - Fallback and Presale function to send Eth to the Funding smart contract.
 
+- SetPresaleAmountLimits: allows the smart contract creator to set the presale limits (minimum and maximum).
+
 - SetPartners: allows the smart contract creator to set Eth account addresses.
 
-- SetLimits and SetFundingLimits: allows the smart contract creator to set the funding limits (amounts and percentage of ether balance share) for all partners.
+- SetFundingLimits: allows the smart contract creator to set the funding limits (amounts and percentage of ether balance share) for all partners.
 
 - FundDaoFor: to send Eth from the Funding smart contract to the Dao according to the set limits (if the funding is fueled).
 
