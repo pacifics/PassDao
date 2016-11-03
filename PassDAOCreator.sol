@@ -125,8 +125,6 @@ contract PassDAO {
     
     // Map to allow the share holders to withdraw board meeting fees
     mapping (address => uint) public pendingFeesWithdrawals;
-    // Map to get the number of opened proposals of a contractor
-    mapping (address => uint) public numberOfRecipientOpenedProposals; 
     // Map to get the last contractor proposal of a recipient
     mapping (address => uint) public lastRecipientProposalId; 
     // Map to get the account management smart contract of contractors
@@ -143,9 +141,10 @@ contract PassDAO {
     // The current Dao rules
     Rules public DaoRules; 
     
-    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed Recipient, address AccountManagerAddress, uint Amount);
+    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed Recipient, uint Amount);
     event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID);
+    event NewContractorAccountManager(address indexed Recipient, address AccountManagerAddress);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
@@ -260,20 +259,10 @@ contract PassDAO {
         c.hashOfTheDocument = _hashOfTheDocument; 
         c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         c.inflationRate = _inflationRate;
-
-        if (lastRecipientProposalId[c.recipient] == 0) {
-            AccountManager m = new AccountManager(msg.sender, address(this), c.recipient, c.initialSupply) ;
-            contractorAccountManager[c.recipient] = m;
-            m.TransferAble();
-        }
-
-        lastRecipientProposalId[c.recipient] = _ContractorProposalID;
         
-        numberOfRecipientOpenedProposals[c.recipient] += 1;
-
         c.boardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
 
-        ContractorProposalAdded(_ContractorProposalID, c.recipient, address(contractorAccountManager[c.recipient]), c.amount);
+        ContractorProposalAdded(_ContractorProposalID, c.recipient, c.amount);
         
         return _ContractorProposalID;
         
@@ -306,7 +295,7 @@ contract PassDAO {
             || (!_publicShareCreation && _mainPartner == 0)
             || _mainPartner == address(this)
             || _mainPartner == address(daoAccountManager)
-            || (_contractorProposalID == 0 &&_maxFundingAmount == 0)
+            || (_contractorProposalID == 0 && _maxFundingAmount == 0)
             || (_contractorProposalID != 0 && _maxFundingAmount != 0)
             || _initialSharePriceMultiplier == 0
             ) {
@@ -435,6 +424,18 @@ contract PassDAO {
 
     }
 
+    /// @dev Internal function to create a new contractor account manager
+    /// @param _recipient The contractor's recipient
+    /// @param _initialSupply The quantity of tokens to create for the recipient 
+    /// in the contractor account manager
+    function createContractorAccountManager(address _recipient, uint _initialSupply) internal {
+                AccountManager m = new AccountManager(msg.sender, address(this), _recipient, _initialSupply) ;
+                contractorAccountManager[_recipient] = m;
+                m.TransferAble();
+                NewContractorAccountManager(_recipient, address(m));
+    }
+    
+    
     /// @notice Function to execute a board meeting decision and close the board meeting
     /// @param _BoardMeetingID The index of the board meeting
     /// @return Whether the proposal was executed or not
@@ -479,8 +480,7 @@ contract PassDAO {
         if (!takeBoardMeetingFees(_BoardMeetingID)) throw;
         
         b.open = false;
-        if (b.contractorProposalID != 0) numberOfRecipientOpenedProposals[c.recipient] -= 1;
-        
+
         if ((b.yea + b.nay < minQuorum() || b.yea <= b.nay) && (_fundedAmount < c.amount || c.fundingProposalID == 0)) {
             BoardMeetingClosed(_BoardMeetingID, _fees, false);
             return;
@@ -497,6 +497,9 @@ contract PassDAO {
 
             if (f.contractorProposalID != 0 && !f.publicShareCreation) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
+                
+                if (lastRecipientProposalId[cf.recipient] == 0) createContractorAccountManager(cf.recipient, cf.initialSupply);
+                lastRecipientProposalId[cf.recipient] = f.contractorProposalID;
 
                 if (cf.initialTokenPriceMultiplier != 0) {
                     contractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
@@ -524,11 +527,16 @@ contract PassDAO {
         }
             
         if (b.contractorProposalID != 0) {
+
+            if (lastRecipientProposalId[c.recipient] == 0) createContractorAccountManager(c.recipient, c.initialSupply);
+            lastRecipientProposalId[c.recipient] = b.contractorProposalID;
+
             if (c.fundingProposalID != 0) {
                 if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], _fundedAmount)) throw;
             } else {
                 if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], c.amount)) throw;
             }
+
         }
 
         BoardMeetingClosed(_BoardMeetingID, _fees, true);
