@@ -125,7 +125,7 @@ contract PassFunding {
         uint _maxAmount
         ) onlyCreator {
 
-        if (IsfundingAborted) throw;
+        if (limitSet || IsfundingAborted) throw;
         
         minPresaleAmount = _minAmount;
         maxPresaleAmount = _maxAmount;
@@ -187,7 +187,7 @@ contract PassFunding {
             uint _to
         ) onlyCreator {
 
-        if (allSet) throw;
+        if (limitSet) throw;
         
         if (_from < 1 || _to > partners.length - 1) throw;
         
@@ -208,7 +208,7 @@ contract PassFunding {
             uint _to
         ) onlyCreator {
 
-        if (allSet) throw;
+        if (limitSet) throw;
         
         if (_from < 1 || _to > partners.length - 1) throw;
         
