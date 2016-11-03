@@ -34,8 +34,6 @@ contract PassFunding {
     address public contractorAccountManager;
     // Minimum amount (in wei) to fund
     uint public minAmount;
-    // Maximum amount (in wei) to fund
-    uint public maxAmount;
     // Minimum amount (in wei) that partners can send to this smart contract
     uint public minPresaleAmount;
     // Maximum amount (in wei) that partners can send to this smart contract
@@ -65,6 +63,8 @@ contract PassFunding {
     // The calculated sum of funding amout limits (in wei) according to the set limits
     uint sumOfFundingAmountLimits;
     
+    // To allow the creator to abort the funding before the closing time
+    bool IsfundingAborted;
     // To allow the set of partners in several times
     uint setFromPartner;
     // To allow the refund for partners in several times
@@ -187,12 +187,32 @@ contract PassFunding {
         
         for (uint i = _from; i <= _to; i++) {
             Partner t = partners[i];
-            if (DaoAccountManager.balanceOf(t.partnerAddress) != 0) t.valid = true;
-            else t.valid = _valid;
+            t.valid = _valid;
         }
         
     }
 
+    /// @notice Function used by the creator to set the addresses of Dao share holders
+    /// @param _valid True if the address can fund the Dao
+    /// @param _from The index of the first partner to set
+    /// @param _to The index of the last partner to set
+    function setShareHolders(
+            bool _valid,
+            uint _from,
+            uint _to
+        ) onlyCreator {
+
+        if (allSet) throw;
+        
+        if (_from < 1 || _to > partners.length - 1) throw;
+        
+        for (uint i = _from; i <= _to; i++) {
+            Partner t = partners[i];
+            if (DaoAccountManager.balanceOf(t.partnerAddress) != 0) t.valid = _valid;
+        }
+        
+    }
+    
     /// @notice Function used by the creator to set the funding limits for the funding
     /// @param _minAmountLimit The amount below this limit (in wei) can fund the dao
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
@@ -207,7 +227,6 @@ contract PassFunding {
         
         if (limitSet) throw;
         
-        maxAmount = DaoAccountManager.fundingMaxAmount();
         minAmountLimit = _minAmountLimit;
         maxAmountLimit = _maxAmountLimit;
         divisorBalanceLimit = _divisorBalanceLimit;
@@ -224,32 +243,39 @@ contract PassFunding {
     /// @return Whether the set was successful or not
     function setPartnersFundingLimits(uint _to) onlyCreator returns (bool _success) {
         
-        if (!limitSet) throw;
+        if (!limitSet || DaoAccountManager.fundingMaxAmount() < minAmount) throw;
 
         if (setFromPartner > _to || _to > partners.length - 1) throw;
         
         if (setFromPartner == 1) sumOfFundingAmountLimits = 0;
         
         for (uint i = setFromPartner; i <= _to; i++) {
+
             partners[i].fundingAmountLimit = partnerFundingLimit(i, minAmountLimit, maxAmountLimit, 
                 divisorBalanceLimit, divisorSharesLimit);
+
             sumOfFundingAmountLimits += partners[i].fundingAmountLimit;
+
         }
         
         setFromPartner = _to + 1;
-        
         if (setFromPartner >= partners.length) {
+
             setFromPartner = 1;
-            if (sumOfFundingAmountLimits < minAmount || sumOfFundingAmountLimits > maxAmount) {
+            if (sumOfFundingAmountLimits < minAmount 
+                || sumOfFundingAmountLimits > DaoAccountManager.fundingMaxAmount()) {
+
                 limitSet = false;
                 PartnersNotSet(sumOfFundingAmountLimits);
                 return;
+
             }
             else {
                 allSet = true;
                 AllPartnersSet(sumOfFundingAmountLimits);
                 return true;
             }
+
         }
 
     }
@@ -354,6 +380,12 @@ contract PassFunding {
         return refundFor(partnerID[msg.sender]);
     }
 
+    /// @notice Function to allow the creator to abort the funding before the closing time
+    function abortFunding() onlyCreator {
+        maxPresaleAmount = 0;
+        IsfundingAborted = true; 
+    }
+    
     /// @notice Function to refund for valid partners
     /// @param _to The index of the last partner
     function refundForPartners(uint _to) {
@@ -370,15 +402,18 @@ contract PassFunding {
         
         if (refundFromPartner >= partners.length) {
             refundFromPartner = 1;
-            if (totalFunded >= sumOfFundingAmountLimits && allSet && closingTime > now) {
+
+            if ((totalFunded >= sumOfFundingAmountLimits && allSet && closingTime > now)
+                || IsfundingAborted) {
+
                 closingTime = now; 
                 FundingClosed(); 
+
             }
         }
         
     }
 
-    
     /// @param _minAmountLimit The amount (in wei) below this limit can fund the dao
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
     /// @param _divisorBalanceLimit The partner can fund 
