@@ -220,10 +220,17 @@ contract TokenManager {
 
     }
 
+    /// @notice Function used by the main partner to set the start time of the funding
+    /// @param _startTime The unix start date of the funding 
+    function setFundingStartTime(uint _startTime) external {
+        if (msg.sender != FundingRules.mainPartner || now > FundingRules.closingTime) throw;
+        FundingRules.startTime = _startTime;
+    }
+    
     /// @notice Function used by the main partner to reward shares or tokens
     /// @param _recipient The address of the recipient of shares or tokens
     /// @param _amount The amount (in Wei) to calculate the quantity of shares or tokens to create
-    /// @param _date The date to consider for the share or token price calculation
+    /// @param _date The unix date to consider for the share or token price calculation
     /// @return Whether the transfer was successful or not
     function rewardToken(
         address _recipient, 
