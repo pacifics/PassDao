@@ -47,8 +47,8 @@ contract TokenManager {
     /* Amount of decimals for token display purposes */
     uint8 public decimals;
 
-    // Map The funding dates for funding proposals
-    mapping (uint => uint) fundingDate;
+    // Map The result in wei of funding proposals
+    mapping (uint => uint) fundedAmount;
     
     // If true, the shares or tokens can be transfered
     bool public transferable;
@@ -82,9 +82,9 @@ contract TokenManager {
     }
 
     /// @param _fundingProposalID The index of the Dao funding proposal
-    /// @return The unix date when the funding was fueled. 0 if not fueled.
-    function FundingDate(uint _fundingProposalID) constant external returns (uint) {
-        return fundingDate[_fundingProposalID];
+    /// @return The result in wei of the funding proposal
+    function FundedAmount(uint _fundingProposalID) constant external returns (uint) {
+        return fundedAmount[_fundingProposalID];
     }
 
     /// @param _saleDate in case of presale, the date of the presale
@@ -110,11 +110,12 @@ contract TokenManager {
         return priceDivisor(now);
     }
 
-    /// @return The maximal amount to fund of the actual funding. 0 if there is not any funding at this moment
-    function fundingMaxAmount() constant returns (uint) {
+    /// @return The maximal amount 'msg.sender' can fund with his partners
+    function fundingMaxAmount() constant external returns (uint) {
         
-        if ((now > FundingRules.closingTime)
-            || now < FundingRules.startTime) {
+        if (now > FundingRules.closingTime
+            || now < FundingRules.startTime
+            || msg.sender != FundingRules.mainPartner) {
             return 0;   
         } else {
             return FundingRules.maxAmountToFund;
@@ -200,7 +201,9 @@ contract TokenManager {
         uint _saleDate
     ) internal returns (bool success) {
 
-        if (FundingRules.fundedAmount + _amount > fundingMaxAmount()) return;
+        if (now > FundingRules.closingTime
+            || now < FundingRules.startTime
+            || FundingRules.fundedAmount + _amount > FundingRules.maxAmountToFund) return;
 
         uint _quantity = 100*_amount*FundingRules.initialPriceMultiplier/priceDivisor(_saleDate);
         if (totalSupply + _quantity <= totalSupply) return;
@@ -239,7 +242,7 @@ contract TokenManager {
     /// @notice Internal function to close the actual funding
     function closeFunding() internal {
         
-        fundingDate[FundingRules.fundingProposalID] = now;
+        fundedAmount[FundingRules.fundingProposalID] = FundingRules.fundedAmount;
         FundingRules.closingTime = now;
 
     }
