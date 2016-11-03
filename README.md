@@ -16,17 +16,19 @@ Our DAO is open source and used for our project to put together a transparent or
 
 ## The Dao Smart Contract
 
-Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period called board meeting.
+Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). The fees go to the voters according to their share in the Dao. For the funding and Dao rules proposal, the Dao gives back the fees to the creator of the proposal if the quorum is reached.
 
 Main functions: 
 
-- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). The fees go to the voters according to their share in the Dao. The contractor proposal can be linked to a funding proposal and foresee the reward of contractor tokens to funders. We use this method for the primary funding with a funding smart contract linked to the first project manager proposal. This method gives to new DAO share holders Pass reputation tokens which will be used by the couriers as currency for deposits when taking parcels.
+- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services.  The contractor proposal can be linked to a funding proposal. We use this method for the primary funding with a funding smart contract linked to the first project manager proposal.
 
-- Set a funding proposal: the dao sharehoders can propose to fund the Dao with a public or private funding. The funding rules can be set in a separated smart contract. We use this method for the primary funding.
+- Set a funding proposal: the dao sharehoders can propose to fund the Dao with a public or private funding. The funding rules can be set in a separated smart contract and foresee the reward of contractor tokens to funders. We use this method for the primary funding that gives to new DAO share holders Pass reputation tokens.
 
 - Set a Dao Rules proposal: the dao share holders can propose to change the minimum quorum for proposals, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period and the date when shares can be transfered.
 
-- Approve a proposal: share holders can vote for or against a proposal. If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
+- Vote for or against a proposal: If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
+
+- Withdraw function: allows the share holders to withdraw the board meeting fees sent by the creators of the proposals.
 
 =
 
@@ -39,6 +41,8 @@ Main functions are :
 - Fallback function to receive Eth.
 
 - BuyToken and BuyTokenFor to buy Dao shares in case of public fundings.
+
+- Withdraw function: allows the contractors to withdraw the amounts sent by the Dao.
 
 - RewardToken to voters by the Dao smart contract or to funders for private fundings by the funding smart contract.
 
@@ -63,6 +67,8 @@ Main functions:
 - FundDaoFor: to send Eth from the Funding smart contract to the Dao according to the set limits (if the funding is fueled).
 
 - Refund: to refund the amount that did not fund the Dao.
+
+- AbortFunding: allows the smart contract creator to abort the funding and refund.
 
 =
 
