@@ -141,10 +141,10 @@ contract PassDAO {
     // The current Dao rules
     Rules public DaoRules; 
     
-    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed Recipient, uint Amount);
+    event ContractorProposalAdded(uint indexed ContractorProposalID, uint Amount);
     event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID);
-    event AmountSentToContractor(address indexed Recipient, address AccountManagerAddress, uint Amount);
+    event SentToContractor(address indexed Recipient, address AccountManagerAddress, uint Amount);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
@@ -178,44 +178,44 @@ contract PassDAO {
     }
     
     /// @dev Internal function to create a board meeting
-    /// @param _ContractorProposalID The index of the proposal if contractor
-    /// @param _DaoRulesProposalID The index of the proposal if Dao rules
-    /// @param _FundingProposalID The index of the proposal if funding
-    /// @param _MinutesDebatingPeriod The duration in minutes of the meeting
+    /// @param _contractorProposalID The index of the proposal if contractor
+    /// @param _daoRulesProposalID The index of the proposal if Dao rules
+    /// @param _fundingProposalID The index of the proposal if funding
+    /// @param _minutesDebatingPeriod The duration in minutes of the meeting
     /// @return the index of the board meeting
     function newBoardMeeting(
-        uint _ContractorProposalID, 
-        uint _DaoRulesProposalID, 
-        uint _FundingProposalID, 
-        uint _MinutesDebatingPeriod
+        uint _contractorProposalID, 
+        uint _daoRulesProposalID, 
+        uint _fundingProposalID, 
+        uint _minutesDebatingPeriod
     ) internal returns (uint) {
 
         if (msg.value < DaoRules.minBoardMeetingFees
-            || DaoRules.minutesSetProposalPeriod + _MinutesDebatingPeriod > maxMinutesProposalPeriod
-            || _MinutesDebatingPeriod < DaoRules.minMinutesDebatePeriod
+            || DaoRules.minutesSetProposalPeriod + _minutesDebatingPeriod > maxMinutesProposalPeriod
+            || _minutesDebatingPeriod < DaoRules.minMinutesDebatePeriod
             || msg.sender == address(this)) {
             throw;
         }
 
-        uint _BoardMeetingID = BoardMeetings.length++;
-        BoardMeeting b = BoardMeetings[_BoardMeetingID];
+        uint _boardMeetingID = BoardMeetings.length++;
+        BoardMeeting b = BoardMeetings[_boardMeetingID];
 
         b.creator = msg.sender;
 
-        b.contractorProposalID = _ContractorProposalID;
-        b.daoRulesProposalID = _DaoRulesProposalID;
-        b.fundingProposalID = _FundingProposalID;
+        b.contractorProposalID = _contractorProposalID;
+        b.daoRulesProposalID = _daoRulesProposalID;
+        b.fundingProposalID = _fundingProposalID;
 
         b.fees = msg.value;
         
         b.setDeadline = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);        
-        b.votingDeadline = b.setDeadline + (_MinutesDebatingPeriod * 1 minutes); 
+        b.votingDeadline = b.setDeadline + (_minutesDebatingPeriod * 1 minutes); 
 
         if (b.votingDeadline < now) throw;
 
         b.open = true; 
 
-        return _BoardMeetingID;
+        return _boardMeetingID;
 
     }
 
@@ -227,7 +227,7 @@ contract PassDAO {
     /// @param _initialTokenPriceMultiplier The initial price multiplier of contractor tokens (not mandatory)    
     /// @param _inflationRate If 0, the contractor token price doesn't change during the funding (not mandatory)
     /// @param _initialSupply If the contractor asks for an initial supply of contractor tokens (not mandatory)
-    /// @param _MinutesDebatingPeriod Proposed period in minutes of the board meeting to vote on the proposal
+    /// @param _minutesDebatingPeriod Proposed period in minutes of the board meeting to vote on the proposal
     /// @return The index of the proposal
     function newContractorProposal(
         address _recipient,
@@ -237,7 +237,7 @@ contract PassDAO {
         uint _initialTokenPriceMultiplier, 
         uint _inflationRate,
         uint256 _initialSupply,
-        uint _MinutesDebatingPeriod
+        uint _minutesDebatingPeriod
     ) payable returns (uint) {
 
         if (_inflationRate > maxInflationRate
@@ -249,8 +249,8 @@ contract PassDAO {
                 && ((msg.sender != _recipient && !contractorAccountManager[_recipient].IsCreator(msg.sender))
                     || _initialSupply != 0))) throw;
 
-        uint _ContractorProposalID = ContractorProposals.length++;
-        ContractorProposal c = ContractorProposals[_ContractorProposalID];
+        uint _contractorProposalID = ContractorProposals.length++;
+        ContractorProposal c = ContractorProposals[_contractorProposalID];
 
         c.recipient = _recipient;       
         c.initialSupply = _initialSupply;
@@ -260,11 +260,11 @@ contract PassDAO {
         c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         c.inflationRate = _inflationRate;
         
-        c.boardMeetingID = newBoardMeeting(_ContractorProposalID, 0, 0, _MinutesDebatingPeriod);    
+        c.boardMeetingID = newBoardMeeting(_contractorProposalID, 0, 0, _minutesDebatingPeriod);    
 
-        ContractorProposalAdded(_ContractorProposalID, c.recipient, c.amount);
+        ContractorProposalAdded(_contractorProposalID, c.amount);
         
-        return _ContractorProposalID;
+        return _contractorProposalID;
         
     }
 
@@ -276,7 +276,7 @@ contract PassDAO {
     /// @param _inflationRate If 0, the share price doesn't change during the funding (not mandatory)
     /// @param _minutesFundingPeriod Period in minutes of the funding
     /// @param _contractorProposalID Index of the contractor proposal if linked to this funding proposal (not mandatory)
-    /// @param _MinutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
     /// @return The index of the proposal
     function newFundingProposal(
         bool _publicShareCreation,
@@ -286,7 +286,7 @@ contract PassDAO {
         uint _inflationRate,
         uint _minutesFundingPeriod,
         uint _contractorProposalID,
-        uint _MinutesDebatingPeriod
+        uint _minutesDebatingPeriod
     ) payable returns (uint) {
 
         if (_inflationRate > maxInflationRate
@@ -302,8 +302,8 @@ contract PassDAO {
                 throw;
             }
 
-        uint _FundingProposalID = FundingProposals.length++;
-        FundingProposal f = FundingProposals[_FundingProposalID];
+        uint _fundingProposalID = FundingProposals.length++;
+        FundingProposal f = FundingProposals[_fundingProposalID];
 
         f.mainPartner = _mainPartner;
         f.publicShareCreation = _publicShareCreation;
@@ -319,7 +319,7 @@ contract PassDAO {
             BoardMeeting b = BoardMeetings[cf.boardMeetingID];
             if (now > b.setDeadline || b.creator != msg.sender) throw;
 
-            cf.fundingProposalID = _FundingProposalID;
+            cf.fundingProposalID = _fundingProposalID;
             
             f.maxFundingAmount = cf.amount;
 
@@ -329,11 +329,11 @@ contract PassDAO {
             
         }
         
-        f.boardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
+        f.boardMeetingID = newBoardMeeting(0, 0, _fundingProposalID, _minutesDebatingPeriod);   
 
-        FundingProposalAdded(_FundingProposalID, _contractorProposalID, f.maxFundingAmount);
+        FundingProposalAdded(_fundingProposalID, _contractorProposalID, f.maxFundingAmount);
 
-        return _FundingProposalID;
+        return _fundingProposalID;
         
     }
 
@@ -343,14 +343,14 @@ contract PassDAO {
     /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
     /// @param _transferable True if the proposal foresee to allow the transfer of Dao shares
-    /// @param _MinutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
     function newDaoRulesProposal(
         uint _minQuorumDivisor, 
         uint _minBoardMeetingFees,
         uint _minutesSetProposalPeriod,
         uint _minMinutesDebatePeriod, 
         bool _transferable,
-        uint _MinutesDebatingPeriod
+        uint _minutesDebatingPeriod
     ) payable returns (uint) {
     
         if (_minQuorumDivisor <= 1
@@ -369,7 +369,7 @@ contract PassDAO {
         r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
         r.transferable = _transferable;
         
-        r.boardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _MinutesDebatingPeriod);     
+        r.boardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _minutesDebatingPeriod);     
 
         DaoRulesProposalAdded(_DaoRulesProposalID);
 
@@ -378,14 +378,14 @@ contract PassDAO {
     }
     
     /// @notice Function to vote during a board meeting
-    /// @param _BoardMeetingID The index of the board meeting
+    /// @param _boardMeetingID The index of the board meeting
     /// @param _supportsProposal True if the proposal is supported
     function vote(
-        uint _BoardMeetingID, 
+        uint _boardMeetingID, 
         bool _supportsProposal
     ) {
         
-        BoardMeeting b = BoardMeetings[_BoardMeetingID];
+        BoardMeeting b = BoardMeetings[_boardMeetingID];
         if (daoAccountManager.balanceOf(msg.sender) == 0
             || b.hasVoted[msg.sender] 
             || now < b.setDeadline
@@ -406,12 +406,9 @@ contract PassDAO {
 
             if (c.fundingProposalID != 0) throw;
             
-            uint _balance = uint(daoAccountManager.balanceOf(msg.sender));
-            uint _totalSupply = uint(daoAccountManager.TotalSupply());
-            
             if (b.fees > 0) {
 
-                uint _rewardedamount = b.fees*_balance/_totalSupply;
+                uint _rewardedamount = b.fees*uint(daoAccountManager.balanceOf(msg.sender))/uint(daoAccountManager.TotalSupply());
                 
                 b.totalRewardedAmount += _rewardedamount;
                 pendingFeesWithdrawals[msg.sender] += _rewardedamount;
@@ -436,11 +433,11 @@ contract PassDAO {
     
     
     /// @notice Function to execute a board meeting decision and close the board meeting
-    /// @param _BoardMeetingID The index of the board meeting
+    /// @param _boardMeetingID The index of the board meeting
     /// @return Whether the proposal was executed or not
-    function executeDecision(uint _BoardMeetingID) returns (bool) {
+    function executeDecision(uint _boardMeetingID) returns (bool) {
 
-        BoardMeeting b = BoardMeetings[_BoardMeetingID];
+        BoardMeeting b = BoardMeetings[_boardMeetingID];
 
         if (now < b.votingDeadline 
             || !b.open
@@ -476,12 +473,12 @@ contract PassDAO {
             
         }
 
-        if (!takeBoardMeetingFees(_BoardMeetingID)) throw;
+        if (!takeBoardMeetingFees(_boardMeetingID)) throw;
         
         b.open = false;
 
         if ((b.yea + b.nay < minQuorum() || b.yea <= b.nay) && (_fundedAmount < c.amount || c.fundingProposalID == 0)) {
-            BoardMeetingClosed(_BoardMeetingID, _fees, false);
+            BoardMeetingClosed(_boardMeetingID, _fees, false);
             return;
         }
 
@@ -534,11 +531,11 @@ contract PassDAO {
                 
             if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], _fundedAmount)) throw;
 
-            AmountSentToContractor(c.recipient, contractorAccountManager[c.recipient], _fundedAmount);
+            SentToContractor(c.recipient, contractorAccountManager[c.recipient], _fundedAmount);
 
         }
 
-        BoardMeetingClosed(_BoardMeetingID, _fees, true);
+        BoardMeetingClosed(_boardMeetingID, _fees, true);
 
         return true;
         
