@@ -220,7 +220,7 @@ contract TokenManager {
 
     }
 
-    /// @notice Function used by the Dao or a main partner to reward shares or tokens
+    /// @notice Function used by the main partner to reward shares or tokens
     /// @param _recipient The address of the recipient of shares or tokens
     /// @param _amount The amount (in Wei) to calculate the quantity of shares or tokens to create
     /// @param _date The date to consider for the share or token price calculation
@@ -230,12 +230,8 @@ contract TokenManager {
         uint _amount,
         uint _date
         ) external {
-        
-        if (msg.sender != client && msg.sender != FundingRules.mainPartner) {
-            throw;
-        }
-        
-        if (!createToken(_recipient, _amount, _date)) throw;
+            
+        if (msg.sender != FundingRules.mainPartner&& !createToken(_recipient, _amount, _date)) throw;
 
     }
 
