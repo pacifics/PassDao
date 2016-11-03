@@ -144,7 +144,7 @@ contract PassDAO {
     event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed Recipient, uint ProposalAmount);
     event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID);
-    event SentToContractor(address indexed Recipient, address AccountManagerAddress, uint Amount);
+    event SentToContractor(address indexed Recipient, address AccountManagerAddress, uint AmountSent);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
@@ -262,7 +262,7 @@ contract PassDAO {
         
         c.boardMeetingID = newBoardMeeting(_contractorProposalID, 0, 0, _minutesDebatingPeriod);    
 
-        ContractorProposalAdded(_contractorProposalID, _recipient, _amount);
+        ContractorProposalAdded(_contractorProposalID, c.recipient, c.amount);
         
         return _contractorProposalID;
         
@@ -531,7 +531,7 @@ contract PassDAO {
                 
             if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], _fundedAmount)) throw;
 
-            SentToContractor(c.recipient, contractorAccountManager[c.recipient], _fundedAmount);
+            SentToContractor(c.recipient, address(contractorAccountManager[c.recipient]), _fundedAmount);
 
         }
 
