@@ -139,10 +139,10 @@ contract PassDAO {
     // The current Dao rules
     Rules public DaoRules; 
     
-    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed Recipient, uint ProposalAmount);
+    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed AccountManagerAddress, uint ProposalAmount);
     event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID);
-    event SentToContractor(address indexed Recipient, address AccountManagerAddress, uint AmountSent);
+    event SentToContractor(address indexed AccountManagerAddress, uint AmountSent);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
@@ -258,9 +258,14 @@ contract PassDAO {
         c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         c.inflationRate = _inflationRate;
         
+        if (accountManagerAddress[_recipient] == 0) {
+            AccountManager m = new AccountManager(msg.sender, address(this), _recipient, _initialSupply) ;
+            accountManagerAddress[_recipient] = address(m);
+        }
+
         c.boardMeetingID = newBoardMeeting(_contractorProposalID, 0, 0, _minutesDebatingPeriod);    
 
-        ContractorProposalAdded(_contractorProposalID, c.recipient, c.amount);
+        ContractorProposalAdded(_contractorProposalID, accountManagerAddress[c.recipient], c.amount);
         
         return _contractorProposalID;
         
@@ -320,8 +325,6 @@ contract PassDAO {
             cf.fundingProposalID = _fundingProposalID;
             
             f.maxFundingAmount = cf.amount;
-
-            createContractorAccountManager(cf.recipient, cf.initialSupply);
 
             uint _fees = b.fees;
             b.fees = 0;
@@ -510,33 +513,15 @@ contract PassDAO {
             
         if (b.contractorProposalID != 0) {
 
-            createContractorAccountManager(c.recipient, c.initialSupply);
-
             if (c.fundingProposalID == 0) _fundedAmount == c.amount;
             if (!daoAccountManager.sendTo(AccountManager(accountManagerAddress[c.recipient]), _fundedAmount)) throw;
-            SentToContractor(c.recipient, accountManagerAddress[c.recipient], _fundedAmount);
+            SentToContractor(accountManagerAddress[c.recipient], _fundedAmount);
 
         }
 
         BoardMeetingClosed(_boardMeetingID, _fees, true);
 
         return true;
-        
-    }
-    
-    /// @dev Internal function to create a contractor account manager
-    /// @param _recipient The contractor's recipient
-    /// @param _initialSupply The quantity of tokens to create for the recipient 
-    /// in the contractor account manager
-    function createContractorAccountManager(
-        address _recipient, 
-        uint _initialSupply
-        ) internal {
-        
-        if (accountManagerAddress[_recipient] == 0) {
-            AccountManager m = new AccountManager(msg.sender, address(this), _recipient, _initialSupply) ;
-            accountManagerAddress[_recipient] = address(m);
-        }
         
     }
     
