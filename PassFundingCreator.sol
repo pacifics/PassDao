@@ -265,7 +265,6 @@ contract PassFunding {
             if (sumOfFundingAmountLimits < minAmount 
                 || sumOfFundingAmountLimits > DaoAccountManager.fundingMaxAmount()) {
 
-                limitSet = false;
                 PartnersNotSet(sumOfFundingAmountLimits);
                 return;
 
