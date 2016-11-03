@@ -141,7 +141,7 @@ contract PassDAO {
     // The current Dao rules
     Rules public DaoRules; 
     
-    event ContractorProposalAdded(uint indexed ContractorProposalID, uint Amount);
+    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed Recipient, uint ProposalAmount);
     event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID);
     event SentToContractor(address indexed Recipient, address AccountManagerAddress, uint Amount);
@@ -262,7 +262,7 @@ contract PassDAO {
         
         c.boardMeetingID = newBoardMeeting(_contractorProposalID, 0, 0, _minutesDebatingPeriod);    
 
-        ContractorProposalAdded(_contractorProposalID, c.amount);
+        ContractorProposalAdded(_contractorProposalID, _recipient, _amount);
         
         return _contractorProposalID;
         
