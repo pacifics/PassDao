@@ -111,7 +111,7 @@ contract TokenManager {
     }
 
     /// @return The maximal amount 'msg.sender' can fund with his partners
-    function fundingMaxAmount() constant external returns (uint) {
+    function fundingMaxAmount() external returns (uint) {
         
         if (now > FundingRules.closingTime
             || now < FundingRules.startTime
