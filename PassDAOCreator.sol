@@ -306,7 +306,8 @@ contract PassDAO {
             || (!_publicShareCreation && _mainPartner == 0)
             || _mainPartner == address(this)
             || _mainPartner == address(daoAccountManager)
-            || _maxFundingAmount == 0
+            || (_contractorProposalID == 0 &&_maxFundingAmount == 0)
+            || (_contractorProposalID != 0 && _maxFundingAmount != 0)
             || _initialSharePriceMultiplier == 0
             ) {
                 throw;
@@ -330,6 +331,8 @@ contract PassDAO {
             if (now > b.setDeadline || b.creator != msg.sender) throw;
 
             cf.fundingProposalID = _FundingProposalID;
+            
+            f.maxFundingAmount = cf.amount;
 
             uint _fees = b.fees;
             b.fees = 0;
