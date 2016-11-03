@@ -46,7 +46,7 @@ Main functions are :
 
 - SetFundingRules to set the funding rules according to approved funding proposals.
 
-- CreateToken to create tokens according to the set funding rules.
+- CreateToken according to the funding rules.
 
 - RewardToken to funders for private fundings by the funding smart contract.
 
