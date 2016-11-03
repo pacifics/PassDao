@@ -16,7 +16,7 @@ Our DAO is open source and used for our project to put together a transparent or
 
 ## The Dao Smart Contract
 
-Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). The fees go to the voters according to their share in the Dao. For the funding and Dao rules proposal, the Dao gives back the fees to the creator of the proposal if the quorum is reached.
+Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). For the contractor proposals, the fees go to the voters according to their share in the Dao. For the funding and Dao rules proposal, the Dao gives back the fees to the creator of the proposal if the quorum is reached.
 
 Main functions: 
 
