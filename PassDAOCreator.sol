@@ -125,10 +125,8 @@ contract PassDAO {
     
     // Map to allow the share holders to withdraw board meeting fees
     mapping (address => uint) public pendingFeesWithdrawals;
-    // Map to get the last contractor proposal of a recipient
-    mapping (address => uint) public lastRecipientProposalId; 
     // Map to get the account management smart contract of contractors
-    mapping (address => AccountManager) public contractorAccountManager; 
+    mapping (address => address) public accountManagerAddress; 
 
     // Board meetings to vote for or against a proposal
     BoardMeeting[] public BoardMeetings; 
@@ -245,8 +243,8 @@ contract PassDAO {
             || _recipient == address(this)
             || _recipient == address(daoAccountManager)
             || _amount == 0
-            || (lastRecipientProposalId[_recipient] != 0 
-                && ((msg.sender != _recipient && !contractorAccountManager[_recipient].IsCreator(msg.sender))
+            || (accountManagerAddress[_recipient] != 0 
+                && ((msg.sender != _recipient && !AccountManager(accountManagerAddress[_recipient]).IsCreator(msg.sender))
                     || _initialSupply != 0))) throw;
 
         uint _contractorProposalID = ContractorProposals.length++;
@@ -322,6 +320,8 @@ contract PassDAO {
             cf.fundingProposalID = _fundingProposalID;
             
             f.maxFundingAmount = cf.amount;
+
+            createContractorAccountManager(cf.recipient, cf.initialSupply);
 
             uint _fees = b.fees;
             b.fees = 0;
@@ -421,17 +421,6 @@ contract PassDAO {
 
     }
 
-    /// @dev Internal function to create a new contractor account manager
-    /// @param _recipient The contractor's recipient
-    /// @param _initialSupply The quantity of tokens to create for the recipient 
-    /// in the contractor account manager
-    function createContractorAccountManager(address _recipient, uint _initialSupply) internal {
-                AccountManager m = new AccountManager(msg.sender, address(this), _recipient, _initialSupply) ;
-                contractorAccountManager[_recipient] = m;
-                m.TransferAble();
-    }
-    
-    
     /// @notice Function to execute a board meeting decision and close the board meeting
     /// @param _boardMeetingID The index of the board meeting
     /// @return Whether the proposal was executed or not
@@ -494,11 +483,8 @@ contract PassDAO {
             if (f.contractorProposalID != 0 && !f.publicShareCreation) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
                 
-                if (lastRecipientProposalId[cf.recipient] == 0) createContractorAccountManager(cf.recipient, cf.initialSupply);
-                lastRecipientProposalId[cf.recipient] = f.contractorProposalID;
-
                 if (cf.initialTokenPriceMultiplier != 0) {
-                    contractorAccountManager[cf.recipient].setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
+                    AccountManager(accountManagerAddress[cf.recipient]).setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
                     f.maxFundingAmount, now, f.minutesFundingPeriod, cf.inflationRate, b.fundingProposalID);
                 }
             }
@@ -524,20 +510,33 @@ contract PassDAO {
             
         if (b.contractorProposalID != 0) {
 
-            if (lastRecipientProposalId[c.recipient] == 0) createContractorAccountManager(c.recipient, c.initialSupply);
-            lastRecipientProposalId[c.recipient] = b.contractorProposalID;
+            createContractorAccountManager(c.recipient, c.initialSupply);
 
             if (c.fundingProposalID == 0) _fundedAmount == c.amount;
-                
-            if (!daoAccountManager.sendTo(contractorAccountManager[c.recipient], _fundedAmount)) throw;
-
-            SentToContractor(c.recipient, address(contractorAccountManager[c.recipient]), _fundedAmount);
+            if (!daoAccountManager.sendTo(AccountManager(accountManagerAddress[c.recipient]), _fundedAmount)) throw;
+            SentToContractor(c.recipient, accountManagerAddress[c.recipient], _fundedAmount);
 
         }
 
         BoardMeetingClosed(_boardMeetingID, _fees, true);
 
         return true;
+        
+    }
+    
+    /// @dev Internal function to create a contractor account manager
+    /// @param _recipient The contractor's recipient
+    /// @param _initialSupply The quantity of tokens to create for the recipient 
+    /// in the contractor account manager
+    function createContractorAccountManager(
+        address _recipient, 
+        uint _initialSupply
+        ) internal {
+        
+        if (accountManagerAddress[_recipient] == 0) {
+            AccountManager m = new AccountManager(msg.sender, address(this), _recipient, _initialSupply) ;
+            accountManagerAddress[_recipient] = address(m);
+        }
         
     }
     
