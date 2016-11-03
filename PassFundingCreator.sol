@@ -48,6 +48,8 @@ contract PassFunding {
     uint maxAmountLimit; 
     /// The partner can fund below the minimum amount limit or a set percentage of his ether balance 
     uint divisorBalanceLimit;
+    /// The partner can fund below the minimum amount limit or a set percentage of his shares balance in the Dao
+    uint multiplierSharesLimit;
     /// The partner can fund below the minimum amount limit or a set percentage of his shares balance in the Dao 
     uint divisorSharesLimit;
     // True if the amount and divisor balance limits for the funding are set
@@ -65,6 +67,7 @@ contract PassFunding {
     
     // To allow the creator to abort the funding before the closing time
     bool IsfundingAborted;
+    
     // To allow the set of partners in several times
     uint setFromPartner;
     // To allow the refund for partners in several times
@@ -76,7 +79,8 @@ contract PassFunding {
     event IntentionToFund(address partner, uint amount);
     event Fund(address partner, uint amount);
     event Refund(address partner, uint amount);
-    event LimitSet(uint minAmountLimit, uint maxAmountLimit, uint divisorBalanceLimit, uint divisorSharesLimit);
+    event LimitSet(uint minAmountLimit, uint maxAmountLimit, uint divisorBalanceLimit, 
+        uint _multiplierSharesLimit, uint divisorSharesLimit);
     event PartnersNotSet(uint sumOfFundingAmountLimits);
     event AllPartnersSet(uint fundingAmount);
     event Fueled();
@@ -121,6 +125,8 @@ contract PassFunding {
         uint _maxAmount
         ) onlyCreator {
 
+        if (IsfundingAborted) throw;
+        
         minPresaleAmount = _minAmount;
         maxPresaleAmount = _maxAmount;
 
@@ -216,12 +222,14 @@ contract PassFunding {
     /// @notice Function used by the creator to set the funding limits for the funding
     /// @param _minAmountLimit The amount below this limit (in wei) can fund the dao
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
-    /// @param _divisorBalanceLimit The creator can set a limit in percentage of Eth balance (not mandatory) 
+    /// @param _divisorBalanceLimit The creator can set a limit in percentage of Eth balance (not mandatory)
+    /// @param _multiplierSharesLimit The creator can set a limit in percentage of shares balance in the Dao (not mandatory)
     /// @param _divisorSharesLimit The creator can set a limit in percentage of shares balance in the Dao (not mandatory) 
     function setFundingLimits(
             uint _minAmountLimit,
             uint _maxAmountLimit, 
             uint _divisorBalanceLimit,
+            uint _multiplierSharesLimit,
             uint _divisorSharesLimit
     ) onlyCreator {
         
@@ -230,15 +238,16 @@ contract PassFunding {
         minAmountLimit = _minAmountLimit;
         maxAmountLimit = _maxAmountLimit;
         divisorBalanceLimit = _divisorBalanceLimit;
+        multiplierSharesLimit = _multiplierSharesLimit;
         divisorSharesLimit = _divisorSharesLimit;
 
         limitSet = true;
         
-        LimitSet(_minAmountLimit, _maxAmountLimit, _divisorBalanceLimit, _divisorSharesLimit);
+        LimitSet(_minAmountLimit, _maxAmountLimit, _divisorBalanceLimit, _multiplierSharesLimit, _divisorSharesLimit);
     
     }
 
-    /// @notice Function used by the creator to set the funding limits for partners
+    /// @notice Function used to set the funding limits for partners
     /// @param _to The index of the last partner to set
     /// @return Whether the set was successful or not
     function setPartnersFundingLimits(uint _to) onlyCreator returns (bool _success) {
@@ -252,7 +261,7 @@ contract PassFunding {
         for (uint i = setFromPartner; i <= _to; i++) {
 
             partners[i].fundingAmountLimit = partnerFundingLimit(i, minAmountLimit, maxAmountLimit, 
-                divisorBalanceLimit, divisorSharesLimit);
+                divisorBalanceLimit, multiplierSharesLimit, divisorSharesLimit);
 
             sumOfFundingAmountLimits += partners[i].fundingAmountLimit;
 
@@ -262,9 +271,12 @@ contract PassFunding {
         if (setFromPartner >= partners.length) {
 
             setFromPartner = 1;
+
             if (sumOfFundingAmountLimits < minAmount 
                 || sumOfFundingAmountLimits > DaoAccountManager.fundingMaxAmount()) {
 
+                maxPresaleAmount = 0;
+                IsfundingAborted = true; 
                 PartnersNotSet(sumOfFundingAmountLimits);
                 return;
 
@@ -342,6 +354,12 @@ contract PassFunding {
         return fundDaoFor(partnerID[msg.sender], partnerID[msg.sender]);
     }
 
+    /// @notice Function to allow the creator to abort the funding before the closing time
+    function abortFunding() onlyCreator {
+        maxPresaleAmount = 0;
+        IsfundingAborted = true; 
+    }
+    
     /// @notice Function to refund for a partner
     /// @param _index The index of the partner
     /// @return Whether the refund was successful or not 
@@ -379,12 +397,6 @@ contract PassFunding {
         return refundFor(partnerID[msg.sender]);
     }
 
-    /// @notice Function to allow the creator to abort the funding before the closing time
-    function abortFunding() onlyCreator {
-        maxPresaleAmount = 0;
-        IsfundingAborted = true; 
-    }
-    
     /// @notice Function to refund for valid partners
     /// @param _to The index of the last partner
     function refundForPartners(uint _to) {
@@ -416,7 +428,9 @@ contract PassFunding {
     /// @param _minAmountLimit The amount (in wei) below this limit can fund the dao
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
     /// @param _divisorBalanceLimit The partner can fund 
-    /// only under a defined percentage of his ether balance 
+    /// only under a defined percentage of his ether balance
+    /// @param _multiplierSharesLimit The partner can fund 
+    /// only under a defined percentage of his shares balance in the Dao 
     /// @param _divisorSharesLimit The partner can fund 
     /// only under a defined percentage of his shares balance in the Dao 
     /// @param _from The index of the first partner
@@ -426,6 +440,7 @@ contract PassFunding {
         uint _minAmountLimit,
         uint _maxAmountLimit, 
         uint _divisorBalanceLimit,
+        uint _multiplierSharesLimit,
         uint _divisorSharesLimit,
         uint _from,
         uint _to
@@ -436,7 +451,8 @@ contract PassFunding {
         uint _total = 0;
         
         for (uint i = _from; i <= _to; i++) {
-            _total += partnerFundingLimit(i, _minAmountLimit, _maxAmountLimit, _divisorBalanceLimit, _divisorSharesLimit);
+            _total += partnerFundingLimit(i, _minAmountLimit, _maxAmountLimit, 
+                _divisorBalanceLimit, _multiplierSharesLimit, _divisorSharesLimit);
         }
 
         return _total;
@@ -448,6 +464,8 @@ contract PassFunding {
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
     /// @param _divisorBalanceLimit The partner can fund 
     /// only under a defined percentage of his ether balance 
+    /// @param _multiplierSharesLimit The partner can fund 
+    /// only under a defined percentage of his shares balance in the Dao 
     /// @param _divisorSharesLimit The partner can fund 
     /// only under a defined percentage of his shares balance in the Dao 
     /// @return The maximum amount (in wei) a partner can fund
@@ -456,6 +474,7 @@ contract PassFunding {
         uint _minAmountLimit,
         uint _maxAmountLimit, 
         uint _divisorBalanceLimit,
+        uint _multiplierSharesLimit,
         uint _divisorSharesLimit
         ) internal returns (uint) {
 
@@ -474,7 +493,7 @@ contract PassFunding {
                 }
 
             if (_divisorSharesLimit > 0) {
-                _amount1 = uint(DaoAccountManager.balanceOf(t.partnerAddress))/uint(_divisorSharesLimit);
+                _amount1 = uint(DaoAccountManager.balanceOf(t.partnerAddress))*_multiplierSharesLimit/_divisorSharesLimit;
                 if (_amount > _amount1) _amount = _amount1; 
                 }
 
