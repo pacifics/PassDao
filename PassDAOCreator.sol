@@ -342,7 +342,7 @@ contract PassDAO {
         
         f.boardMeetingID = newBoardMeeting(0, 0, _FundingProposalID, _MinutesDebatingPeriod);   
 
-        FundingProposalAdded(_FundingProposalID, _contractorProposalID, _maxFundingAmount);
+        FundingProposalAdded(_FundingProposalID, _contractorProposalID, f.maxFundingAmount);
 
         return _FundingProposalID;
         
