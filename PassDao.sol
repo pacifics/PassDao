@@ -25,7 +25,7 @@ to automate organizational governance and decision-making.
 */
 
 /// @title Pass Decentralized Autonomous Organisation
-contract PassDAOInterface {
+contract PassDaoInterface {
 
     struct BoardMeeting {        
         // Address who created the board meeting for a proposal
@@ -150,7 +150,7 @@ contract PassDAOInterface {
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
-    //function PassDAO(address _creator);
+    //function PassDao(address _creator);
 
     /// @dev Function to initialize the Dao
     /// @param _managerCreator Address of the smart contract for the creation of managers
@@ -266,9 +266,9 @@ contract PassDAOInterface {
 
 }
 
-contract PassDAO is PassDAOInterface {
+contract PassDao is PassDAOInterface {
 
-    function PassDAO() {
+    function PassDao() {
         creator = msg.sender;
     }
     
