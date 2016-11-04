@@ -553,7 +553,7 @@ contract PassDao is PassDaoInterface {
 
                 _fundedAmount = daoManager.FundedAmount(c.fundingProposalID);
                 
-                if (_fundedAmount < c.amount 
+                if (_fundedAmount == 0 
                     && (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].open
                         || (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution != 0
                             && now < BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution 
