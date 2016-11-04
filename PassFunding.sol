@@ -1,4 +1,4 @@
-import "PassAccountManager.sol";
+import "PassManager.sol";
 
 pragma solidity ^0.4.2;
 
@@ -28,10 +28,10 @@ contract PassFundingInterface {
 
     // Address of the creator of this contract
     address public creator;
-    // The account manager smart contract to fund
-    PassAccountManager public DaoAccountManager;
-    // Address of the account manager smart contract for the reward of contractor tokens
-    address public contractorAccountManager;
+    // The manager smart contract to fund
+    PassManager public DaoManager;
+    // Address of the manager smart contract for the reward of contractor tokens
+    address public contractorManager;
     // Minimum amount (in wei) to fund
     uint public minAmount;
     // Minimum amount (in wei) that partners can send to this smart contract
@@ -88,16 +88,16 @@ contract PassFundingInterface {
 
     /// @dev Constructor function
     /// @param _creator The creator of the smart contract
-    /// @param _DaoAccountManager The Dao account manager smart contract
-    /// @param _contractorAccountManager The address of the contractor account manager smart contract  
+    /// @param _DaoManager The Dao manager smart contract
+    /// @param _contractorManager The address of the contractor manager smart contract  
     /// for the reward of tokens (not mandatory)
     /// @param _minAmount Minimum amount (in wei) of the funding to be fueled 
     /// @param _startTime The unix start time of the presale
     /// @param _closingTime The unix closing time of the funding
     //function PassFunding (
         //address _creator,
-        //address _DaoAccountManager,
-        //address _contractorAccountManager,
+        //address _DaoManager,
+        //address _contractorManager,
         //uint _minAmount,
         //uint _startTime,
         //uint _closingTime
@@ -144,7 +144,7 @@ contract PassFundingInterface {
     /// @param _divisorBalanceLimit The creator can set a limit in percentage of Eth balance (not mandatory)
     /// @param _multiplierSharesLimit The creator can set a limit in percentage of shares balance in the Dao (not mandatory)
     /// @param _divisorSharesLimit The creator can set a limit in percentage of shares balance in the Dao (not mandatory) 
-    function setFundingLimits(
+    function setLimits(
             uint _minAmountLimit,
             uint _maxAmountLimit, 
             uint _divisorBalanceLimit,
@@ -155,7 +155,7 @@ contract PassFundingInterface {
     /// @notice Function used to set the funding limits for partners
     /// @param _to The index of the last partner to set
     /// @return Whether the set was successful or not
-    function setPartnersFundingLimits(uint _to) returns (bool _success);
+    function setFunding(uint _to) returns (bool _success);
 
     /// @notice Function for the funding of the Dao by a group of partners
     /// @param _from The index of the first partner
@@ -243,16 +243,16 @@ contract PassFunding is PassFundingInterface {
 
     function PassFunding (
         address _creator,
-        address _DaoAccountManager,
-        address _contractorAccountManager,
+        address _DaoManager,
+        address _contractorManager,
         uint _minAmount,
         uint _startTime,
         uint _closingTime
         ) {
             
         creator = _creator;
-        DaoAccountManager = PassAccountManager(_DaoAccountManager);
-        contractorAccountManager = _contractorAccountManager;
+        DaoManager = PassManager(_DaoManager);
+        contractorManager = _contractorManager;
 
         minAmount = _minAmount;
 
@@ -286,6 +286,7 @@ contract PassFunding is PassFundingInterface {
             || now < startTime
             || (now > closingTime && closingTime != 0)
             || limitSet
+            || IsfundingAborted
             || msg.value < minPresaleAmount
             || msg.value > maxPresaleAmount
             || msg.sender == creator
@@ -347,12 +348,12 @@ contract PassFunding is PassFundingInterface {
         
         for (uint i = _from; i <= _to; i++) {
             Partner t = partners[i];
-            if (DaoAccountManager.balanceOf(t.partnerAddress) != 0) t.valid = _valid;
+            if (DaoManager.balanceOf(t.partnerAddress) != 0) t.valid = _valid;
         }
         
     }
     
-    function setFundingLimits(
+    function setLimits(
             uint _minAmountLimit,
             uint _maxAmountLimit, 
             uint _divisorBalanceLimit,
@@ -374,12 +375,17 @@ contract PassFunding is PassFundingInterface {
     
     }
 
-    function setPartnersFundingLimits(uint _to) onlyCreator returns (bool _success) {
+    function setFunding(uint _to) onlyCreator returns (bool _success) {
         
         if (!limitSet 
-            || DaoAccountManager.fundingMaxAmount() < minAmount
+            || DaoManager.fundingMaxAmount() < minAmount
             || setFromPartner > _to 
             || _to > partners.length - 1) throw;
+            
+        DaoManager.setFundingStartTime(startTime);
+        if (contractorManager != 0) {
+            PassManager(contractorManager).setFundingStartTime(startTime);
+        }
         
         if (setFromPartner == 1) sumOfFundingAmountLimits = 0;
         
@@ -398,7 +404,7 @@ contract PassFunding is PassFundingInterface {
             setFromPartner = 1;
 
             if (sumOfFundingAmountLimits < minAmount 
-                || sumOfFundingAmountLimits > DaoAccountManager.fundingMaxAmount()) {
+                || sumOfFundingAmountLimits > DaoManager.fundingMaxAmount()) {
 
                 maxPresaleAmount = 0;
                 IsfundingAborted = true; 
@@ -439,11 +445,10 @@ contract PassFunding is PassFundingInterface {
                 partners[i].fundedAmount += _amountToFund;
                 _sumAmountToFund += _amountToFund;
 
-                DaoAccountManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
+                DaoManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
 
-                if (contractorAccountManager != 0) {
-                    PassAccountManager(contractorAccountManager).rewardToken(_partner, _amountToFund, 
-                        partners[i].presaleDate);
+                if (contractorManager != 0) {
+                    PassManager(contractorManager).rewardToken(_partner, _amountToFund, partners[i].presaleDate);
                 }
 
             }
@@ -452,13 +457,13 @@ contract PassFunding is PassFundingInterface {
 
         if (_sumAmountToFund == 0) return;
         
-        if (!DaoAccountManager.send(_sumAmountToFund)) throw;
+        if (!DaoManager.send(_sumAmountToFund)) throw;
 
         totalFunded += _sumAmountToFund;
 
         if (totalFunded >= sumOfFundingAmountLimits) {
-            DaoAccountManager.Fueled(); 
-            if (contractorAccountManager != 0) PassAccountManager(contractorAccountManager).Fueled(); 
+            DaoManager.Fueled(); 
+            if (contractorManager != 0) PassManager(contractorManager).Fueled(); 
             Fueled();
         }
         
@@ -580,7 +585,7 @@ contract PassFunding is PassFundingInterface {
                 }
 
             if (_divisorSharesLimit > 0) {
-                _amount1 = uint(DaoAccountManager.balanceOf(t.partnerAddress))*_multiplierSharesLimit/_divisorSharesLimit;
+                _amount1 = uint(DaoManager.balanceOf(t.partnerAddress))*_multiplierSharesLimit/_divisorSharesLimit;
                 if (_amount > _amount1) _amount = _amount1; 
                 }
 
