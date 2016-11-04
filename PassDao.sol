@@ -266,7 +266,7 @@ contract PassDaoInterface {
 
 }
 
-contract PassDao is PassDAOInterface {
+contract PassDao is PassDaoInterface {
 
     function PassDao() {
         creator = msg.sender;
