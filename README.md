@@ -32,9 +32,9 @@ Main functions:
 
 =
 
-## The Account Manager Smart Contract
+## The Manager Smart Contract
 
-The Dao Account Manager contains the Eth balance of the Dao. An account manager smart contract is also created for each contractor with the payments in ethers by the Dao. The smart contract derives to the Token Manager smart contract used for the management of Dao shares or contractor tokens. The smart contract is conform to ERC20.
+The Dao Manager smart contract contains the Eth balance of the Dao. A manager smart contract is also created for each contractor with the payments in ethers by the Dao. The smart contract derives to the Token Manager smart contract used for the management of Dao shares or contractor tokens. The smart contract is conform to ERC20.
 
 Main functions are : 
 
