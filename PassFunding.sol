@@ -76,16 +76,6 @@ contract PassFundingInterface {
     // The manager of this funding is the creator of this contract
     modifier onlyCreator {if (msg.sender != creator) throw; _ ;}
 
-    event IntentionToFund(address partner, uint amount);
-    event Fund(address partner, uint amount);
-    event Refund(address partner, uint amount);
-    event LimitSet(uint minAmountLimit, uint maxAmountLimit, uint divisorBalanceLimit, 
-        uint _multiplierSharesLimit, uint divisorSharesLimit);
-    event PartnersNotSet(uint sumOfFundingAmountLimits);
-    event AllPartnersSet(uint fundingAmount);
-    event Fueled();
-    event FundingClosed();
-
     /// @dev Constructor function
     /// @param _creator The creator of the smart contract
     /// @param _DaoManager The Dao manager smart contract
@@ -236,6 +226,16 @@ contract PassFundingInterface {
         uint _from,
         uint _to
         ) constant external returns (uint);
+
+    event IntentionToFund(address partner, uint amount);
+    event Fund(address partner, uint amount);
+    event Refund(address partner, uint amount);
+    event LimitSet(uint minAmountLimit, uint maxAmountLimit, uint divisorBalanceLimit, 
+        uint _multiplierSharesLimit, uint divisorSharesLimit);
+    event PartnersNotSet(uint sumOfFundingAmountLimits);
+    event AllPartnersSet(uint fundingAmount);
+    event Fueled();
+    event FundingClosed();
 
 }
 
