@@ -569,7 +569,7 @@ contract PassDao is PassDaoInterface {
         
         b.open = false;
 
-        if ((b.yea + b.nay < minQuorum() || b.yea <= b.nay) && (_fundedAmount < c.amount || c.fundingProposalID == 0)) {
+        if ((b.yea + b.nay < minQuorum() || b.yea <= b.nay) && (_fundedAmount == 0 || c.fundingProposalID == 0)) {
             BoardMeetingClosed(_boardMeetingID, _fees, false);
             return;
         }
