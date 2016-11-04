@@ -159,13 +159,19 @@ contract PassDaoInterface {
     /// @param _maxMinutesFundingPeriod The maximum funding period in minutes for funding proposals
     /// @param _maxMinutesProposalPeriod The maximum period in minutes for proposals (set+debate)
     /// @param _minQuorumDivisor The initial minimum quorum divisor for the proposals
+    /// @param _minBoardMeetingFees The amount (in wei) to make a proposal and ask for a board meeting
+    /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
+    /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
     function initDao(        
         address _managerCreator,
         uint _maxInflationRate,
         uint _minMinutesPeriods,
         uint _maxMinutesFundingPeriod,
         uint _maxMinutesProposalPeriod,
-        uint _minQuorumDivisor
+        uint _minQuorumDivisor,
+        uint _minBoardMeetingFees,
+        uint _minutesSetProposalPeriod,
+        uint _minMinutesDebatePeriod
         );
     
     /// @dev Internal function to create a board meeting
@@ -278,7 +284,10 @@ contract PassDao is PassDaoInterface {
         uint _minMinutesPeriods,
         uint _maxMinutesFundingPeriod,
         uint _maxMinutesProposalPeriod,
-        uint _minQuorumDivisor
+        uint _minQuorumDivisor,
+        uint _minBoardMeetingFees,
+        uint _minutesSetProposalPeriod,
+        uint _minMinutesDebatePeriod
         ) {
         
         if (msg.sender != creator || DaoRules.minQuorumDivisor != 0) throw;
@@ -290,7 +299,11 @@ contract PassDao is PassDaoInterface {
         minMinutesPeriods = _minMinutesPeriods;
         maxMinutesFundingPeriod = _maxMinutesFundingPeriod;
         maxMinutesProposalPeriod = _maxMinutesProposalPeriod;
+        
         DaoRules.minQuorumDivisor = _minQuorumDivisor;
+        DaoRules.minBoardMeetingFees = _minBoardMeetingFees;
+        DaoRules.minutesSetProposalPeriod = _minutesSetProposalPeriod;
+        DaoRules.minMinutesDebatePeriod = _minMinutesDebatePeriod;
 
         BoardMeetings.length = 1; 
         ContractorProposals.length = 1;
