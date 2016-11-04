@@ -143,12 +143,6 @@ contract PassDaoInterface {
     // The current Dao rules
     Rules public DaoRules; 
     
-    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed AccountManagerAddress, uint ProposalAmount);
-    event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
-    event DaoRulesProposalAdded(uint indexed DaoRulesProposalID);
-    event SentToContractor(uint indexed ContractorProposalID, address indexed AccountManagerAddress, uint AmountSent);
-    event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
-
     /// @dev The constructor function
     //function PassDao(address _creator);
 
@@ -270,6 +264,12 @@ contract PassDaoInterface {
     /// @return The minimum quorum for proposals to pass 
     function minQuorum() constant returns (uint);
 
+    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed AccountManagerAddress, uint ProposalAmount);
+    event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
+    event DaoRulesProposalAdded(uint indexed DaoRulesProposalID);
+    event SentToContractor(uint indexed ContractorProposalID, address indexed AccountManagerAddress, uint AmountSent);
+    event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
+
 }
 
 contract PassDao is PassDaoInterface {
@@ -359,11 +359,12 @@ contract PassDao is PassDaoInterface {
         uint _minutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > maxInflationRate
-            || _recipient == 0
+        if (_recipient == 0
             || _recipient == address(this)
             || _recipient == address(daoManager)
+            || _recipient == managerAddress[_recipient]
             || _amount == 0
+            || _inflationRate > maxInflationRate
             || (managerAddress[_recipient] != 0 
                 && ((msg.sender != _recipient && !PassManager(managerAddress[_recipient]).IsCreator(msg.sender))
                     || _initialSupply != 0))
@@ -404,18 +405,16 @@ contract PassDao is PassDaoInterface {
         uint _minutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_inflationRate > maxInflationRate
-            || _minutesFundingPeriod < minMinutesPeriods
-            || _minutesFundingPeriod > maxMinutesFundingPeriod
-            || (!_publicShareCreation && _mainPartner == 0)
+        if ((!_publicShareCreation && _mainPartner == 0)
+            || (_publicShareCreation && _mainPartner != 0)
             || _mainPartner == address(this)
             || _mainPartner == address(daoManager)
             || (_contractorProposalID == 0 && _maxFundingAmount == 0)
             || (_contractorProposalID != 0 && _maxFundingAmount != 0)
             || _initialSharePriceMultiplier == 0
-            ) {
-                throw;
-            }
+            || _inflationRate > maxInflationRate
+            || _minutesFundingPeriod < minMinutesPeriods
+            || _minutesFundingPeriod > maxMinutesFundingPeriod) throw;
 
         uint _fundingProposalID = FundingProposals.length++;
         FundingProposal f = FundingProposals[_fundingProposalID];
@@ -553,7 +552,7 @@ contract PassDao is PassDaoInterface {
 
                 _fundedAmount = daoManager.FundedAmount(c.fundingProposalID);
                 
-                if (_fundedAmount == 0 
+                if (_fundedAmount == 0
                     && (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].open
                         || (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution != 0
                             && now < BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution 
@@ -600,14 +599,13 @@ contract PassDao is PassDaoInterface {
             DaoRules.boardMeetingID = r.boardMeetingID;
 
             DaoRules.minQuorumDivisor = r.minQuorumDivisor;
-            DaoRules.minMinutesDebatePeriod = r.minMinutesDebatePeriod;
+            DaoRules.minMinutesDebatePeriod = r.minMinutesDebatePeriod; 
             DaoRules.minBoardMeetingFees = r.minBoardMeetingFees;
             DaoRules.minutesSetProposalPeriod = r.minutesSetProposalPeriod;
 
-            if (r.transferable) {
-                DaoRules.transferable = true;
-                daoManager.TransferAble();
-            }
+            DaoRules.transferable = r.transferable;
+            if (r.transferable) daoManager.ableTransfer();
+            else daoManager.disableTransfer();
             
         }
             
