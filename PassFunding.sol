@@ -1,4 +1,4 @@
-import "AccountManager.sol";
+import "PassAccountManager.sol";
 
 pragma solidity ^0.4.2;
 
@@ -9,7 +9,7 @@ pragma solidity ^0.4.2;
 */
 
 /// @title Funding smart contract for the Pass Decentralized Autonomous Organisation
-contract PassFunding {
+contract PassFundingInterface {
 
     struct Partner {
         // The address of the partner
@@ -29,7 +29,7 @@ contract PassFunding {
     // Address of the creator of this contract
     address public creator;
     // The account manager smart contract to fund
-    AccountManager public DaoAccountManager;
+    PassAccountManager public DaoAccountManager;
     // Address of the account manager smart contract for the reward of contractor tokens
     address public contractorAccountManager;
     // Minimum amount (in wei) to fund
@@ -94,6 +94,153 @@ contract PassFunding {
     /// @param _minAmount Minimum amount (in wei) of the funding to be fueled 
     /// @param _startTime The unix start time of the presale
     /// @param _closingTime The unix closing time of the funding
+    //function PassFunding (
+        //address _creator,
+        //address _DaoAccountManager,
+        //address _contractorAccountManager,
+        //uint _minAmount,
+        //uint _startTime,
+        //uint _closingTime
+    //);
+
+    /// @notice Function used by the creator to set the presale limits
+    /// @param _minAmount Minimum amount (in wei) that partners can send
+    /// @param _maxAmount Maximum amount (in wei) that partners can send
+    function SetPresaleAmountLimits(
+        uint _minAmount,
+        uint _maxAmount
+        );
+
+    /// @dev Fallback function
+    function () payable;
+
+    /// @notice Function to participate in the presale of the funding
+    /// @return Whether the presale was successful or not
+    function presale() payable returns (bool);
+    
+    /// @notice Function used by the creator to set addresses that can fund the dao
+    /// @param _valid True if the address can fund the Dao
+    /// @param _from The index of the first partner to set
+    /// @param _to The index of the last partner to set
+    function setValidPartners(
+            bool _valid,
+            uint _from,
+            uint _to
+        );
+
+    /// @notice Function used by the creator to set the addresses of Dao share holders
+    /// @param _valid True if the address can fund the Dao
+    /// @param _from The index of the first partner to set
+    /// @param _to The index of the last partner to set
+    function setShareHolders(
+            bool _valid,
+            uint _from,
+            uint _to
+        );
+    
+    /// @notice Function used by the creator to set the funding limits for the funding
+    /// @param _minAmountLimit The amount below this limit (in wei) can fund the dao
+    /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
+    /// @param _divisorBalanceLimit The creator can set a limit in percentage of Eth balance (not mandatory)
+    /// @param _multiplierSharesLimit The creator can set a limit in percentage of shares balance in the Dao (not mandatory)
+    /// @param _divisorSharesLimit The creator can set a limit in percentage of shares balance in the Dao (not mandatory) 
+    function setFundingLimits(
+            uint _minAmountLimit,
+            uint _maxAmountLimit, 
+            uint _divisorBalanceLimit,
+            uint _multiplierSharesLimit,
+            uint _divisorSharesLimit
+    );
+
+    /// @notice Function used to set the funding limits for partners
+    /// @param _to The index of the last partner to set
+    /// @return Whether the set was successful or not
+    function setPartnersFundingLimits(uint _to) returns (bool _success);
+
+    /// @notice Function for the funding of the Dao by a group of partners
+    /// @param _from The index of the first partner
+    /// @param _to The index of the last partner
+    /// @return Whether the Dao was funded or not
+    function fundDaoFor(
+            uint _from,
+            uint _to
+        ) returns (bool);
+    
+    /// @notice Function to fund the Dao with 'msg.sender' as 'beneficiary'
+    /// @return Whether the Dao was funded or not 
+    function fundDao() returns (bool);
+
+    /// @notice Function to allow the creator to abort the funding before the closing time
+    function abortFunding();
+    
+    /// @notice Function to refund for a partner
+    /// @param _index The index of the partner
+    /// @return Whether the refund was successful or not 
+    function refundFor(uint _index) internal returns (bool);
+
+    /// @notice Function to refund with 'msg.sender' as 'beneficiary'
+    /// @return Whether the refund was successful or not 
+    function refund() returns (bool);
+
+    /// @notice Function to refund for valid partners
+    /// @param _to The index of the last partner
+    function refundForPartners(uint _to);
+
+    /// @param _minAmountLimit The amount (in wei) below this limit can fund the dao
+    /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
+    /// @param _divisorBalanceLimit The partner can fund 
+    /// only under a defined percentage of his ether balance
+    /// @param _multiplierSharesLimit The partner can fund 
+    /// only under a defined percentage of his shares balance in the Dao 
+    /// @param _divisorSharesLimit The partner can fund 
+    /// only under a defined percentage of his shares balance in the Dao 
+    /// @param _from The index of the first partner
+    /// @param _to The index of the last partner
+    /// @return The result of the funding procedure (in wei) at present time
+    function estimatedFundingAmount(
+        uint _minAmountLimit,
+        uint _maxAmountLimit, 
+        uint _divisorBalanceLimit,
+        uint _multiplierSharesLimit,
+        uint _divisorSharesLimit,
+        uint _from,
+        uint _to
+        ) constant external returns (uint);
+
+    /// @param _index The index of the partner
+    /// @param _minAmountLimit The amount (in wei) below this limit can fund the dao
+    /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
+    /// @param _divisorBalanceLimit The partner can fund 
+    /// only under a defined percentage of his ether balance 
+    /// @param _multiplierSharesLimit The partner can fund 
+    /// only under a defined percentage of his shares balance in the Dao 
+    /// @param _divisorSharesLimit The partner can fund 
+    /// only under a defined percentage of his shares balance in the Dao 
+    /// @return The maximum amount (in wei) a partner can fund
+    function partnerFundingLimit(
+        uint _index, 
+        uint _minAmountLimit,
+        uint _maxAmountLimit, 
+        uint _divisorBalanceLimit,
+        uint _multiplierSharesLimit,
+        uint _divisorSharesLimit
+        ) internal returns (uint);
+        
+    /// @return the number of partners
+    function numberOfPartners() constant external returns (uint);
+    
+    /// @param _from The index of the first partner
+    /// @param _to The index of the last partner
+    /// @return The number of valid partners
+    function numberOfValidPartners(
+        uint _from,
+        uint _to
+        ) constant external returns (uint);
+
+}
+
+contract PassFunding is PassFundingInterface {
+
     function PassFunding (
         address _creator,
         address _DaoAccountManager,
@@ -104,7 +251,7 @@ contract PassFunding {
         ) {
             
         creator = _creator;
-        DaoAccountManager = AccountManager(_DaoAccountManager);
+        DaoAccountManager = PassAccountManager(_DaoAccountManager);
         contractorAccountManager = _contractorAccountManager;
 
         minAmount = _minAmount;
@@ -117,28 +264,22 @@ contract PassFunding {
         
         }
 
-    /// @notice Function used by the creator to set the presale limits
-    /// @param _minAmount Minimum amount (in wei) that partners can send
-    /// @param _maxAmount Maximum amount (in wei) that partners can send
     function SetPresaleAmountLimits(
         uint _minAmount,
         uint _maxAmount
         ) onlyCreator {
 
-        if (limitSet || IsfundingAborted) throw;
+        if (IsfundingAborted) throw;
         
         minPresaleAmount = _minAmount;
         maxPresaleAmount = _maxAmount;
 
         }
 
-    /// @dev Fallback function
     function () payable {
         if (!presale()) throw;
     }
 
-    /// @notice Function to participate in the presale of the funding
-    /// @return Whether the presale was successful or not
     function presale() payable returns (bool) {
 
         if (msg.value <= 0
@@ -177,17 +318,13 @@ contract PassFunding {
         
     }
     
-    /// @notice Function used by the creator to set addresses that can fund the dao
-    /// @param _valid True if the address can fund the Dao
-    /// @param _from The index of the first partner to set
-    /// @param _to The index of the last partner to set
     function setValidPartners(
             bool _valid,
             uint _from,
             uint _to
         ) onlyCreator {
 
-        if (limitSet) throw;
+        if (allSet) throw;
         
         if (_from < 1 || _to > partners.length - 1) throw;
         
@@ -198,19 +335,15 @@ contract PassFunding {
         
     }
 
-    /// @notice Function used by the creator to set the addresses of Dao share holders
-    /// @param _valid True if the address can fund the Dao
-    /// @param _from The index of the first partner to set
-    /// @param _to The index of the last partner to set
     function setShareHolders(
             bool _valid,
             uint _from,
             uint _to
         ) onlyCreator {
 
-        if (limitSet) throw;
-        
-        if (_from < 1 || _to > partners.length - 1) throw;
+        if (allSet
+            ||_from < 1 
+            || _to > partners.length - 1) throw;
         
         for (uint i = _from; i <= _to; i++) {
             Partner t = partners[i];
@@ -219,12 +352,6 @@ contract PassFunding {
         
     }
     
-    /// @notice Function used by the creator to set the funding limits for the funding
-    /// @param _minAmountLimit The amount below this limit (in wei) can fund the dao
-    /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
-    /// @param _divisorBalanceLimit The creator can set a limit in percentage of Eth balance (not mandatory)
-    /// @param _multiplierSharesLimit The creator can set a limit in percentage of shares balance in the Dao (not mandatory)
-    /// @param _divisorSharesLimit The creator can set a limit in percentage of shares balance in the Dao (not mandatory) 
     function setFundingLimits(
             uint _minAmountLimit,
             uint _maxAmountLimit, 
@@ -247,19 +374,12 @@ contract PassFunding {
     
     }
 
-    /// @notice Set the funding start time and the funding limits for partners
-    /// @param _to The index of the last partner to set
-    /// @return Whether the set was successful or not
-    function setFunding(uint _to) onlyCreator returns (bool _success) {
+    function setPartnersFundingLimits(uint _to) onlyCreator returns (bool _success) {
         
-        if (!limitSet || DaoAccountManager.fundingMaxAmount() < minAmount) throw;
-
-        DaoAccountManager.setFundingStartTime(startTime);
-        if (contractorAccountManager != 0) {
-            AccountManager(contractorAccountManager).setFundingStartTime(startTime);
-        }
-
-        if (setFromPartner > _to || _to > partners.length - 1) throw;
+        if (!limitSet 
+            || DaoAccountManager.fundingMaxAmount() < minAmount
+            || setFromPartner > _to 
+            || _to > partners.length - 1) throw;
         
         if (setFromPartner == 1) sumOfFundingAmountLimits = 0;
         
@@ -296,10 +416,6 @@ contract PassFunding {
 
     }
 
-    /// @notice Function for the funding of the Dao by a group of partners
-    /// @param _from The index of the first partner
-    /// @param _to The index of the last partner
-    /// @return Whether the Dao was funded or not
     function fundDaoFor(
             uint _from,
             uint _to
@@ -326,7 +442,7 @@ contract PassFunding {
                 DaoAccountManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
 
                 if (contractorAccountManager != 0) {
-                    AccountManager(contractorAccountManager).rewardToken(_partner, _amountToFund, 
+                    PassAccountManager(contractorAccountManager).rewardToken(_partner, _amountToFund, 
                         partners[i].presaleDate);
                 }
 
@@ -341,33 +457,24 @@ contract PassFunding {
         totalFunded += _sumAmountToFund;
 
         if (totalFunded >= sumOfFundingAmountLimits) {
-            
             DaoAccountManager.Fueled(); 
-            if (contractorAccountManager != 0) AccountManager(contractorAccountManager).Fueled(); 
-
+            if (contractorAccountManager != 0) PassAccountManager(contractorAccountManager).Fueled(); 
             Fueled();
-            
         }
         
         return true;
 
     }
     
-    /// @notice Function to fund the Dao with 'msg.sender' as 'beneficiary'
-    /// @return Whether the Dao was funded or not 
     function fundDao() returns (bool) {
         return fundDaoFor(partnerID[msg.sender], partnerID[msg.sender]);
     }
 
-    /// @notice Function to allow the creator to abort the funding before the closing time
     function abortFunding() onlyCreator {
         maxPresaleAmount = 0;
         IsfundingAborted = true; 
     }
     
-    /// @notice Function to refund for a partner
-    /// @param _index The index of the partner
-    /// @return Whether the refund was successful or not 
     function refundFor(uint _index) internal returns (bool) {
 
         Partner t = partners[_index];
@@ -396,14 +503,10 @@ contract PassFunding {
 
     }
 
-    /// @notice Function to refund with 'msg.sender' as 'beneficiary'
-    /// @return Whether the refund was successful or not 
     function refund() returns (bool) {
         return refundFor(partnerID[msg.sender]);
     }
 
-    /// @notice Function to refund for valid partners
-    /// @param _to The index of the last partner
     function refundForPartners(uint _to) {
 
         if (refundFromPartner > _to || _to > partners.length - 1) throw;
@@ -430,17 +533,6 @@ contract PassFunding {
         
     }
 
-    /// @param _minAmountLimit The amount (in wei) below this limit can fund the dao
-    /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
-    /// @param _divisorBalanceLimit The partner can fund 
-    /// only under a defined percentage of his ether balance
-    /// @param _multiplierSharesLimit The partner can fund 
-    /// only under a defined percentage of his shares balance in the Dao 
-    /// @param _divisorSharesLimit The partner can fund 
-    /// only under a defined percentage of his shares balance in the Dao 
-    /// @param _from The index of the first partner
-    /// @param _to The index of the last partner
-    /// @return The result of the funding procedure (in wei) at present time
     function estimatedFundingAmount(
         uint _minAmountLimit,
         uint _maxAmountLimit, 
@@ -464,16 +556,6 @@ contract PassFunding {
 
     }
 
-    /// @param _index The index of the partner
-    /// @param _minAmountLimit The amount (in wei) below this limit can fund the dao
-    /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
-    /// @param _divisorBalanceLimit The partner can fund 
-    /// only under a defined percentage of his ether balance 
-    /// @param _multiplierSharesLimit The partner can fund 
-    /// only under a defined percentage of his shares balance in the Dao 
-    /// @param _divisorSharesLimit The partner can fund 
-    /// only under a defined percentage of his shares balance in the Dao 
-    /// @return The maximum amount (in wei) a partner can fund
     function partnerFundingLimit(
         uint _index, 
         uint _minAmountLimit,
@@ -514,14 +596,10 @@ contract PassFunding {
         
     }
 
-    /// @return the number of partners
     function numberOfPartners() constant external returns (uint) {
         return partners.length - 1;
     }
     
-    /// @param _from The index of the first partner
-    /// @param _to The index of the last partner
-    /// @return The number of valid partners
     function numberOfValidPartners(
         uint _from,
         uint _to
