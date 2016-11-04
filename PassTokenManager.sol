@@ -55,11 +55,6 @@ contract PassTokenManagerInterface {
     // Map of blocked Dao share accounts. Points to the date when the share holder can transfer shares
     mapping (address => uint) public blockedDeadLine; 
 
-    event TokensCreated(address indexed Sender, address indexed TokenHolder, uint Quantity);
-    event FundingRulesSet(address indexed MainPartner, uint indexed FundingProposalId, uint indexed StartTime, uint ClosingTime);
-    event FundingFueled(uint indexed FundingProposalID, uint FundedAmount);
-    event TokenTransferable();
-
     /// @return The total supply of shares or tokens 
     function TotalSupply() constant external returns (uint256);
 
@@ -151,7 +146,10 @@ contract PassTokenManagerInterface {
     function Fueled() external;
     
     /// @dev Function to able the transfer of Dao shares or contractor tokens
-    function TransferAble() external;
+    function ableTransfer() external;
+
+    /// @dev Function to disable the transfer of Dao shares
+    function disableTransfer() external;
 
     /// @dev Function used by the client to block the transfer of shares from and to a share holder
     /// @param _shareHolder The address of the share holder
@@ -189,6 +187,12 @@ contract PassTokenManagerInterface {
     /// @param _value The amount of tokens to be approved for transfer
     /// @return Whether the approval was successful or not
     function approve(address _spender, uint256 _value) returns (bool success);
+
+    event TokensCreated(address indexed Sender, address indexed TokenHolder, uint Quantity);
+    event FundingRulesSet(address indexed MainPartner, uint indexed FundingProposalId, uint indexed StartTime, uint ClosingTime);
+    event FundingFueled(uint indexed FundingProposalID, uint FundedAmount);
+    event TransferAble();
+    event TransferDisable();
 
 }    
 
@@ -249,7 +253,7 @@ contract PassTokenManager is PassTokenManagerInterface {
 
         if (_recipient != 0) {
             transferable = true;
-            TokenTransferable();
+            TransferAble();
         }
 
         decimals = 18;
@@ -266,7 +270,7 @@ contract PassTokenManager is PassTokenManagerInterface {
     function setFundingRules(
         address _mainPartner,
         bool _publicCreation, 
-        uint _initialPriceMultiplier, 
+        uint _initialPriceMultiplier,
         uint _maxAmountToFund, 
         uint _startTime, 
         uint _minutesFundingPeriod, 
@@ -345,11 +349,16 @@ contract PassTokenManager is PassTokenManagerInterface {
         FundingFueled(FundingRules.fundingProposalID, FundingRules.fundedAmount);
     }
     
-    function TransferAble() external onlyClient {
+    function ableTransfer() external onlyClient {
         transferable = true;
-        TokenTransferable();
+        TransferAble();
     }
 
+    function disableTransfer() external onlyClient {
+        transferable = false;
+        TransferDisable();
+    }
+    
     function blockTransfer(address _shareHolder, uint _deadLine) external onlyClient {
         if (_deadLine > blockedDeadLine[_shareHolder]) {
             blockedDeadLine[_shareHolder] = _deadLine;
