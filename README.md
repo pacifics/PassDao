@@ -68,7 +68,7 @@ Main functions:
 
 - SetPartners: allows the smart contract creator to set Eth account addresses.
 
-- SetFundingLimits: allows the smart contract creator to set the funding limits (amounts and percentage of ether balance share) for all partners.
+- SetFundingLimits: allows the smart contract creator to set the funding limits for all partners.
 
 - FundDaoFor: to send Eth from the Funding smart contract to the Dao according to the set limits (if the funding is fueled).
 
