@@ -142,7 +142,7 @@ contract PassDAOInterface {
     event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed AccountManagerAddress, uint ProposalAmount);
     event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID);
-    event SentToContractor(address indexed AccountManagerAddress, uint AmountSent);
+    event SentToContractor(uint indexed ContractorProposalID, address indexed AccountManagerAddress, uint AmountSent);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
     /// @dev The constructor function
@@ -586,7 +586,7 @@ contract PassDAO is PassDAOInterface {
 
             if (c.fundingProposalID == 0) _fundedAmount == c.amount;
             if (!daoAccountManager.sendTo(PassAccountManager(accountManagerAddress[c.recipient]), _fundedAmount)) throw;
-            SentToContractor(accountManagerAddress[c.recipient], _fundedAmount);
+            SentToContractor(b.contractorProposalID, accountManagerAddress[c.recipient], _fundedAmount);
 
         }
 
