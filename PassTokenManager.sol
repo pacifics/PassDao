@@ -350,13 +350,17 @@ contract PassTokenManager is PassTokenManagerInterface {
     }
     
     function ableTransfer() external onlyClient {
-        transferable = true;
-        TransferAble();
+        if (!transferable) {
+            transferable = true;
+            TransferAble();
+        }
     }
 
     function disableTransfer() external onlyClient {
-        transferable = false;
-        TransferDisable();
+        if (transferable) {
+            transferable = false;
+            TransferDisable();
+        }
     }
     
     function blockTransfer(address _shareHolder, uint _deadLine) external onlyClient {
