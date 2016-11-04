@@ -1,4 +1,4 @@
-import "AccountManager.sol";
+import "PassAccountManager.sol";
 
 pragma solidity ^0.4.2;
 
@@ -25,7 +25,7 @@ to automate organizational governance and decision-making.
 */
 
 /// @title Pass Decentralized Autonomous Organisation
-contract PassDAO {
+contract PassDAOInterface {
 
     struct BoardMeeting {        
         // Address who created the board meeting for a proposal
@@ -121,7 +121,7 @@ contract PassDAO {
     uint public maxInflationRate;
 
     // The Dao account manager smart contract
-    AccountManager public daoAccountManager;
+    PassAccountManager public daoAccountManager;
     
     // Map to allow the share holders to withdraw board meeting fees
     mapping (address => uint) public pendingFeesWithdrawals;
@@ -151,6 +151,114 @@ contract PassDAO {
     /// @param _minMinutesPeriods The minimum periods in minutes
     /// @param _maxMinutesFundingPeriod The maximum funding period in minutes for funding proposals
     /// @param _maxMinutesProposalPeriod The maximum period in minutes for proposals (set+debate)
+    //function PassDAO(
+        //address _creator,
+        //uint _maxInflationRate,
+        //uint _minMinutesPeriods,
+        //uint _maxMinutesFundingPeriod,
+        //uint _maxMinutesProposalPeriod
+    //);
+    
+    /// @dev Internal function to create a board meeting
+    /// @param _contractorProposalID The index of the proposal if contractor
+    /// @param _daoRulesProposalID The index of the proposal if Dao rules
+    /// @param _fundingProposalID The index of the proposal if funding
+    /// @param _minutesDebatingPeriod The duration in minutes of the meeting
+    /// @return the index of the board meeting
+    function newBoardMeeting(
+        uint _contractorProposalID, 
+        uint _daoRulesProposalID, 
+        uint _fundingProposalID, 
+        uint _minutesDebatingPeriod
+    ) internal returns (uint);
+    
+    /// @notice Function to make a proposal to work for the Dao
+    /// @param _recipient The beneficiary of the proposal amount
+    /// @param _amount The amount (in wei) to be sent if the proposal is approved
+    /// @param _description String describing the proposal
+    /// @param _hashOfTheDocument The hash of the proposal document
+    /// @param _initialTokenPriceMultiplier The initial price multiplier of contractor tokens (not mandatory)    
+    /// @param _inflationRate If 0, the contractor token price doesn't change during the funding (not mandatory)
+    /// @param _initialSupply If the contractor asks for an initial supply of contractor tokens (not mandatory)
+    /// @param _minutesDebatingPeriod Proposed period in minutes of the board meeting to vote on the proposal
+    /// @return The index of the proposal
+    function newContractorProposal(
+        address _recipient,
+        uint _amount, 
+        string _description, 
+        bytes32 _hashOfTheDocument,
+        uint _initialTokenPriceMultiplier, 
+        uint _inflationRate,
+        uint256 _initialSupply,
+        uint _minutesDebatingPeriod
+    ) payable returns (uint);
+
+    /// @notice Function to make a proposal for a funding of the Dao
+    /// @param _publicShareCreation True if crowdfunding
+    /// @param _mainPartner The address of the funding contract if private (not mandatory if public)
+    /// @param _maxFundingAmount The maximum amount to fund
+    /// @param _initialSharePriceMultiplier The initial price multiplier of shares
+    /// @param _inflationRate If 0, the share price doesn't change during the funding (not mandatory)
+    /// @param _minutesFundingPeriod Period in minutes of the funding
+    /// @param _contractorProposalID Index of the contractor proposal if linked to this funding proposal (not mandatory)
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
+    /// @return The index of the proposal
+    function newFundingProposal(
+        bool _publicShareCreation,
+        address _mainPartner,
+        uint _maxFundingAmount,  
+        uint _initialSharePriceMultiplier,    
+        uint _inflationRate,
+        uint _minutesFundingPeriod,
+        uint _contractorProposalID,
+        uint _minutesDebatingPeriod
+    ) payable returns (uint);
+
+    /// @notice Function to make a proposal to change the Dao rules 
+    /// @param _minQuorumDivisor If 5, the minimum quorum is 20%
+    /// @param _minBoardMeetingFees The amount (in wei) to make a proposal and ask for a board meeting
+    /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
+    /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
+    /// @param _transferable True if the proposal foresee to allow the transfer of Dao shares
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
+    function newDaoRulesProposal(
+        uint _minQuorumDivisor, 
+        uint _minBoardMeetingFees,
+        uint _minutesSetProposalPeriod,
+        uint _minMinutesDebatePeriod, 
+        bool _transferable,
+        uint _minutesDebatingPeriod
+    ) payable returns (uint);
+    
+    /// @notice Function to vote during a board meeting
+    /// @param _boardMeetingID The index of the board meeting
+    /// @param _supportsProposal True if the proposal is supported
+    function vote(
+        uint _boardMeetingID, 
+        bool _supportsProposal
+    );
+
+    /// @notice Function to execute a board meeting decision and close the board meeting
+    /// @param _boardMeetingID The index of the board meeting
+    /// @return Whether the proposal was executed or not
+    function executeDecision(uint _boardMeetingID) returns (bool);
+    
+    /// @notice Function to withdraw the rewarded board meeting fees
+    /// @return Whether the withdraw was successful or not    
+    function withdrawBoardMeetingFees() returns (bool);
+
+    /// @dev Internal function to send to the Dao account manager the board meeting fees balance
+    /// @param _boardMeetingID The index of the board meeting
+    /// @return Whether the function was successful or not 
+    function takeBoardMeetingFees(uint _boardMeetingID) internal returns (bool);
+
+    /// @return The minimum quorum for proposals to pass 
+    function minQuorum() constant returns (uint);
+
+}
+
+contract PassDAO is PassDAOInterface {
+
     function PassDAO(
         address _creator,
         uint _maxInflationRate,
@@ -159,7 +267,7 @@ contract PassDAO {
         uint _maxMinutesProposalPeriod
         ) {
 
-        daoAccountManager = new AccountManager(_creator, address(this), 0, 10);
+        daoAccountManager = new PassAccountManager(_creator, address(this), 0, 10);
 
         maxInflationRate = _maxInflationRate;
         minMinutesPeriods = _minMinutesPeriods;
@@ -175,12 +283,6 @@ contract PassDAO {
         
     }
     
-    /// @dev Internal function to create a board meeting
-    /// @param _contractorProposalID The index of the proposal if contractor
-    /// @param _daoRulesProposalID The index of the proposal if Dao rules
-    /// @param _fundingProposalID The index of the proposal if funding
-    /// @param _minutesDebatingPeriod The duration in minutes of the meeting
-    /// @return the index of the board meeting
     function newBoardMeeting(
         uint _contractorProposalID, 
         uint _daoRulesProposalID, 
@@ -217,16 +319,6 @@ contract PassDAO {
 
     }
 
-    /// @notice Function to make a proposal to work for the Dao
-    /// @param _recipient The beneficiary of the proposal amount
-    /// @param _amount The amount (in wei) to be sent if the proposal is approved
-    /// @param _description String describing the proposal
-    /// @param _hashOfTheDocument The hash of the proposal document
-    /// @param _initialTokenPriceMultiplier The initial price multiplier of contractor tokens (not mandatory)    
-    /// @param _inflationRate If 0, the contractor token price doesn't change during the funding (not mandatory)
-    /// @param _initialSupply If the contractor asks for an initial supply of contractor tokens (not mandatory)
-    /// @param _minutesDebatingPeriod Proposed period in minutes of the board meeting to vote on the proposal
-    /// @return The index of the proposal
     function newContractorProposal(
         address _recipient,
         uint _amount, 
@@ -244,8 +336,9 @@ contract PassDAO {
             || _recipient == address(daoAccountManager)
             || _amount == 0
             || (accountManagerAddress[_recipient] != 0 
-                && ((msg.sender != _recipient && !AccountManager(accountManagerAddress[_recipient]).IsCreator(msg.sender))
-                    || _initialSupply != 0))) throw;
+                && ((msg.sender != _recipient && !PassAccountManager(accountManagerAddress[_recipient]).IsCreator(msg.sender))
+                    || _initialSupply != 0))
+            ) throw;
 
         uint _contractorProposalID = ContractorProposals.length++;
         ContractorProposal c = ContractorProposals[_contractorProposalID];
@@ -259,7 +352,7 @@ contract PassDAO {
         c.inflationRate = _inflationRate;
         
         if (accountManagerAddress[_recipient] == 0) {
-            AccountManager m = new AccountManager(msg.sender, address(this), _recipient, _initialSupply) ;
+            PassAccountManager m = new PassAccountManager(msg.sender, address(this), _recipient, _initialSupply) ;
             accountManagerAddress[_recipient] = address(m);
         }
 
@@ -271,16 +364,6 @@ contract PassDAO {
         
     }
 
-    /// @notice Function to make a proposal for a funding of the Dao
-    /// @param _publicShareCreation True if crowdfunding
-    /// @param _mainPartner The address of the funding contract if private (not mandatory if public)
-    /// @param _maxFundingAmount The maximum amount to fund
-    /// @param _initialSharePriceMultiplier The initial price multiplier of shares
-    /// @param _inflationRate If 0, the share price doesn't change during the funding (not mandatory)
-    /// @param _minutesFundingPeriod Period in minutes of the funding
-    /// @param _contractorProposalID Index of the contractor proposal if linked to this funding proposal (not mandatory)
-    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
-    /// @return The index of the proposal
     function newFundingProposal(
         bool _publicShareCreation,
         address _mainPartner,
@@ -340,13 +423,6 @@ contract PassDAO {
         
     }
 
-    /// @notice Function to make a proposal to change the Dao rules 
-    /// @param _minQuorumDivisor If 5, the minimum quorum is 20%
-    /// @param _minBoardMeetingFees The amount (in wei) to make a proposal and ask for a board meeting
-    /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
-    /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
-    /// @param _transferable True if the proposal foresee to allow the transfer of Dao shares
-    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
     function newDaoRulesProposal(
         uint _minQuorumDivisor, 
         uint _minBoardMeetingFees,
@@ -380,17 +456,15 @@ contract PassDAO {
         
     }
     
-    /// @notice Function to vote during a board meeting
-    /// @param _boardMeetingID The index of the board meeting
-    /// @param _supportsProposal True if the proposal is supported
     function vote(
         uint _boardMeetingID, 
         bool _supportsProposal
     ) {
         
         BoardMeeting b = BoardMeetings[_boardMeetingID];
-        if (daoAccountManager.balanceOf(msg.sender) == 0
-            || b.hasVoted[msg.sender] 
+        if (
+            daoAccountManager.balanceOf(msg.sender) == 0|| 
+            b.hasVoted[msg.sender] 
             || now < b.setDeadline
             || now > b.votingDeadline) throw;
 
@@ -424,9 +498,6 @@ contract PassDAO {
 
     }
 
-    /// @notice Function to execute a board meeting decision and close the board meeting
-    /// @param _boardMeetingID The index of the board meeting
-    /// @return Whether the proposal was executed or not
     function executeDecision(uint _boardMeetingID) returns (bool) {
 
         BoardMeeting b = BoardMeetings[_boardMeetingID];
@@ -487,7 +558,7 @@ contract PassDAO {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
                 
                 if (cf.initialTokenPriceMultiplier != 0) {
-                    AccountManager(accountManagerAddress[cf.recipient]).setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
+                    PassAccountManager(accountManagerAddress[cf.recipient]).setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
                     f.maxFundingAmount, now, f.minutesFundingPeriod, cf.inflationRate, b.fundingProposalID);
                 }
             }
@@ -514,7 +585,7 @@ contract PassDAO {
         if (b.contractorProposalID != 0) {
 
             if (c.fundingProposalID == 0) _fundedAmount == c.amount;
-            if (!daoAccountManager.sendTo(AccountManager(accountManagerAddress[c.recipient]), _fundedAmount)) throw;
+            if (!daoAccountManager.sendTo(PassAccountManager(accountManagerAddress[c.recipient]), _fundedAmount)) throw;
             SentToContractor(accountManagerAddress[c.recipient], _fundedAmount);
 
         }
@@ -525,8 +596,6 @@ contract PassDAO {
         
     }
     
-    /// @notice Function to withdraw the rewarded board meeting fees
-    /// @return Whether the withdraw was successful or not    
     function withdrawBoardMeetingFees() returns (bool) {
 
         uint _amount = pendingFeesWithdrawals[msg.sender];
@@ -542,9 +611,6 @@ contract PassDAO {
 
     }
 
-    /// @dev Internal function to send to the Dao account manager the board meeting fees balance
-    /// @param _boardMeetingID The index of the board meeting
-    /// @return Whether the function was successful or not 
     function takeBoardMeetingFees(uint _boardMeetingID) internal returns (bool) {
 
         BoardMeeting b = BoardMeetings[_boardMeetingID];
@@ -561,9 +627,8 @@ contract PassDAO {
 
     }
 
-    /// @return The minimum quorum for proposals to pass 
     function minQuorum() constant returns (uint) {
-        return uint(daoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
+        uint(daoAccountManager.TotalSupply()) / DaoRules.minQuorumDivisor;
     }
     
 }
