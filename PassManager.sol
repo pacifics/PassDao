@@ -5,20 +5,20 @@ pragma solidity ^0.4.2;
 /*
  * This file is part of Pass DAO.
  
- * The Account Manager smart contract is used for the management of ether accounts.
- * The contract derives to the Token Manager smart contract for the management of tokens.
+ * The Manager smart contract is used for the management of accounts and tokens.
  * Allows to receive or withdraw ethers and to buy Dao shares.
+ * The contract derives to the Token Manager smart contract for the management of tokens.
  
  * Recipient is 0 for the Dao account manager and the address of
- * contractor's recipient for the account managers of contractors.
+ * contractor's recipient for the contractors's mahagers.
 */
 
-/// @title Account Manager smart contract of the Pass Decentralized Autonomous Organisation
-contract PassAccountManagerInterface {
+/// @title Manager smart contract of the Pass Decentralized Autonomous Organisation
+contract PassManagerInterface {
     
     // Address of the creator or this smart contract
-    address public creator;
-    // Address of the account manager recipient;
+    address creator;
+    // Address of the recipient;
     address public recipient;
 
     /// @dev The constructor function
@@ -26,7 +26,7 @@ contract PassAccountManagerInterface {
     /// @param _client The address of the Dao
     /// @param _recipient The address of the recipient. 0 for the Dao
     /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
-    //function AccountManager(
+    //function PassManager(
         //address _creator,
         //address _client,
         //address _recipient,
@@ -37,10 +37,10 @@ contract PassAccountManagerInterface {
         //_recipient,
         //_initialSupply) {}
 
-     /// @return True if the sender is the creator of this account manager
+     /// @return True if the sender is the creator of this manager
     function IsCreator(address _sender) constant external returns (bool);
 
-    /// @notice Fallback function to allow sending ethers to the account manager
+    /// @notice Fallback function to allow sending ethers to the manager
     function () payable;
 
     /// @notice Function to buy Dao shares according to the funding rules 
@@ -51,7 +51,7 @@ contract PassAccountManagerInterface {
     /// @param _recipient The beneficiary of the created shares
     function buySharesFor(address _recipient) payable;
 
-    /// @dev Function used by the client to send ethers from the Dao account manager
+    /// @dev Function used by the client to send ethers from the Dao manager
     /// @param _recipient The address to send to
     /// @param _amount The amount (in wei) to send
     /// @return Whether the transfer was successful or not
@@ -60,15 +60,15 @@ contract PassAccountManagerInterface {
         uint _amount
     ) external returns (bool _success);
 
-    /// @notice Function to allow contractors to withdraw ethers from their account manager
+    /// @notice Function to allow contractors to withdraw ethers from their manager
     /// @param _amount The amount (in wei) to withdraw
     function withdraw(uint _amount);
     
 }    
 
-contract PassAccountManager is PassAccountManagerInterface, PassTokenManager {
+contract PassManager is PassManagerInterface, PassTokenManager {
     
-    function PassAccountManager(
+    function PassManager(
         address _creator,
         address _client,
         address _recipient,
@@ -121,3 +121,22 @@ contract PassAccountManager is PassAccountManagerInterface, PassTokenManager {
     }
     
 }    
+
+contract PassManagerCreator {
+    event NewPassManager(address Creator, address Client, address Recipient, address newPassManager);
+    function createManager(
+        address _creator,
+        address _client,
+        address _recipient,
+        uint256 _initialSupply
+        ) returns (PassManager) {
+        PassManager _newPassManager = new PassManager(
+            _creator,
+            _client,
+            _recipient,
+            _initialSupply
+        );
+        NewPassManager(_creator, _client, _recipient, _newPassManager);
+        return _newPassManager;
+    }
+}
