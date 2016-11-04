@@ -1,4 +1,4 @@
-import "TokenManager.sol";
+import "PassTokenManager.sol";
 
 pragma solidity ^0.4.2;
 
@@ -14,7 +14,7 @@ pragma solidity ^0.4.2;
 */
 
 /// @title Account Manager smart contract of the Pass Decentralized Autonomous Organisation
-contract AccountManager is TokenManager {
+contract PassAccountManagerInterface {
     
     // Address of the creator or this smart contract
     address public creator;
@@ -26,12 +26,54 @@ contract AccountManager is TokenManager {
     /// @param _client The address of the Dao
     /// @param _recipient The address of the recipient. 0 for the Dao
     /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
-    function AccountManager(
+    //function AccountManager(
+        //address _creator,
+        //address _client,
+        //address _recipient,
+        //uint256 _initialSupply
+    //) TokenManager(
+        //_creator,
+        //_client,
+        //_recipient,
+        //_initialSupply) {}
+
+     /// @return True if the sender is the creator of this account manager
+    function IsCreator(address _sender) constant external returns (bool);
+
+    /// @notice Fallback function to allow sending ethers to the account manager
+    function () payable;
+
+    /// @notice Function to buy Dao shares according to the funding rules 
+    /// with `msg.sender` as the beneficiary
+    function buyShares() payable;
+    
+    /// @notice Function to buy Dao shares according to the funding rules 
+    /// @param _recipient The beneficiary of the created shares
+    function buySharesFor(address _recipient) payable;
+
+    /// @dev Function used by the client to send ethers from the Dao account manager
+    /// @param _recipient The address to send to
+    /// @param _amount The amount (in wei) to send
+    /// @return Whether the transfer was successful or not
+    function sendTo(
+        address _recipient, 
+        uint _amount
+    ) external returns (bool _success);
+
+    /// @notice Function to allow contractors to withdraw ethers from their account manager
+    /// @param _amount The amount (in wei) to withdraw
+    function withdraw(uint _amount);
+    
+}    
+
+contract PassAccountManager is PassAccountManagerInterface, PassTokenManager {
+    
+    function PassAccountManager(
         address _creator,
         address _client,
         address _recipient,
         uint256 _initialSupply
-    ) TokenManager(
+    ) PassTokenManager(
         _creator,
         _client,
         _recipient,
@@ -42,23 +84,17 @@ contract AccountManager is TokenManager {
 
    }
 
-     /// @return True if the sender is the creator of this account manager
     function IsCreator(address _sender) constant external returns (bool) {
         if (creator == _sender) return true;
     }
 
-    /// @notice Fallback function to allow sending ethers to the account manager
     function () payable {
     }
 
-    /// @notice Function to buy Dao shares according to the funding rules 
-    /// with `msg.sender` as the beneficiary
     function buyShares() payable {
         buySharesFor(msg.sender);
     } 
     
-    /// @notice Function to buy Dao shares according to the funding rules 
-    /// @param _recipient The beneficiary of the created shares
     function buySharesFor(address _recipient) payable {
         
         if (recipient != 0
@@ -69,10 +105,6 @@ contract AccountManager is TokenManager {
 
     }
 
-    /// @dev Function used by the client to send ethers from the Dao account manager
-    /// @param _recipient The address to send to
-    /// @param _amount The amount (in wei) to send
-    /// @return Whether the transfer was successful or not
     function sendTo(
         address _recipient, 
         uint _amount
@@ -82,8 +114,6 @@ contract AccountManager is TokenManager {
 
     }
 
-    /// @notice Function to allow contractors to withdraw ethers from their account manager
-    /// @param _amount The amount (in wei) to withdraw
     function withdraw(uint _amount) {
         if ((msg.sender != recipient && msg.sender != creator)
             || recipient == 0
@@ -91,4 +121,3 @@ contract AccountManager is TokenManager {
     }
     
 }    
-  
