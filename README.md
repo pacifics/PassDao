@@ -20,7 +20,7 @@ Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a co
 
 Main functions: 
 
-- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services.  The contractor proposal can be linked to a funding proposal. We use this method for the primary funding with a funding smart contract linked to the first project manager proposal.
+- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services.  The contractor proposal can be linked to a funding proposal. We use this method for the primary funding with a funding proposal linked to the first project manager proposal.
 
 - Set a funding proposal: the dao sharehoders can propose to fund the Dao with a public or private funding. The funding rules can be set in a separated smart contract and foresee to reward contractor tokens to funders. We use this method for the primary funding that gives to new DAO share holders Pass reputation tokens.
 
