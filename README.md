@@ -72,7 +72,7 @@ Main functions:
 
 - SetFunding : set the amounts to fund for each partner according to the presale amounts, the set limits and the funding amount of the approved Dao funding proposal.
 
-- FundDaoFor: to send Eth from the Funding smart contract to the Dao according to the set limits (if the funding is fueled).
+- FundDaoFor: to send Eth from the Funding smart contract.
 
 - Refund: to refund the amount that did not fund the Dao.
 
