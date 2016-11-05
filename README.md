@@ -58,7 +58,7 @@ Main functions are :
 
 ## The Funding Smart Contract
 
-Smart contract used for the primary funding of the Dao. Each partner has to send an Eth address to be included in the mailing list and become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. This smart contract will allow others fundings with for instance preferential rights for share holders. The smart contract can also foresee a preliminary step for the setting of partners and amounts to fund for one or several partners before creating the corresponding funding proposal in the Dao.
+Smart contract used for the primary funding of the Dao. Each partner who sent his Eth account address by email (for communication and security purposes) can become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. This smart contract will allow others fundings with for instance preferential rights for share holders. The smart contract can also foresee a preliminary step for the setting of partners and amounts to fund for one or several partners before creating the corresponding funding proposal in the Dao.
 
 Main functions: 
 
