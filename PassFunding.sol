@@ -3,9 +3,11 @@ import "PassManager.sol";
 pragma solidity ^0.4.2;
 
 /*
+ *
  * This file is part of the DAO.
-
+ *
  * Smart contract used for the funding of Pass Dao.
+ *
 */
 
 /// @title Funding smart contract for the Pass Decentralized Autonomous Organisation
@@ -33,7 +35,7 @@ contract PassFundingInterface {
     // Address of the manager smart contract for the reward of contractor tokens
     address public contractorManager;
     // Minimum amount (in wei) to fund
-    uint public minAmount;
+    uint public minFundingAmount;
     // Minimum amount (in wei) that partners can send to this smart contract
     uint public minPresaleAmount;
     // Maximum amount (in wei) that partners can send to this smart contract
@@ -94,11 +96,11 @@ contract PassFundingInterface {
     //);
 
     /// @notice Function used by the creator to set the presale limits
-    /// @param _minAmount Minimum amount (in wei) that partners can send
-    /// @param _maxAmount Maximum amount (in wei) that partners can send
+    /// @param _minPresaleAmount Minimum amount (in wei) that partners can send
+    /// @param _maxPresaleAmount Maximum amount (in wei) that partners can send
     function SetPresaleAmountLimits(
-        uint _minAmount,
-        uint _maxAmount
+        uint _minPresaleAmount,
+        uint _maxPresaleAmount
         );
 
     /// @dev Fallback function
@@ -227,9 +229,9 @@ contract PassFundingInterface {
         uint _to
         ) constant external returns (uint);
 
-    event IntentionToFund(address partner, uint amount);
-    event Fund(address partner, uint amount);
-    event Refund(address partner, uint amount);
+    event IntentionToFund(address indexed partner, uint amount);
+    event Fund(address indexed partner, uint amount);
+    event Refund(address indexed partner, uint amount);
     event LimitSet(uint minAmountLimit, uint maxAmountLimit, uint divisorBalanceLimit, 
         uint _multiplierSharesLimit, uint divisorSharesLimit);
     event PartnersNotSet(uint sumOfFundingAmountLimits);
@@ -245,34 +247,42 @@ contract PassFunding is PassFundingInterface {
         address _creator,
         address _DaoManager,
         address _contractorManager,
-        uint _minAmount,
+        uint _minFundingAmount,
         uint _startTime,
         uint _closingTime
         ) {
+
+        if (_creator == _DaoManager
+            || _contractorManager == _DaoManager
+            || (_startTime < now && _startTime != 0)) throw;
             
         creator = _creator;
         DaoManager = PassManager(_DaoManager);
         contractorManager = _contractorManager;
 
-        minAmount = _minAmount;
+        minFundingAmount = _minFundingAmount;
 
         if (_startTime == 0) {startTime = now;} else {startTime = _startTime;}
+
+        if (_closingTime <= startTime) throw;
         closingTime = _closingTime;
+        
         setFromPartner = 1;
         refundFromPartner = 1;
+
         partners.length = 1; 
         
         }
 
     function SetPresaleAmountLimits(
-        uint _minAmount,
-        uint _maxAmount
+        uint _minPresaleAmount,
+        uint _maxPresaleAmount
         ) onlyCreator {
 
-        if (IsfundingAborted) throw;
+        if (limitSet) throw;
         
-        minPresaleAmount = _minAmount;
-        maxPresaleAmount = _maxAmount;
+        minPresaleAmount = _minPresaleAmount;
+        maxPresaleAmount = _maxPresaleAmount;
 
         }
 
@@ -284,9 +294,8 @@ contract PassFunding is PassFundingInterface {
 
         if (msg.value <= 0
             || now < startTime
-            || (now > closingTime && closingTime != 0)
+            || now > closingTime
             || limitSet
-            || IsfundingAborted
             || msg.value < minPresaleAmount
             || msg.value > maxPresaleAmount
             || msg.sender == creator
@@ -325,7 +334,7 @@ contract PassFunding is PassFundingInterface {
             uint _to
         ) onlyCreator {
 
-        if (allSet) throw;
+        if (limitSet) throw;
         
         if (_from < 1 || _to > partners.length - 1) throw;
         
@@ -342,7 +351,7 @@ contract PassFunding is PassFundingInterface {
             uint _to
         ) onlyCreator {
 
-        if (allSet
+        if (limitSet
             ||_from < 1 
             || _to > partners.length - 1) throw;
         
@@ -351,6 +360,12 @@ contract PassFunding is PassFundingInterface {
             if (DaoManager.balanceOf(t.partnerAddress) != 0) t.valid = _valid;
         }
         
+    }
+    
+    function abortFunding() onlyCreator {
+        limitSet = true;
+        maxPresaleAmount = 0;
+        IsfundingAborted = true; 
     }
     
     function setLimits(
@@ -378,14 +393,12 @@ contract PassFunding is PassFundingInterface {
     function setFunding(uint _to) onlyCreator returns (bool _success) {
         
         if (!limitSet 
-            || DaoManager.fundingMaxAmount() < minAmount
+            || DaoManager.fundingMaxAmount() < minFundingAmount
             || setFromPartner > _to 
             || _to > partners.length - 1) throw;
             
         DaoManager.setFundingStartTime(startTime);
-        if (contractorManager != 0) {
-            PassManager(contractorManager).setFundingStartTime(startTime);
-        }
+        if (contractorManager != 0) PassManager(contractorManager).setFundingStartTime(startTime);
         
         if (setFromPartner == 1) sumOfFundingAmountLimits = 0;
         
@@ -399,11 +412,12 @@ contract PassFunding is PassFundingInterface {
         }
         
         setFromPartner = _to + 1;
+        
         if (setFromPartner >= partners.length) {
 
             setFromPartner = 1;
 
-            if (sumOfFundingAmountLimits < minAmount 
+            if (sumOfFundingAmountLimits < minFundingAmount 
                 || sumOfFundingAmountLimits > DaoManager.fundingMaxAmount()) {
 
                 maxPresaleAmount = 0;
@@ -475,11 +489,6 @@ contract PassFunding is PassFundingInterface {
         return fundDaoFor(partnerID[msg.sender], partnerID[msg.sender]);
     }
 
-    function abortFunding() onlyCreator {
-        maxPresaleAmount = 0;
-        IsfundingAborted = true; 
-    }
-    
     function refundFor(uint _index) internal returns (bool) {
 
         Partner t = partners[_index];
@@ -629,7 +638,7 @@ contract PassFundingCreator {
     function createFunding(
         address _DaoAccountManager,
         address _contractorAccountManager,
-        uint _minAmount,
+        uint _minFundingAmount,
         uint _startTime,
         uint _closingTime
         ) returns (PassFunding) {
@@ -637,7 +646,7 @@ contract PassFundingCreator {
             msg.sender,
             _DaoAccountManager,
             _contractorAccountManager,        
-            _minAmount,
+            _minFundingAmount,
             _startTime,
             _closingTime
         );
