@@ -58,7 +58,7 @@ Main functions are :
 
 ## The Funding Smart Contract
 
-Smart contract used for the primary funding of the Dao. Each partner who sent his Eth account address by email (for communication and security purposes) can become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. After the primary funding, the smart contract will allow others fundings with for instance preferential rights for share holders. The smart contract also foresee a preliminary step for the setting before the voting procedure of the corresponding funding proposal in the Dao. This will allow the share holders to approve a set private funding without allowing the creator of the funding to change  anything.
+Smart contract used for the primary funding of the Dao. Each partner who sent his Eth account address by email (for communication and security purposes) can become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. After the primary funding, the smart contract will allow others fundings with for instance Priority Subscription Rights for share holders. The smart contract also foresee a preliminary step for the setting before the voting procedure of the corresponding funding proposal in the Dao. This will allow the share holders to approve a set private funding without allowing the creator of the funding to change  anything.
 
 Main functions: 
 
@@ -67,6 +67,8 @@ Main functions:
 - SetPresaleAmountLimits: allows the smart contract creator to set the presale limits (minimum and maximum).
 
 - SetPartners: allows the smart contract creator to set Eth account addresses.
+
+- SetShareHolders: allows organizing a private funding for the share holders.
 
 - SetLimits: allows the smart contract creator to set the funding limits for all partners.
 
