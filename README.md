@@ -76,7 +76,7 @@ Main functions:
 
 - Refund: to refund the amount that did not fund the Dao.
 
-- AbortFunding: allows the smart contract creator to abort the funding and refund.
+- AbortFunding: allows the smart contract creator to abort the funding and refund at any time during the presale.
 
 =
 
