@@ -3,14 +3,16 @@ import "PassTokenManager.sol";
 pragma solidity ^0.4.2;
 
 /*
+ *
  * This file is part of Pass DAO.
- 
+ *
  * The Manager smart contract is used for the management of accounts and tokens.
  * Allows to receive or withdraw ethers and to buy Dao shares.
  * The contract derives to the Token Manager smart contract for the management of tokens.
  
  * Recipient is 0 for the Dao account manager and the address of
  * contractor's recipient for the contractors's mahagers.
+ *
 */
 
 /// @title Manager smart contract of the Pass Decentralized Autonomous Organisation
