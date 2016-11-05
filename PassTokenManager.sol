@@ -40,14 +40,18 @@ contract PassTokenManagerInterface {
     // Address of the Dao    
     address public client;
     
-    /* Array with all balances */
-    mapping (address => uint256) balances;
-    /* Array with all allowances */
-    mapping (address => mapping (address => uint256)) allowed;
-    /* Total amount of tokens */
-    uint256 totalSupply;
-    /* Amount of decimals for token display purposes */
+    // The token name for display purpose
+    string public name;
+    // The quantity of decimals for display purpose
     uint8 public decimals;
+    // Total amount of tokens
+    uint256 totalSupply;
+    // The token name for display purpose
+
+    // Array with all balances
+    mapping (address => uint256) balances;
+    // Array with all allowances
+    mapping (address => mapping (address => uint256)) allowed;
 
     // Map The result in wei of funding proposals
     mapping (uint => uint) fundedAmount;
@@ -80,19 +84,22 @@ contract PassTokenManagerInterface {
     /// @return the actual price divisor of a share or token
     function actualPriceDivisor() constant external returns (uint);
 
-    /// @return The maximal amount 'msg.sender' can fund with his partners
-    function fundingMaxAmount() external returns (uint);
+    /// @return The maximal amount a main partner can fund at this moment
+    /// @param _mainPartner The address of the main parner
+    function fundingMaxAmount(address _mainPartner) constant external returns (uint);
 
     /// @dev The constructor function
     /// @param _creator The address of the creator of the smart contract
     /// @param _client The address of the Dao
     /// @param _recipient The address of the recipient
     /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
+    /// @param _tokenName The token name for display purpose
     //function TokenManager(
         //address _creator,
         //address _client,
         //address _recipient,
-        //uint256 _initialSupply
+        //uint256 _initialSupply,
+        //string _tokenName
     //);
    
     /// @dev Function to set a funding. Can be private or public
@@ -100,7 +107,6 @@ contract PassTokenManagerInterface {
     /// @param _publicCreation True if public funding
     /// @param _initialPriceMultiplier Price multiplier without considering any inflation rate
     /// @param _maxAmountToFund The maximum amount (in wei) of the funding
-    /// @param _startTime  A unix timestamp, denoting the start time of the funding (not mandatory)
     /// @param _minutesFundingPeriod Period in minutes of the funding
     /// @param _inflationRate If 0, the token price doesn't change during the funding
     /// @param _fundingProposalID Index of the Dao funding proposal (not mandatory)
@@ -109,7 +115,6 @@ contract PassTokenManagerInterface {
         bool _publicCreation, 
         uint _initialPriceMultiplier, 
         uint _maxAmountToFund, 
-        uint _startTime, 
         uint _minutesFundingPeriod, 
         uint _inflationRate,
         uint _fundingProposalID
@@ -145,7 +150,7 @@ contract PassTokenManagerInterface {
     function closeFunding() internal;
     
     /// @notice Function used by the main partner to set the funding fueled
-    function Fueled() external;
+    function setFundingFueled() external;
     
     /// @dev Function to able the transfer of Dao shares or contractor tokens
     function ableTransfer() external;
@@ -232,11 +237,11 @@ contract PassTokenManager is PassTokenManagerInterface {
         return priceDivisor(now);
     }
 
-    function fundingMaxAmount() external returns (uint) {
+    function fundingMaxAmount(address _mainPartner) constant external returns (uint) {
         
         if (now > FundingRules.closingTime
             || now < FundingRules.startTime
-            || msg.sender != FundingRules.mainPartner) {
+            || _mainPartner != FundingRules.mainPartner) {
             return 0;   
         } else {
             return FundingRules.maxAmountToFund;
@@ -248,9 +253,15 @@ contract PassTokenManager is PassTokenManagerInterface {
         address _creator,
         address _client,
         address _recipient,
-        uint256 _initialSupply
+        uint256 _initialSupply,
+        string _tokenName
     ) {
         
+        if (_client == 0 || _recipient == address(this)) throw;
+
+        name = _tokenName;
+        decimals = 18;
+
         client = _client;
 
         if (_recipient != 0) {
@@ -258,10 +269,8 @@ contract PassTokenManager is PassTokenManagerInterface {
             TransferAble();
         }
 
-        decimals = 18;
-        
         if (_initialSupply > 0) {
-            if (_recipient == 0)  _recipient = _creator;
+            if (_recipient == 0 && _creator != 0)  _recipient = _creator;
             balances[_recipient] = _initialSupply; 
             totalSupply = _initialSupply;
             TokensCreated(msg.sender, _recipient, _initialSupply);
@@ -274,16 +283,22 @@ contract PassTokenManager is PassTokenManagerInterface {
         bool _publicCreation, 
         uint _initialPriceMultiplier,
         uint _maxAmountToFund, 
-        uint _startTime, 
         uint _minutesFundingPeriod, 
         uint _inflationRate,
         uint _fundingProposalID
     ) external onlyClient {
 
-        if (now < FundingRules.closingTime) throw;
+        if (now < FundingRules.closingTime
+            || _mainPartner == address(this)
+            || (!_publicCreation && _mainPartner == 0)
+            || (_publicCreation && _mainPartner != 0)
+            || _initialPriceMultiplier == 0
+            || _maxAmountToFund <= 0
+            || _minutesFundingPeriod <= 0
+            ) throw;
 
-        FundingRules.startTime = _startTime;
-        FundingRules.closingTime = FundingRules.startTime + (_minutesFundingPeriod * 1 minutes);
+        FundingRules.startTime = now;
+        FundingRules.closingTime = now + _minutesFundingPeriod * 1 minutes;
  
         FundingRules.mainPartner = _mainPartner;
         FundingRules.publicCreation = _publicCreation;
@@ -336,16 +351,21 @@ contract PassTokenManager is PassTokenManagerInterface {
         uint _date
         ) external {
             
-        if (msg.sender != FundingRules.mainPartner || !createToken(_recipient, _amount, _date)) throw;
+        if (msg.sender != FundingRules.mainPartner) throw;
+        
+        uint _saleDate;
+        if (_date == 0) _saleDate = now; else _saleDate = _date;
+
+        if (!createToken(_recipient, _amount, _saleDate)) throw;
 
     }
 
     function closeFunding() internal {
-        fundedAmount[FundingRules.fundingProposalID] = FundingRules.fundedAmount;
+        fundedAmount[FundingRules.fundingProposalID] += FundingRules.fundedAmount;
         FundingRules.closingTime = now;
     }
     
-    function Fueled() external {
+    function setFundingFueled() external {
         if (msg.sender != FundingRules.mainPartner || now > FundingRules.closingTime) throw;
         closeFunding();
         FundingFueled(FundingRules.fundingProposalID, FundingRules.fundedAmount);
