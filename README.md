@@ -40,7 +40,7 @@ Main functions are :
 
 - Fallback function to receive Eth.
 
-- BuyToken and BuyTokenFor to buy Dao shares in case of public fundings.
+- BuyToken and BuyTokenFor to buy Dao shares in case of simple public fundings without funding smart contract.
 
 - Withdraw function: allows the contractors to withdraw the amounts sent by the Dao.
 
