@@ -48,7 +48,7 @@ Main functions are :
 
 - CreateToken according to the funding rules.
 
-- RewardToken to funders for private fundings by the funding smart contract.
+- RewardToken to funders by the funding smart contract.
 
 - Transfer and TransferFrom for the transfer of tokens or shares.
 
