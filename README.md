@@ -70,7 +70,7 @@ Main functions:
 
 - SetLimits: allows the smart contract creator to set the funding limits for all partners.
 
-- SetFunding : set the amounts to fund for each partner according to the presale amounts, the set limits and the funding amount of the approved Dao funding proposal.
+- SetFunding : sets the amounts to fund for each partner according to the presale amounts, the set limits and the funding amount of the approved Dao funding proposal.
 
 - FundDaoFor: to send Eth from the Funding smart contract.
 
