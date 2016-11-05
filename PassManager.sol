@@ -9,7 +9,7 @@ pragma solidity ^0.4.2;
  * The Manager smart contract is used for the management of accounts and tokens.
  * Allows to receive or withdraw ethers and to buy Dao shares.
  * The contract derives to the Token Manager smart contract for the management of tokens.
- 
+ *
  * Recipient is 0 for the Dao account manager and the address of
  * contractor's recipient for the contractors's mahagers.
  *
@@ -28,16 +28,19 @@ contract PassManagerInterface {
     /// @param _client The address of the Dao
     /// @param _recipient The address of the recipient. 0 for the Dao
     /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
+    /// @param _tokenName The token name for display purpose
     //function PassManager(
         //address _creator,
         //address _client,
         //address _recipient,
-        //uint256 _initialSupply
+        //uint256 _initialSupply,
+        //string _tokenName
     //) TokenManager(
         //_creator,
         //_client,
         //_recipient,
-        //_initialSupply) {}
+        //_initialSupply,
+        //_tokenName) {}
 
      /// @return True if the sender is the creator of this manager
     function IsCreator(address _sender) constant external returns (bool);
@@ -74,12 +77,17 @@ contract PassManager is PassManagerInterface, PassTokenManager {
         address _creator,
         address _client,
         address _recipient,
-        uint256 _initialSupply
+        uint256 _initialSupply,
+        string _tokenName
     ) PassTokenManager(
         _creator,
         _client,
         _recipient,
-        _initialSupply) {
+        _initialSupply,
+        _tokenName
+        ) {
+        
+        if (_creator == 0 || _client == 0) throw;
         
         creator = _creator;
         recipient = _recipient;
@@ -125,20 +133,23 @@ contract PassManager is PassManagerInterface, PassTokenManager {
 }    
 
 contract PassManagerCreator {
-    event NewPassManager(address Creator, address Client, address Recipient, address newPassManager);
+    event NewPassManager(address Creator, address Client, address Recipient, 
+        uint256 InitialSupply, string TokenName, address PassManager);
     function createManager(
         address _creator,
         address _client,
         address _recipient,
-        uint256 _initialSupply
+        uint256 _initialSupply,
+        string _tokenName
         ) returns (PassManager) {
-        PassManager _newPassManager = new PassManager(
+        PassManager _passManager = new PassManager(
             _creator,
             _client,
             _recipient,
-            _initialSupply
+            _initialSupply,
+            _tokenName
         );
-        NewPassManager(_creator, _client, _recipient, _newPassManager);
-        return _newPassManager;
+        NewPassManager(_creator, _client, _recipient, _initialSupply, _tokenName, _passManager);
+        return _passManager;
     }
 }
