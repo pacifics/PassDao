@@ -118,9 +118,11 @@ contract PassManager is PassManagerInterface, PassTokenManager {
     function sendTo(
         address _recipient, 
         uint _amount
-    ) external onlyClient returns (bool _success) {
+    ) external onlyClient {
     
-        if (_amount > 0 && recipient == 0 && _recipient.send(_amount)) return true;    
+        if (_amount <= 0 
+            || recipient != 0 
+            || !_recipient.send(_amount)) throw;    
 
     }
 
