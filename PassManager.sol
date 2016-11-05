@@ -120,9 +120,7 @@ contract PassManager is PassManagerInterface, PassTokenManager {
         uint _amount
     ) external onlyClient {
     
-        if (_amount <= 0 
-            || recipient != 0 
-            || !_recipient.send(_amount)) throw;    
+        if (!_recipient.send(_amount)) throw;    
 
     }
 
