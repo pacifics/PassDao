@@ -156,6 +156,7 @@ contract PassDaoInterface {
     /// @param _minBoardMeetingFees The amount (in wei) to make a proposal and ask for a board meeting
     /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
+    /// @param _shareName The share name for display purpose
     function initDao(        
         address _managerCreator,
         uint _maxInflationRate,
@@ -165,7 +166,8 @@ contract PassDaoInterface {
         uint _minQuorumDivisor,
         uint _minBoardMeetingFees,
         uint _minutesSetProposalPeriod,
-        uint _minMinutesDebatePeriod
+        uint _minMinutesDebatePeriod,
+        string _shareName
         );
     
     /// @dev Internal function to create a board meeting
@@ -186,22 +188,24 @@ contract PassDaoInterface {
     /// @param _amount The amount (in wei) to be sent if the proposal is approved
     /// @param _description String describing the proposal
     /// @param _hashOfTheDocument The hash of the proposal document
+    /// @param _minutesDebatingPeriod Proposed period in minutes of the board meeting to vote on the proposal
     /// @param _initialTokenPriceMultiplier The initial price multiplier of contractor tokens (not mandatory)    
     /// @param _inflationRate If 0, the contractor token price doesn't change during the funding (not mandatory)
     /// @param _initialSupply If the contractor asks for an initial supply of contractor tokens (not mandatory)
-    /// @param _minutesDebatingPeriod Proposed period in minutes of the board meeting to vote on the proposal
+    /// @param _tokenSymbol The token symbol for display purpose (not mandatory)
     /// @return The index of the proposal
     function newContractorProposal(
         address _recipient,
         uint _amount, 
         string _description, 
         bytes32 _hashOfTheDocument,
+        uint _minutesDebatingPeriod,
         uint _initialTokenPriceMultiplier, 
         uint _inflationRate,
         uint256 _initialSupply,
-        uint _minutesDebatingPeriod
+        string _tokenSymbol
     ) payable returns (uint);
-
+    
     /// @notice Function to make a proposal for a funding of the Dao
     /// @param _publicShareCreation True if crowdfunding
     /// @param _mainPartner The address of the funding contract if private (not mandatory if public)
@@ -288,13 +292,15 @@ contract PassDao is PassDaoInterface {
         uint _minQuorumDivisor,
         uint _minBoardMeetingFees,
         uint _minutesSetProposalPeriod,
-        uint _minMinutesDebatePeriod
+        uint _minMinutesDebatePeriod,
+        string _shareName
         ) {
         
         if (msg.sender != creator || DaoRules.minQuorumDivisor != 0) throw;
 
         managerCreator = _managerCreator;
-        daoManager = PassManagerCreator(_managerCreator).createManager(creator, address(this), 0, 10);
+        daoManager = PassManagerCreator(_managerCreator).createManager
+            (creator, address(this), 0, 10, _shareName);
 
         maxInflationRate = _maxInflationRate;
         minMinutesPeriods = _minMinutesPeriods;
@@ -354,17 +360,17 @@ contract PassDao is PassDaoInterface {
         uint _amount, 
         string _description, 
         bytes32 _hashOfTheDocument,
+        uint _minutesDebatingPeriod,
         uint _initialTokenPriceMultiplier, 
         uint _inflationRate,
         uint256 _initialSupply,
-        uint _minutesDebatingPeriod
+        string _tokenName
     ) payable returns (uint) {
 
         if (_recipient == 0
             || _recipient == address(this)
             || _recipient == address(daoManager)
-            || _recipient == managerAddress[_recipient]
-            || _amount == 0
+            || _amount <= 0
             || _inflationRate > maxInflationRate
             || (managerAddress[_recipient] != 0 
                 && ((msg.sender != _recipient && !PassManager(managerAddress[_recipient]).IsCreator(msg.sender))
@@ -383,8 +389,9 @@ contract PassDao is PassDaoInterface {
         c.inflationRate = _inflationRate;
         
         if (managerAddress[_recipient] == 0) {
-            PassManager m = PassManagerCreator(managerCreator).createManager(msg.sender, address(this), _recipient, _initialSupply) ;
-            managerAddress[_recipient] = address(m);
+            PassManager m = PassManagerCreator(managerCreator).createManager
+                (msg.sender, address(this), c.recipient, c.initialSupply, _tokenName);
+            managerAddress[c.recipient] = address(m);
         }
 
         c.boardMeetingID = newBoardMeeting(_contractorProposalID, 0, 0, _minutesDebatingPeriod);    
@@ -406,13 +413,8 @@ contract PassDao is PassDaoInterface {
         uint _minutesDebatingPeriod
     ) payable returns (uint) {
 
-        if ((!_publicShareCreation && _mainPartner == 0)
-            || (_publicShareCreation && _mainPartner != 0)
-            || _mainPartner == address(this)
-            || _mainPartner == address(daoManager)
-            || (_contractorProposalID == 0 && _maxFundingAmount == 0)
+        if (_mainPartner == address(this)
             || (_contractorProposalID != 0 && _maxFundingAmount != 0)
-            || _initialSharePriceMultiplier == 0
             || _inflationRate > maxInflationRate
             || _minutesFundingPeriod < minMinutesPeriods
             || _minutesFundingPeriod > maxMinutesFundingPeriod) throw;
@@ -498,6 +500,8 @@ contract PassDao is PassDaoInterface {
             || now < b.setDeadline
             || now > b.votingDeadline) throw;
 
+        if (b.contractorProposalID != 0 && ContractorProposals[b.contractorProposalID].fundingProposalID != 0) throw;
+
         b.hasVoted[msg.sender] = true;
         
         if (_supportsProposal) {
@@ -507,20 +511,14 @@ contract PassDao is PassDaoInterface {
             b.nay += daoManager.balanceOf(msg.sender); 
         }
 
-        if (b.contractorProposalID != 0) {
+        if (b.fees > 0
+            && (b.contractorProposalID != 0 
+                || (b.fundingProposalID != 0 && FundingProposals[b.fundingProposalID].contractorProposalID != 0))) {
             
-            ContractorProposal c = ContractorProposals[b.contractorProposalID];
-
-            if (c.fundingProposalID != 0) throw;
-            
-            if (b.fees > 0) {
-
-                uint _rewardedamount = b.fees*uint(daoManager.balanceOf(msg.sender))/uint(daoManager.TotalSupply());
+            uint _rewardedamount = b.fees*uint(daoManager.balanceOf(msg.sender))/uint(daoManager.TotalSupply());
                 
-                b.totalRewardedAmount += _rewardedamount;
-                pendingFeesWithdrawals[msg.sender] += _rewardedamount;
-
-            }
+            b.totalRewardedAmount += _rewardedamount;
+            pendingFeesWithdrawals[msg.sender] += _rewardedamount;
 
         }
 
@@ -539,14 +537,19 @@ contract PassDao is PassDaoInterface {
         uint _fees;
         uint _fundedAmount;
 
-        if (b.fundingProposalID != 0 || b.daoRulesProposalID != 0) {
-                if (b.fees > 0 && b.yea + b.nay >= minQuorum()) {
+        if (b.fees > 0
+            && (b.contractorProposalID == 0 
+                && (b.fundingProposalID == 0 || FundingProposals[b.fundingProposalID].contractorProposalID == 0))) {
+
+                if (b.yea + b.nay >= minQuorum()) {
                     _fees = b.fees;
                     b.fees = 0;
                     pendingFeesWithdrawals[b.creator] += _fees;
+
                 }
         }        
-        else {
+        
+        if (b.contractorProposalID != 0) {
             
             ContractorProposal c = ContractorProposals[b.contractorProposalID];
             
@@ -582,14 +585,14 @@ contract PassDao is PassDaoInterface {
             FundingProposal f = FundingProposals[b.fundingProposalID];
 
             daoManager.setFundingRules(f.mainPartner, f.publicShareCreation, f.initialSharePriceMultiplier, 
-                f.maxFundingAmount, now, f.minutesFundingPeriod, f.inflationRate, b.fundingProposalID);
+                f.maxFundingAmount, f.minutesFundingPeriod, f.inflationRate, b.fundingProposalID);
 
             if (f.contractorProposalID != 0 && !f.publicShareCreation) {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
                 
                 if (cf.initialTokenPriceMultiplier != 0) {
                     PassManager(managerAddress[cf.recipient]).setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
-                    f.maxFundingAmount, now, f.minutesFundingPeriod, cf.inflationRate, b.fundingProposalID);
+                    f.maxFundingAmount, f.minutesFundingPeriod, cf.inflationRate, b.fundingProposalID);
                 }
             }
             
@@ -614,7 +617,7 @@ contract PassDao is PassDaoInterface {
         if (b.contractorProposalID != 0) {
 
             if (c.fundingProposalID == 0) _fundedAmount == c.amount;
-            if (!daoManager.sendTo(PassManager(managerAddress[c.recipient]), _fundedAmount)) throw;
+            daoManager.sendTo(PassManager(managerAddress[c.recipient]), _fundedAmount);
             SentToContractor(b.contractorProposalID, managerAddress[c.recipient], _fundedAmount);
 
         }
