@@ -1,12 +1,14 @@
 pragma solidity ^0.4.2;
 
 /*
+ *
  * This file is part of Pass DAO.
- 
+ *
  * The Token Manager smart contract is used for the management of tokens
  * by a client smart contract (the Dao). Defines the functions to set new funding rules,
  * create or reward tokens, check token balances, send tokens and send
  * tokens on behalf of a 3rd party and the corresponding approval process.
+ *
 */
 
 /// @title Token Manager smart contract of the Pass Decentralized Autonomous Organisation
