@@ -120,7 +120,7 @@ contract PassManager is PassManagerInterface, PassTokenManager {
         uint _amount
     ) external onlyClient returns (bool _success) {
     
-        if (_amount > 0 && recipient == 0) return _recipient.send(_amount);    
+        if (_amount > 0 && recipient == 0 && _recipient.send(_amount)) return true;    
 
     }
 
