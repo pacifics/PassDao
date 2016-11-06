@@ -130,7 +130,7 @@ contract PassDaoInterface {
     // Map to allow the share holders to withdraw board meeting fees
     mapping (address => uint) public pendingFeesWithdrawals;
     // Map to get the management smart contract of contractors
-    mapping (address => address) public managerAddress; 
+    mapping (address => address) public RecipientManagerAddress; 
 
     // Board meetings to vote for or against a proposal
     BoardMeeting[] public BoardMeetings; 
