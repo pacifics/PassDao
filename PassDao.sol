@@ -529,7 +529,7 @@ contract PassDao is PassDaoInterface {
             uint _divisor = uint(daoManager.TotalSupply())
                 *(100 + 100*DaoRules.feesRewardInflationRate*(now - b.setDeadline)/(100*365 days));
                 
-            if (_divisor < uint(daoManager.TotalSupply()) _divisor = uint(daoManager.TotalSupply());
+            if (_divisor < uint(daoManager.TotalSupply())) _divisor = uint(daoManager.TotalSupply());
 
             uint _rewardedamount = 100*b.fees*uint(daoManager.balanceOf(msg.sender))/_divisor;
                 
