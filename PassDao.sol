@@ -277,7 +277,7 @@ contract PassDaoInterface {
     event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed RecipientManagerAddress, uint ProposalAmount);
     event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID, uint MinQuorumDivisor, uint MinBoardMeetingFees, 
-            uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, bool Transferable);
+            uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, bool Transferable);
     event SentToContractor(uint indexed ContractorProposalID, address indexed RecipientManagerAddress, uint AmountSent);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
@@ -493,7 +493,7 @@ contract PassDao is PassDaoInterface {
         r.boardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _minutesDebatingPeriod);     
 
         DaoRulesProposalAdded(_DaoRulesProposalID, _minQuorumDivisor, _minBoardMeetingFees, 
-            _minutesSetProposalPeriod, _minMinutesDebatePeriod, _transferable);
+            _minutesSetProposalPeriod, _minMinutesDebatePeriod, _feesRewardInflationRate ,_transferable);
 
         return _DaoRulesProposalID;
         
