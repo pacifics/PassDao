@@ -298,6 +298,7 @@ contract PassTokenManager is PassTokenManagerInterface {
             || _initialPriceMultiplier == 0
             || _maxAmountToFund <= 0
             || _minutesFundingPeriod <= 0
+            || fundedAmount[_fundingProposalID] != 0
             ) throw;
 
         FundingRules.startTime = now;
