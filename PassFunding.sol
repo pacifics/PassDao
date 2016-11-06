@@ -132,6 +132,14 @@ contract PassFundingInterface {
             uint _to
         );
     
+    /// @notice Function to allow the creator to abort the funding before the closing time
+    function abortFunding() onlyCreator;
+    
+    /// @notice Function To allow the creator to pause during the presale
+    function pause(uint _pauseClosingTime) onlyCreator {
+        pauseClosingTime = _pauseClosingTime;
+    }
+
     /// @notice Function used by the creator to set the funding limits for the funding
     /// @param _minAmountLimit The amount below this limit (in wei) can fund the dao
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
@@ -163,14 +171,6 @@ contract PassFundingInterface {
     /// @notice Function to fund the Dao with 'msg.sender' as 'beneficiary'
     /// @return Whether the Dao was funded or not 
     function fundDao() returns (bool);
-    
-    /// @notice Function To allow the creator to pause during the presale
-    function pause(uint _pauseClosingTime) onlyCreator {
-        pauseClosingTime = _pauseClosingTime;
-    }
-
-    /// @notice Function to allow the creator to abort the funding before the closing time
-    function abortFunding() onlyCreator;
     
     /// @notice Function to refund for a partner
     /// @param _partnerID The index of the partner
