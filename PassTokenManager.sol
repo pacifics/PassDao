@@ -152,7 +152,7 @@ contract PassTokenManagerInterface {
         uint _date
         ) external onlyMainPartner;
 
-    /// @notice Internal function to close the actual funding
+    /// @dev Internal function to close the actual funding
     function closeFunding() internal;
     
     /// @notice Function used by the main partner to set the funding fueled
