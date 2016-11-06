@@ -324,7 +324,9 @@ contract PassTokenManager is PassTokenManagerInterface {
         uint _saleDate
     ) internal returns (bool success) {
 
-        if (_saleDate > FundingRules.closingTime
+        if (now > FundingRules.closingTime
+            || now < FundingRules.startTime
+            ||_saleDate > FundingRules.closingTime
             || _saleDate < FundingRules.startTime
             || FundingRules.fundedAmount + _amount > FundingRules.maxAmountToFund) return;
 
