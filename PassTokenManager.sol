@@ -88,6 +88,12 @@ contract PassTokenManagerInterface {
     /// @param _mainPartner The address of the main parner
     function fundingMaxAmount(address _mainPartner) constant external returns (uint);
 
+    // Modifier that allows only the client to manage this account manager
+    modifier onlyClient {if (msg.sender != client) throw; _;}
+
+    // Modifier that allows only the main partner to manage the actual funding
+    modifier onlyMainPartner {if (msg.sender !=  FundingRules.mainPartner) throw; _;}
+    
     /// @dev The constructor function
     /// @param _creator The address of the creator of the smart contract
     /// @param _client The address of the Dao
@@ -102,7 +108,7 @@ contract PassTokenManagerInterface {
         //string _tokenName
     //);
    
-    /// @dev Function to set a funding. Can be private or public
+    /// @notice Function to set a funding. Can be private or public
     /// @param _mainPartner The address of the smart contract to manage a private funding
     /// @param _publicCreation True if public funding
     /// @param _initialPriceMultiplier Price multiplier without considering any inflation rate
@@ -118,7 +124,7 @@ contract PassTokenManagerInterface {
         uint _minutesFundingPeriod, 
         uint _inflationRate,
         uint _fundingProposalID
-    ) external;
+    ) onlyClient external;
     
     /// @dev Internal function for the creation of shares or tokens
     /// @param _recipient The recipient address of shares or tokens
@@ -133,7 +139,7 @@ contract PassTokenManagerInterface {
 
     /// @notice Function used by the main partner to set the start time of the funding
     /// @param _startTime The unix start date of the funding 
-    function setFundingStartTime(uint _startTime) external;
+    function setFundingStartTime(uint _startTime) external onlyMainPartner;
     
     /// @notice Function used by the main partner to reward shares or tokens
     /// @param _recipient The address of the recipient of shares or tokens
@@ -144,24 +150,24 @@ contract PassTokenManagerInterface {
         address _recipient, 
         uint _amount,
         uint _date
-        ) external;
+        ) external onlyMainPartner;
 
     /// @notice Internal function to close the actual funding
     function closeFunding() internal;
     
     /// @notice Function used by the main partner to set the funding fueled
-    function setFundingFueled() external;
+    function setFundingFueled() external onlyMainPartner;
     
-    /// @dev Function to able the transfer of Dao shares or contractor tokens
-    function ableTransfer() external;
+    /// @notice Function to able the transfer of Dao shares or contractor tokens
+    function ableTransfer() external onlyClient;
 
-    /// @dev Function to disable the transfer of Dao shares
-    function disableTransfer() external;
+    /// @notice Function to disable the transfer of Dao shares
+    function disableTransfer() external onlyClient;
 
-    /// @dev Function used by the client to block the transfer of shares from and to a share holder
+    /// @notice Function used by the client to block the transfer of shares from and to a share holder
     /// @param _shareHolder The address of the share holder
     /// @param _deadLine When the account will be unblocked
-    function blockTransfer(address _shareHolder, uint _deadLine) external;
+    function blockTransfer(address _shareHolder, uint _deadLine) external onlyClient;
     
     /// @dev Internal function to send `_value` token to `_to` from `_From`
     /// @param _from The address of the sender
@@ -205,9 +211,6 @@ contract PassTokenManagerInterface {
 
 contract PassTokenManager is PassTokenManagerInterface {
     
-    // Modifier that allows only the cient to manage this account manager
-    modifier onlyClient {if (msg.sender != client) throw; _;}
-
     function TotalSupply() constant external returns (uint256) {
         return totalSupply;
     }
@@ -340,8 +343,8 @@ contract PassTokenManager is PassTokenManagerInterface {
 
     }
 
-    function setFundingStartTime(uint _startTime) external {
-        if (msg.sender != FundingRules.mainPartner || now > FundingRules.closingTime) throw;
+    function setFundingStartTime(uint _startTime) external onlyMainPartner {
+        if (now > FundingRules.closingTime) throw;
         FundingRules.startTime = _startTime;
     }
     
@@ -349,10 +352,8 @@ contract PassTokenManager is PassTokenManagerInterface {
         address _recipient, 
         uint _amount,
         uint _date
-        ) external {
-            
-        if (msg.sender != FundingRules.mainPartner) throw;
-        
+        ) external onlyMainPartner {
+
         uint _saleDate;
         if (_date == 0) _saleDate = now; else _saleDate = _date;
 
@@ -365,8 +366,8 @@ contract PassTokenManager is PassTokenManagerInterface {
         FundingRules.closingTime = now;
     }
     
-    function setFundingFueled() external {
-        if (msg.sender != FundingRules.mainPartner || now > FundingRules.closingTime) throw;
+    function setFundingFueled() external onlyMainPartner {
+        if (now > FundingRules.closingTime) throw;
         closeFunding();
         FundingFueled(FundingRules.fundingProposalID, FundingRules.fundedAmount);
     }
