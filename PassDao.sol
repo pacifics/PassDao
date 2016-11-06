@@ -274,11 +274,11 @@ contract PassDaoInterface {
     /// @return The minimum quorum for proposals to pass 
     function minQuorum() constant returns (uint);
 
-    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed AccountManagerAddress, uint ProposalAmount);
+    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed RecipientManagerAddress, uint ProposalAmount);
     event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID, uint MinQuorumDivisor, uint MinBoardMeetingFees, 
             uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, bool Transferable);
-    event SentToContractor(uint indexed ContractorProposalID, address indexed AccountManagerAddress, uint AmountSent);
+    event SentToContractor(uint indexed ContractorProposalID, address indexed RecipientManagerAddress, uint AmountSent);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
 
 }
