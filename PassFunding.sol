@@ -120,7 +120,7 @@ contract PassFundingInterface {
             bool _valid,
             uint _from,
             uint _to
-        );
+        ) onlyCreator;
 
     /// @notice Function used by the creator to set the addresses of Dao share holders
     /// @param _valid True if the address can fund the Dao
@@ -130,7 +130,7 @@ contract PassFundingInterface {
             bool _valid,
             uint _from,
             uint _to
-        );
+        ) onlyCreator;
     
     /// @notice Function to allow the creator to abort the funding before the closing time
     function abortFunding() onlyCreator;
@@ -152,12 +152,12 @@ contract PassFundingInterface {
             uint _divisorBalanceLimit,
             uint _multiplierSharesLimit,
             uint _divisorSharesLimit
-    );
+    ) onlyCreator;
 
     /// @notice Function used to set the funding limits for partners
     /// @param _to The index of the last partner to set
     /// @return Whether the set was successful or not
-    function setFunding(uint _to) returns (bool _success);
+    function setFunding(uint _to) onlyCreator returns (bool _success);
 
     /// @notice Function for the funding of the Dao by a group of partners
     /// @param _from The index of the first partner
