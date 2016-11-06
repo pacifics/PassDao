@@ -75,7 +75,7 @@ Main functions:
 
 - FundDaoFor: to send Eth from the Funding smart contract.
 
-- Refund: to refund the amount that did not fund the Dao.
+- RefundForValidPartners and RefundForAll: to refund the amount that did not fund the Dao (priority to the valid addresses).
 
 - AbortFunding: allows the smart contract creator to abort the funding and refund at any time during the presale.
 
