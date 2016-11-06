@@ -39,7 +39,7 @@ Main functions are :
 
 ## The Dao Smart Contract
 
-Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). For the contractor proposals, the fees go to the voters according to their share and how quickly they vote after the set period. For the funding and Dao rules proposal, the Dao gives back the fees to the creator of the proposal if the quorum is reached. Otherwise, the fees goes to the Dao manager smart contract.
+Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). For the contractor proposals, the fees go to the voters according to their share and how quickly they vote after the set period. For the funding and Dao rules proposal, the Dao gives back the fees to the creator of the proposal if the quorum is reached. The balance of fees goes to the Dao manager smart contract.
 
 Main functions: 
 
