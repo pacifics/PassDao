@@ -68,7 +68,7 @@ contract PassFundingInterface {
     uint sumOfFundingAmountLimits;
     
     // To allow the creator to pause during the presale
-    uint pauseClosingTime;
+    uint public pauseClosingTime;
     // To allow the creator to abort the funding before the closing time
     bool IsfundingAborted;
     
