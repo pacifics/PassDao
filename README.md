@@ -9,26 +9,7 @@ Website : http://pacifics.org/dao
 =
 
 ## Overview
-Our DAO is open source and used for our project to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. 
-
-=
-
-
-## The Dao Smart Contract
-
-Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). For the contractor proposals, the fees go to the voters according to their share and how quickly they vote after the set period. For the funding and Dao rules proposal, the Dao gives back the fees to the creator of the proposal if the quorum is reached. Otherwise, the fees goes to the Dao manager smart contract.
-
-Main functions: 
-
-- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services.  The contractor proposal can be linked to a funding proposal. We use this method for the primary funding with a funding proposal linked to the first project manager proposal.
-
-- Set a funding proposal: the dao sharehoders can propose to fund the Dao with a public or private funding. The funding rules can be set in a separated smart contract and foresee to reward contractor tokens to funders. We use this method for the primary funding that gives to new DAO share holders Pass reputation tokens.
-
-- Set a Dao Rules proposal: the dao share holders can propose to change the minimum quorum for proposals, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period and the date when shares can be transfered.
-
-- Vote for or against a proposal: If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
-
-- Withdraw function: allows the share holders to withdraw the board meeting fees sent by the creators of the proposals.
+Pass DAO is open source and used for the project to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. The source includes three separated smart contracts : the manager smart contract for the management of Eth accounts, shares and tokens, the Dao smart contract to make decision on proposals and the Funding smart contract to fund the Dao.
 
 =
 
@@ -53,6 +34,24 @@ Main functions are :
 - Transfer and TransferFrom for the transfer of tokens or shares.
 
 - Approve tokens allowance by a token owner to a spender third party. 
+
+=
+
+## The Dao Smart Contract
+
+Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). For the contractor proposals, the fees go to the voters according to their share and how quickly they vote after the set period. For the funding and Dao rules proposal, the Dao gives back the fees to the creator of the proposal if the quorum is reached. Otherwise, the fees goes to the Dao manager smart contract.
+
+Main functions: 
+
+- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services.  The contractor proposal can be linked to a funding proposal. We use this method for the primary funding with a funding proposal linked to the first project manager proposal.
+
+- Set a funding proposal: the dao sharehoders can propose to fund the Dao with a public or private funding. The funding rules can be set in a separated smart contract and foresee to reward contractor tokens to funders. We use this method for the primary funding that gives to new DAO share holders Pass reputation tokens.
+
+- Set a Dao Rules proposal: the dao share holders can propose to change the minimum quorum for proposals, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period and the date when shares can be transfered.
+
+- Vote for or against a proposal: If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
+
+- Withdraw function: allows the share holders to withdraw the board meeting fees sent by the creators of the proposals.
 
 =
 
