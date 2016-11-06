@@ -307,7 +307,7 @@ contract PassDao is PassDaoInterface {
 
         managerCreator = _managerCreator;
         daoManager = PassManagerCreator(_managerCreator).createManager
-            (creator, address(this), 0, 10, _shareName);
+            (creator, address(this), 0, 1000, _shareName);
 
         maxInflationRate = _maxInflationRate;
         minMinutesPeriods = _minMinutesPeriods;
@@ -527,10 +527,9 @@ contract PassDao is PassDaoInterface {
                 || (b.fundingProposalID != 0 && FundingProposals[b.fundingProposalID].contractorProposalID != 0))) {
                     
             uint _divisor = 100 + 100*DaoRules.feesRewardInflationRate*(now - b.setDeadline)/(100*365 days);
-            uint _divisor1 = uint(daoManager.TotalSupply())/b.fees;
-                
-            uint _rewardedamount = 100*(uint(daoManager.balanceOf(msg.sender))/_divisor) / _divisor1;
-                
+
+            uint _rewardedamount = b.fees * (100*uint(daoManager.balanceOf(msg.sender))/uint(daoManager.TotalSupply())) / _divisor;
+
             b.totalRewardedAmount += _rewardedamount;
             pendingFeesWithdrawals[msg.sender] += _rewardedamount;
 
