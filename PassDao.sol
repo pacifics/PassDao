@@ -106,7 +106,9 @@ contract PassDaoInterface {
         // Period in minutes to consider or set a proposal before the voting procedure
         uint minutesSetProposalPeriod; 
         // The minimum debate period in minutes that a generic proposal can have
-        uint minMinutesDebatePeriod; 
+        uint minMinutesDebatePeriod;
+        // The inflation rate to calculate the reward of fees to voters during a board meeting 
+        uint feesRewardInflationRate;
         // True if the dao rules allow the transfer of shares
         bool transferable;
     } 
@@ -156,8 +158,9 @@ contract PassDaoInterface {
     /// @param _minBoardMeetingFees The amount (in wei) to make a proposal and ask for a board meeting
     /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
+    /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a board meeting
     /// @param _shareName The share name for display purpose
-    function initDao(        
+    function initDao(
         address _managerCreator,
         uint _maxInflationRate,
         uint _minMinutesPeriods,
@@ -167,6 +170,7 @@ contract PassDaoInterface {
         uint _minBoardMeetingFees,
         uint _minutesSetProposalPeriod,
         uint _minMinutesDebatePeriod,
+        uint _feesRewardInflationRate,
         string _shareName
         );
     
@@ -232,13 +236,15 @@ contract PassDaoInterface {
     /// @param _minBoardMeetingFees The amount (in wei) to make a proposal and ask for a board meeting
     /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
+    /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a board meeting
     /// @param _transferable True if the proposal foresee to allow the transfer of Dao shares
-    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal    function newDaoRulesProposal(
     function newDaoRulesProposal(
         uint _minQuorumDivisor, 
         uint _minBoardMeetingFees,
         uint _minutesSetProposalPeriod,
-        uint _minMinutesDebatePeriod, 
+        uint _minMinutesDebatePeriod,
+        uint _feesRewardInflationRate,
         bool _transferable,
         uint _minutesDebatingPeriod
     ) payable returns (uint);
@@ -293,6 +299,7 @@ contract PassDao is PassDaoInterface {
         uint _minBoardMeetingFees,
         uint _minutesSetProposalPeriod,
         uint _minMinutesDebatePeriod,
+        uint _feesRewardInflationRate,
         string _shareName
         ) {
         
@@ -311,6 +318,7 @@ contract PassDao is PassDaoInterface {
         DaoRules.minBoardMeetingFees = _minBoardMeetingFees;
         DaoRules.minutesSetProposalPeriod = _minutesSetProposalPeriod;
         DaoRules.minMinutesDebatePeriod = _minMinutesDebatePeriod;
+        DaoRules.feesRewardInflationRate = _feesRewardInflationRate;
 
         BoardMeetings.length = 1; 
         ContractorProposals.length = 1;
@@ -372,8 +380,8 @@ contract PassDao is PassDaoInterface {
             || _recipient == address(daoManager)
             || _amount <= 0
             || _inflationRate > maxInflationRate
-            || (managerAddress[_recipient] != 0 
-                && ((msg.sender != _recipient && !PassManager(managerAddress[_recipient]).IsCreator(msg.sender))
+            || (RecipientManagerAddress[_recipient] != 0 
+                && ((msg.sender != _recipient && !PassManager(RecipientManagerAddress[_recipient]).IsCreator(msg.sender))
                     || _initialSupply != 0))
             ) throw;
 
@@ -388,15 +396,15 @@ contract PassDao is PassDaoInterface {
         c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
         c.inflationRate = _inflationRate;
         
-        if (managerAddress[_recipient] == 0) {
+        if (RecipientManagerAddress[_recipient] == 0) {
             PassManager m = PassManagerCreator(managerCreator).createManager
                 (msg.sender, address(this), c.recipient, c.initialSupply, _tokenName);
-            managerAddress[c.recipient] = address(m);
+            RecipientManagerAddress[c.recipient] = address(m);
         }
 
         c.boardMeetingID = newBoardMeeting(_contractorProposalID, 0, 0, _minutesDebatingPeriod);    
 
-        ContractorProposalAdded(_contractorProposalID, managerAddress[c.recipient], c.amount);
+        ContractorProposalAdded(_contractorProposalID, RecipientManagerAddress[c.recipient], c.amount);
         
         return _contractorProposalID;
         
@@ -458,7 +466,8 @@ contract PassDao is PassDaoInterface {
         uint _minQuorumDivisor, 
         uint _minBoardMeetingFees,
         uint _minutesSetProposalPeriod,
-        uint _minMinutesDebatePeriod, 
+        uint _minMinutesDebatePeriod,
+        uint _feesRewardInflationRate,
         bool _transferable,
         uint _minutesDebatingPeriod
     ) payable returns (uint) {
@@ -468,6 +477,7 @@ contract PassDao is PassDaoInterface {
             || _minutesSetProposalPeriod < minMinutesPeriods
             || _minMinutesDebatePeriod < minMinutesPeriods
             || _minutesSetProposalPeriod + _minMinutesDebatePeriod > maxMinutesProposalPeriod
+            || _feesRewardInflationRate > maxInflationRate
             ) throw; 
         
         uint _DaoRulesProposalID = DaoRulesProposals.length++;
@@ -477,6 +487,7 @@ contract PassDao is PassDaoInterface {
         r.minBoardMeetingFees = _minBoardMeetingFees;
         r.minutesSetProposalPeriod = _minutesSetProposalPeriod;
         r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
+        r.feesRewardInflationRate = _feesRewardInflationRate;
         r.transferable = _transferable;
         
         r.boardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _minutesDebatingPeriod);     
@@ -514,8 +525,11 @@ contract PassDao is PassDaoInterface {
         if (b.fees > 0
             && (b.contractorProposalID != 0 
                 || (b.fundingProposalID != 0 && FundingProposals[b.fundingProposalID].contractorProposalID != 0))) {
-            
-            uint _rewardedamount = b.fees*uint(daoManager.balanceOf(msg.sender))/uint(daoManager.TotalSupply());
+                    
+            uint _divisor = uint(daoManager.TotalSupply())
+                *(100 + 100*DaoRules.feesRewardInflationRate*(now - b.setDeadline)/(100*365 days));
+
+            uint _rewardedamount = 100*b.fees*uint(daoManager.balanceOf(msg.sender))/_divisor;
                 
             b.totalRewardedAmount += _rewardedamount;
             pendingFeesWithdrawals[msg.sender] += _rewardedamount;
@@ -591,7 +605,7 @@ contract PassDao is PassDaoInterface {
                 ContractorProposal cf = ContractorProposals[f.contractorProposalID];
                 
                 if (cf.initialTokenPriceMultiplier != 0) {
-                    PassManager(managerAddress[cf.recipient]).setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
+                    PassManager(RecipientManagerAddress[cf.recipient]).setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
                     f.maxFundingAmount, f.minutesFundingPeriod, cf.inflationRate, b.fundingProposalID);
                 }
             }
@@ -607,6 +621,7 @@ contract PassDao is PassDaoInterface {
             DaoRules.minMinutesDebatePeriod = r.minMinutesDebatePeriod; 
             DaoRules.minBoardMeetingFees = r.minBoardMeetingFees;
             DaoRules.minutesSetProposalPeriod = r.minutesSetProposalPeriod;
+            DaoRules.feesRewardInflationRate = r.feesRewardInflationRate;
 
             DaoRules.transferable = r.transferable;
             if (r.transferable) daoManager.ableTransfer();
@@ -617,8 +632,8 @@ contract PassDao is PassDaoInterface {
         if (b.contractorProposalID != 0) {
 
             if (c.fundingProposalID == 0) _fundedAmount == c.amount;
-            daoManager.sendTo(PassManager(managerAddress[c.recipient]), _fundedAmount);
-            SentToContractor(b.contractorProposalID, managerAddress[c.recipient], _fundedAmount);
+            daoManager.sendTo(PassManager(RecipientManagerAddress[c.recipient]), _fundedAmount);
+            SentToContractor(b.contractorProposalID, RecipientManagerAddress[c.recipient], _fundedAmount);
 
         }
 
