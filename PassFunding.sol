@@ -170,7 +170,7 @@ contract PassFundingInterface {
     }
 
     /// @notice Function to allow the creator to abort the funding before the closing time
-    function abortFunding();
+    function abortFunding() onlyCreator;
     
     /// @notice Function to refund for a partner
     /// @param _partnerID The index of the partner
