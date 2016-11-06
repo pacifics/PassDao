@@ -17,7 +17,7 @@ contract PassFundingInterface {
         // The address of the partner
         address partnerAddress; 
         // The amount (in wei) that the partner wish to fund
-        uint256 presaleAmount;
+        uint presaleAmount;
         // The unix timestamp denoting the average date of the presale of the partner 
         uint presaleDate;
         // The funding amount (in wei) according to the set limits
@@ -67,6 +67,8 @@ contract PassFundingInterface {
     // The calculated sum of funding amout limits (in wei) according to the set limits
     uint sumOfFundingAmountLimits;
     
+    // To allow the creator to pause during the presale
+    uint pauseClosingTime;
     // To allow the creator to abort the funding before the closing time
     bool IsfundingAborted;
     
@@ -161,22 +163,33 @@ contract PassFundingInterface {
     /// @notice Function to fund the Dao with 'msg.sender' as 'beneficiary'
     /// @return Whether the Dao was funded or not 
     function fundDao() returns (bool);
+    
+    /// @notice Function To allow the creator to pause during the presale
+    function pause(uint _pauseClosingTime) onlyCreator {
+        pauseClosingTime = _pauseClosingTime;
+    }
 
     /// @notice Function to allow the creator to abort the funding before the closing time
     function abortFunding();
     
     /// @notice Function to refund for a partner
-    /// @param _index The index of the partner
+    /// @param _partnerID The index of the partner
     /// @return Whether the refund was successful or not 
-    function refundFor(uint _index) internal returns (bool);
+    function refundFor(uint _partnerID) internal returns (bool);
 
-    /// @notice Function to refund with 'msg.sender' as 'beneficiary'
-    /// @return Whether the refund was successful or not 
-    function refund() returns (bool);
-
-    /// @notice Function to refund for valid partners
+    /// @notice Function to refund for valid partners before the closing time
     /// @param _to The index of the last partner
-    function refundForPartners(uint _to);
+    function refundForValidPartners(uint _to);
+
+    /// @notice Function to refund for a group of partners after the closing time
+    /// @param _from The index of the first partner
+    /// @param _to The index of the last partner
+    function refundForAll(
+        uint _from,
+        uint _to);
+
+    /// @notice Function to refund after the closing time with 'msg.sender' as 'beneficiary'
+    function refund();
 
     /// @param _minAmountLimit The amount (in wei) below this limit can fund the dao
     /// @param _maxAmountLimit Maximum amount (in wei) a partner can fund
@@ -238,7 +251,7 @@ contract PassFundingInterface {
     event AllPartnersSet(uint fundingAmount);
     event Fueled();
     event FundingClosed();
-
+    
 }
 
 contract PassFunding is PassFundingInterface {
@@ -253,6 +266,9 @@ contract PassFunding is PassFundingInterface {
         ) {
 
         if (_creator == _DaoManager
+            || _creator == 0
+            || _creator == _contractorManager
+            || _DaoManager == 0
             || _contractorManager == _DaoManager
             || (_startTime < now && _startTime != 0)) throw;
             
@@ -295,6 +311,7 @@ contract PassFunding is PassFundingInterface {
         if (msg.value <= 0
             || now < startTime
             || now > closingTime
+            || now < pauseClosingTime
             || limitSet
             || msg.value < minPresaleAmount
             || msg.value > maxPresaleAmount
@@ -368,6 +385,10 @@ contract PassFunding is PassFundingInterface {
         IsfundingAborted = true; 
     }
     
+    function pause(uint _pauseClosingTime) onlyCreator {
+        pauseClosingTime = _pauseClosingTime;
+    }
+    
     function setLimits(
             uint _minAmountLimit,
             uint _maxAmountLimit, 
@@ -393,7 +414,7 @@ contract PassFunding is PassFundingInterface {
     function setFunding(uint _to) onlyCreator returns (bool _success) {
         
         if (!limitSet 
-            || DaoManager.fundingMaxAmount() < minFundingAmount
+            || DaoManager.fundingMaxAmount(address(this)) < minFundingAmount
             || setFromPartner > _to 
             || _to > partners.length - 1) throw;
             
@@ -418,7 +439,7 @@ contract PassFunding is PassFundingInterface {
             setFromPartner = 1;
 
             if (sumOfFundingAmountLimits < minFundingAmount 
-                || sumOfFundingAmountLimits > DaoManager.fundingMaxAmount()) {
+                || sumOfFundingAmountLimits > DaoManager.fundingMaxAmount(address(this))) {
 
                 maxPresaleAmount = 0;
                 IsfundingAborted = true; 
@@ -476,8 +497,8 @@ contract PassFunding is PassFundingInterface {
         totalFunded += _sumAmountToFund;
 
         if (totalFunded >= sumOfFundingAmountLimits) {
-            DaoManager.Fueled(); 
-            if (contractorManager != 0) PassManager(contractorManager).Fueled(); 
+            DaoManager.setFundingFueled(); 
+            if (contractorManager != 0) PassManager(contractorManager).setFundingFueled(); 
             Fueled();
         }
         
@@ -489,9 +510,9 @@ contract PassFunding is PassFundingInterface {
         return fundDaoFor(partnerID[msg.sender], partnerID[msg.sender]);
     }
 
-    function refundFor(uint _index) internal returns (bool) {
+    function refundFor(uint _partnerID) internal returns (bool) {
 
-        Partner t = partners[_index];
+        Partner t = partners[_partnerID];
         uint _amountnotToRefund = t.presaleAmount;
         uint _amountToRefund;
         
@@ -517,11 +538,7 @@ contract PassFunding is PassFundingInterface {
 
     }
 
-    function refund() returns (bool) {
-        return refundFor(partnerID[msg.sender]);
-    }
-
-    function refundForPartners(uint _to) {
+    function refundForValidPartners(uint _to) {
 
         if (refundFromPartner > _to || _to > partners.length - 1) throw;
         
@@ -545,6 +562,22 @@ contract PassFunding is PassFundingInterface {
             }
         }
         
+    }
+
+    function refundForAll(
+        uint _from,
+        uint _to) {
+
+        if (_from < 1 || _to > partners.length - 1) throw;
+        
+        for (uint i = _from; i <= _to; i++) {
+            if (!refundFor(i)) throw;
+        }
+
+    }
+
+    function refund() {
+        refundForAll(partnerID[msg.sender], partnerID[msg.sender]);
     }
 
     function estimatedFundingAmount(
@@ -634,7 +667,8 @@ contract PassFunding is PassFundingInterface {
 }
 
 contract PassFundingCreator {
-    event NewFunding(address creator, address newFunding);
+    event NewFunding(address creator, address DaoAccountManager, address ContractorAccountManager,
+        uint MinFundingAmount, uint StartTime, uint ClosingTime, address FundingContractAddress);
     function createFunding(
         address _DaoAccountManager,
         address _contractorAccountManager,
@@ -650,7 +684,8 @@ contract PassFundingCreator {
             _startTime,
             _closingTime
         );
-        NewFunding(msg.sender, address(_newFunding));
+        NewFunding(msg.sender, _DaoAccountManager, _contractorAccountManager, 
+            _minFundingAmount, _startTime, _closingTime, address(_newFunding));
         return _newFunding;
     }
 }
