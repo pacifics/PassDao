@@ -660,7 +660,7 @@ contract PassDao is PassDaoInterface {
     }
 
     function minQuorum() constant returns (uint) {
-        uint(daoManager.TotalSupply()) / DaoRules.minQuorumDivisor;
+        return (uint(daoManager.TotalSupply()) / DaoRules.minQuorumDivisor);
     }
     
 }
