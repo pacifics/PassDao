@@ -16,7 +16,7 @@ pragma solidity ^0.4.2;
 */
 
 /// @title Manager smart contract of the Pass Decentralized Autonomous Organisation
-contract PassManagerInterface {
+contract PassManagerInterface is PassTokenManagerInterface {
     
     // Address of the creator or this smart contract
     address creator;
@@ -63,7 +63,7 @@ contract PassManagerInterface {
     function sendTo(
         address _recipient, 
         uint _amount
-    ) external returns (bool _success);
+    ) external onlyClient;
 
     /// @notice Function to allow contractors to withdraw ethers from their manager
     /// @param _amount The amount (in wei) to withdraw
