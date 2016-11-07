@@ -116,7 +116,7 @@ contract PassFundingInterface {
     /// @param _valid True if the address can fund the Dao
     /// @param _from The index of the first partner to set
     /// @param _to The index of the last partner to set
-    function setValidPartners(
+    function setPartners(
             bool _valid,
             uint _from,
             uint _to
@@ -345,7 +345,7 @@ contract PassFunding is PassFundingInterface {
         
     }
     
-    function setValidPartners(
+    function setPartners(
             bool _valid,
             uint _from,
             uint _to
