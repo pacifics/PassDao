@@ -32,8 +32,8 @@ contract PassFundingInterface {
     address public creator;
     // The manager smart contract to fund
     PassManager public DaoManager;
-    // Address of the manager smart contract for the reward of contractor tokens
-    address public contractorManager;
+    // The manager smart contract for the reward of contractor tokens
+    PassManager public contractorManager;
     // Minimum amount (in wei) to fund
     uint public minFundingAmount;
     // Minimum amount (in wei) that partners can send to this smart contract
@@ -83,7 +83,6 @@ contract PassFundingInterface {
     /// @dev Constructor function
     /// @param _creator The creator of the smart contract
     /// @param _DaoManager The Dao manager smart contract
-    /// @param _contractorManager The address of the contractor manager smart contract  
     /// for the reward of tokens (not mandatory)
     /// @param _minAmount Minimum amount (in wei) of the funding to be fueled 
     /// @param _startTime The unix start time of the presale
@@ -91,19 +90,22 @@ contract PassFundingInterface {
     //function PassFunding (
         //address _creator,
         //address _DaoManager,
-        //address _contractorManager,
         //uint _minAmount,
         //uint _startTime,
         //uint _closingTime
     //);
 
+    /// @notice Function used by the creator to set the contractor manager smart contract
+    /// @param _contractorManager The address of the contractor manager smart contract
+    function SetContractorManager(address _contractorManager) onlyCreator;
+    
     /// @notice Function used by the creator to set the presale limits
     /// @param _minPresaleAmount Minimum amount (in wei) that partners can send
     /// @param _maxPresaleAmount Maximum amount (in wei) that partners can send
     function SetPresaleAmountLimits(
         uint _minPresaleAmount,
         uint _maxPresaleAmount
-        );
+        ) onlyCreator;
 
     /// @dev Fallback function
     function () payable;
@@ -242,6 +244,7 @@ contract PassFundingInterface {
         uint _to
         ) constant external returns (uint);
 
+    event ContractorManagerSet(address ContractorManagerAddress);
     event IntentionToFund(address indexed partner, uint amount);
     event Fund(address indexed partner, uint amount);
     event Refund(address indexed partner, uint amount);
@@ -259,7 +262,6 @@ contract PassFunding is PassFundingInterface {
     function PassFunding (
         address _creator,
         address _DaoManager,
-        address _contractorManager,
         uint _minFundingAmount,
         uint _startTime,
         uint _closingTime
@@ -267,14 +269,11 @@ contract PassFunding is PassFundingInterface {
 
         if (_creator == _DaoManager
             || _creator == 0
-            || _creator == _contractorManager
             || _DaoManager == 0
-            || _contractorManager == _DaoManager
             || (_startTime < now && _startTime != 0)) throw;
             
         creator = _creator;
         DaoManager = PassManager(_DaoManager);
-        contractorManager = _contractorManager;
 
         minFundingAmount = _minFundingAmount;
 
@@ -287,6 +286,19 @@ contract PassFunding is PassFundingInterface {
         refundFromPartner = 1;
 
         partners.length = 1; 
+        
+    }
+    
+    function SetContractorManager(address _contractorManager) onlyCreator {
+        
+        if (_contractorManager == 0
+            || address(contractorManager) != 0
+            || creator == _contractorManager
+            || _contractorManager == address(DaoManager)) throw;
+            
+        contractorManager = PassManager(_contractorManager);
+        
+        ContractorManagerSet(_contractorManager);
         
     }
 
@@ -419,7 +431,7 @@ contract PassFunding is PassFundingInterface {
             || _to > partners.length - 1) throw;
             
         DaoManager.setFundingStartTime(startTime);
-        if (contractorManager != 0) PassManager(contractorManager).setFundingStartTime(startTime);
+        if (address(contractorManager) != 0) PassManager(contractorManager).setFundingStartTime(startTime);
         
         if (setFromPartner == 1) sumOfFundingAmountLimits = 0;
         
@@ -482,7 +494,7 @@ contract PassFunding is PassFundingInterface {
 
                 DaoManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
 
-                if (contractorManager != 0) {
+                if (address(contractorManager) != 0) {
                     PassManager(contractorManager).rewardToken(_partner, _amountToFund, partners[i].presaleDate);
                 }
 
@@ -498,7 +510,7 @@ contract PassFunding is PassFundingInterface {
 
         if (totalFunded >= sumOfFundingAmountLimits) {
             DaoManager.setFundingFueled(); 
-            if (contractorManager != 0) PassManager(contractorManager).setFundingFueled(); 
+            if (address(contractorManager) != 0) PassManager(contractorManager).setFundingFueled(); 
             Fueled();
         }
         
@@ -667,24 +679,22 @@ contract PassFunding is PassFundingInterface {
 }
 
 contract PassFundingCreator {
-    event NewFunding(address creator, address DaoAccountManager, address ContractorAccountManager,
+    event NewFunding(address creator, address DaoAccountManager, 
         uint MinFundingAmount, uint StartTime, uint ClosingTime, address FundingContractAddress);
     function createFunding(
         address _DaoAccountManager,
-        address _contractorAccountManager,
         uint _minFundingAmount,
         uint _startTime,
         uint _closingTime
         ) returns (PassFunding) {
         PassFunding _newFunding = new PassFunding(
             msg.sender,
-            _DaoAccountManager,
-            _contractorAccountManager,        
+            _DaoAccountManager,        
             _minFundingAmount,
             _startTime,
             _closingTime
         );
-        NewFunding(msg.sender, _DaoAccountManager, _contractorAccountManager, 
+        NewFunding(msg.sender, _DaoAccountManager,  
             _minFundingAmount, _startTime, _closingTime, address(_newFunding));
         return _newFunding;
     }
