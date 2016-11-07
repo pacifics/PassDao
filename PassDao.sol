@@ -124,8 +124,8 @@ contract PassDaoInterface {
     // The maximum inflation rate for contractor and funding proposals
     uint public maxInflationRate;
 
-    // Address or the manager creator
-    address public managerCreator;
+    // The manager creator
+    PassManagerCreator public managerCreator;
     // The Dao manager smart contract
     PassManager public daoManager;
     
@@ -150,6 +150,7 @@ contract PassDaoInterface {
 
     /// @dev Function to initialize the Dao
     /// @param _managerCreator Address of the smart contract for the creation of managers
+    /// @param _daoManager Address of the Dao manager smart contract
     /// @param _maxInflationRate The maximum inflation rate for contractor and funding proposals
     /// @param _minMinutesPeriods The minimum periods in minutes
     /// @param _maxMinutesFundingPeriod The maximum funding period in minutes for funding proposals
@@ -159,9 +160,9 @@ contract PassDaoInterface {
     /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
     /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a board meeting
-    /// @param _shareName The share name for display purpose
     function initDao(
         address _managerCreator,
+        address _daoManager,
         uint _maxInflationRate,
         uint _minMinutesPeriods,
         uint _maxMinutesFundingPeriod,
@@ -170,8 +171,7 @@ contract PassDaoInterface {
         uint _minBoardMeetingFees,
         uint _minutesSetProposalPeriod,
         uint _minMinutesDebatePeriod,
-        uint _feesRewardInflationRate,
-        string _shareName
+        uint _feesRewardInflationRate
         );
     
     /// @dev Internal function to create a board meeting
@@ -291,6 +291,7 @@ contract PassDao is PassDaoInterface {
     
     function initDao(
         address _managerCreator,
+        address _daoManager,
         uint _maxInflationRate,
         uint _minMinutesPeriods,
         uint _maxMinutesFundingPeriod,
@@ -299,15 +300,13 @@ contract PassDao is PassDaoInterface {
         uint _minBoardMeetingFees,
         uint _minutesSetProposalPeriod,
         uint _minMinutesDebatePeriod,
-        uint _feesRewardInflationRate,
-        string _shareName
+        uint _feesRewardInflationRate
         ) {
         
         if (msg.sender != creator || DaoRules.minQuorumDivisor != 0) throw;
 
-        managerCreator = _managerCreator;
-        daoManager = PassManagerCreator(_managerCreator).createManager
-            (creator, address(this), 0, 1000, _shareName);
+        managerCreator = PassManagerCreator(_managerCreator);
+        daoManager = PassManager(_daoManager);
 
         maxInflationRate = _maxInflationRate;
         minMinutesPeriods = _minMinutesPeriods;
@@ -397,8 +396,7 @@ contract PassDao is PassDaoInterface {
         c.inflationRate = _inflationRate;
         
         if (RecipientManagerAddress[_recipient] == 0) {
-            PassManager m = PassManagerCreator(managerCreator).createManager
-                (msg.sender, address(this), c.recipient, c.initialSupply, _tokenName);
+            PassManager m = managerCreator.createManager(msg.sender, address(this), c.recipient, c.initialSupply, _tokenName);
             RecipientManagerAddress[c.recipient] = address(m);
         }
 
