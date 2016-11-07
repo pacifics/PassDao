@@ -1,443 +1,680 @@
+import "PassManager.sol";
+
 pragma solidity ^0.4.2;
 
 /*
- *
- * This file is part of Pass DAO.
- *
- * The Token Manager smart contract is used for the management of tokens
- * by a client smart contract (the Dao). Defines the functions to set new funding rules,
- * create or reward tokens, check token balances, send tokens and send
- * tokens on behalf of a 3rd party and the corresponding approval process.
- *
+This file is part of Pass DAO.
+
+Pass DAO is free software: you can redistribute it and/or modify
+it under the terms of the GNU lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Pass DAO is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU lesser General Public License for more details.
+
+You should have received a copy of the GNU lesser General Public License
+along with Pass DAO.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/// @title Token Manager smart contract of the Pass Decentralized Autonomous Organisation
-contract PassTokenManagerInterface {
-    
-    // Rules for the funding of the account manager
-    fundingData public FundingRules;
-    struct fundingData {
-        // True if crowdfunding
-        bool publicCreation; 
-        // The address which create partners and manage the funding in case of private funding
-        address mainPartner;
-        // The maximum amount (in wei) of the funding
-        uint maxAmountToFund;
-        // The actual funded amount (in wei)
-        uint fundedAmount;
-        // A unix timestamp, denoting the start time of the funding
-        uint startTime; 
-        // A unix timestamp, denoting the closing time of the funding
-        uint closingTime;  
-        // The price multiplier for a share or a token without considering the inflation rate
-        uint initialPriceMultiplier;
-        // Rate per year in percentage applied to the share or token price 
-        uint inflationRate; 
-        // Index of the Dao funding proposal
+/*
+Smart contract for a Decentralized Autonomous Organization (DAO)
+to automate organizational governance and decision-making.
+*/
+
+/// @title Pass Decentralized Autonomous Organisation
+contract PassDaoInterface {
+
+    struct BoardMeeting {        
+        // Address who created the board meeting for a proposal
+        address creator;  
+        // Index to identify the proposal to pay a contractor
+        uint contractorProposalID;
+        // Index to identify the proposal to update the Dao rules 
+        uint daoRulesProposalID; 
+        // Index to identify the proposal for a funding of the Dao
         uint fundingProposalID;
+        // unix timestamp, denoting the end of the set period of a proposal before the board meeting 
+        uint setDeadline;
+        // Fees (in wei) paid by the creator of the board meeting
+        uint fees;
+        // Total of fees (in wei) rewarded to the voters or to the Dao account manager for the balance
+        uint totalRewardedAmount;
+        // A unix timestamp, denoting the end of the voting period
+        uint votingDeadline;
+        // True if the proposal's votes have yet to be counted, otherwise False
+        bool open; 
+        // A unix timestamp, denoting the date of the execution of the approved proposal
+        uint dateOfExecution;
+        // Number of shares in favor of the proposal
+        uint yea; 
+        // Number of shares opposed to the proposal
+        uint nay; 
+        // mapping to indicate if a shareholder has voted
+        mapping (address => bool) hasVoted;  
+    }
+
+    struct ContractorProposal {
+        // Index to identify the board meeting of the proposal
+        uint boardMeetingID;
+        // The address of the recipient where the `amount` will go to if the proposal is accepted
+        address recipient;
+        // The amount (in wei) to transfer to `recipient` if the proposal is accepted.
+        uint amount; 
+        // A description of the proposal
+        string description;
+        // The hash of the proposal's document
+        bytes32 hashOfTheDocument;
+        // The initial price multiplier of the contractor token
+        uint initialTokenPriceMultiplier;
+        // The inflation rate to calculate the actual contractor token price
+        uint inflationRate;
+        // The initial supply of contractor tokens for the recipient
+        uint256 initialSupply;
+        // The index of the funding proposal if linked to the contractor proposal
+        uint fundingProposalID;
+    }
+    
+    struct FundingProposal {
+        // Index to identify the board meeting of the proposal
+        uint boardMeetingID;
+        // True if crowdfunding
+        bool publicShareCreation; 
+        // The address which set partners and manage the funding in case of private funding
+        address mainPartner;
+        // The maximum amount (in wei) to fund
+        uint maxFundingAmount; 
+        // The initial price multiplier of Dao shares
+        uint initialSharePriceMultiplier; 
+        // The inflation rate to calculate the actual contractor share price
+        uint inflationRate;
+        // A unix timestamp, denoting the start time of the funding
+        uint minutesFundingPeriod;
+        // Index of the contractor proposal if linked to the funding proposal
+        uint contractorProposalID;
+    }
+
+    struct Rules {
+        // Index to identify the board meeting that decided to apply the rules
+        uint boardMeetingID;  
+        // The quorum needed for each proposal is calculated by totalSupply / minQuorumDivisor
+        uint minQuorumDivisor;  
+        // Minimum fees (in wei) to create a proposal
+        uint minBoardMeetingFees; 
+        // Period in minutes to consider or set a proposal before the voting procedure
+        uint minutesSetProposalPeriod; 
+        // The minimum debate period in minutes that a generic proposal can have
+        uint minMinutesDebatePeriod;
+        // The inflation rate to calculate the reward of fees to voters during a board meeting 
+        uint feesRewardInflationRate;
+        // True if the dao rules allow the transfer of shares
+        bool transferable;
     } 
 
-    // Address of the Dao    
-    address public client;
+    // The creator of the Dao
+    address public creator;
+    // The minimum periods in minutes 
+    uint public minMinutesPeriods;
+    // The maximum period in minutes for proposals (set+debate)
+    uint public maxMinutesProposalPeriod;
+    // The maximum funding period in minutes for funding proposals
+    uint public maxMinutesFundingPeriod;
+    // The maximum inflation rate for contractor and funding proposals
+    uint public maxInflationRate;
+
+    // Address or the manager creator
+    address public managerCreator;
+    // The Dao manager smart contract
+    PassManager public daoManager;
     
-    // The token name for display purpose
-    string public name;
-    // The quantity of decimals for display purpose
-    uint8 public decimals;
-    // Total amount of tokens
-    uint256 totalSupply;
-    // The token name for display purpose
+    // Map to allow the share holders to withdraw board meeting fees
+    mapping (address => uint) public pendingFeesWithdrawals;
+    // Map to get the management smart contract of contractors
+    mapping (address => address) public RecipientManagerAddress; 
 
-    // Array with all balances
-    mapping (address => uint256) balances;
-    // Array with all allowances
-    mapping (address => mapping (address => uint256)) allowed;
-
-    // Map The result in wei of funding proposals
-    mapping (uint => uint) fundedAmount;
-    
-    // If true, the shares or tokens can be transfered
-    bool public transferable;
-    // Map of blocked Dao share accounts. Points to the date when the share holder can transfer shares
-    mapping (address => uint) public blockedDeadLine; 
-
-    /// @return The total supply of shares or tokens 
-    function TotalSupply() constant external returns (uint256);
-
-    /// @param _owner The address from which the balance will be retrieved
-    /// @return The balance
-     function balanceOf(address _owner) constant external returns (uint256 balance);
-
-    /// @param _owner The address of the account owning tokens
-    /// @param _spender The address of the account able to transfer the tokens
-    /// @return Quantity of remaining tokens of _owner that _spender is allowed to spend
-    function allowance(address _owner, address _spender) constant external returns (uint256 remaining);
-
-    /// @param _fundingProposalID The index of the Dao funding proposal
-    /// @return The result in wei of the funding proposal
-    function FundedAmount(uint _fundingProposalID) constant external returns (uint);
-
-    /// @param _saleDate in case of presale, the date of the presale
-    /// @return the share or token price divisor condidering the sale date and the inflation rate
-    function priceDivisor(uint _saleDate) constant internal returns (uint);
-    
-    /// @return the actual price divisor of a share or token
-    function actualPriceDivisor() constant external returns (uint);
-
-    /// @return The maximal amount a main partner can fund at this moment
-    /// @param _mainPartner The address of the main parner
-    function fundingMaxAmount(address _mainPartner) constant external returns (uint);
-
-    // Modifier that allows only the client to manage this account manager
-    modifier onlyClient {if (msg.sender != client) throw; _;}
-
-    // Modifier that allows only the main partner to manage the actual funding
-    modifier onlyMainPartner {if (msg.sender !=  FundingRules.mainPartner) throw; _;}
+    // Board meetings to vote for or against a proposal
+    BoardMeeting[] public BoardMeetings; 
+    // Proposals to pay a contractor
+    ContractorProposal[] public ContractorProposals;
+    // Proposals for a funding of the Dao
+    FundingProposal[] public FundingProposals;
+   // Proposals to update the Dao Rules
+    Rules[] public DaoRulesProposals;
+    // The current Dao rules
+    Rules public DaoRules; 
     
     /// @dev The constructor function
-    /// @param _creator The address of the creator of the smart contract
-    /// @param _client The address of the Dao
-    /// @param _recipient The address of the recipient
-    /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
-    /// @param _tokenName The token name for display purpose
-    //function TokenManager(
-        //address _creator,
-        //address _client,
-        //address _recipient,
-        //uint256 _initialSupply,
-        //string _tokenName
-    //);
-   
-    /// @notice Function to set a funding. Can be private or public
-    /// @param _mainPartner The address of the smart contract to manage a private funding
-    /// @param _publicCreation True if public funding
-    /// @param _initialPriceMultiplier Price multiplier without considering any inflation rate
-    /// @param _maxAmountToFund The maximum amount (in wei) of the funding
-    /// @param _minutesFundingPeriod Period in minutes of the funding
-    /// @param _inflationRate If 0, the token price doesn't change during the funding
-    /// @param _fundingProposalID Index of the Dao funding proposal (not mandatory)
-    function setFundingRules(
-        address _mainPartner,
-        bool _publicCreation, 
-        uint _initialPriceMultiplier, 
-        uint _maxAmountToFund, 
-        uint _minutesFundingPeriod, 
-        uint _inflationRate,
-        uint _fundingProposalID
-    ) onlyClient external;
+    //function PassDao(address _creator);
+
+    /// @dev Function to initialize the Dao
+    /// @param _managerCreator Address of the smart contract for the creation of managers
+    /// @param _maxInflationRate The maximum inflation rate for contractor and funding proposals
+    /// @param _minMinutesPeriods The minimum periods in minutes
+    /// @param _maxMinutesFundingPeriod The maximum funding period in minutes for funding proposals
+    /// @param _maxMinutesProposalPeriod The maximum period in minutes for proposals (set+debate)
+    /// @param _minQuorumDivisor The initial minimum quorum divisor for the proposals
+    /// @param _minBoardMeetingFees The amount (in wei) to make a proposal and ask for a board meeting
+    /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
+    /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
+    /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a board meeting
+    /// @param _shareName The share name for display purpose
+    function initDao(
+        address _managerCreator,
+        uint _maxInflationRate,
+        uint _minMinutesPeriods,
+        uint _maxMinutesFundingPeriod,
+        uint _maxMinutesProposalPeriod,
+        uint _minQuorumDivisor,
+        uint _minBoardMeetingFees,
+        uint _minutesSetProposalPeriod,
+        uint _minMinutesDebatePeriod,
+        uint _feesRewardInflationRate,
+        string _shareName
+        );
     
-    /// @dev Internal function for the creation of shares or tokens
-    /// @param _recipient The recipient address of shares or tokens
-    /// @param _amount The funded amount (in wei)
-    /// @param _saleDate In case of presale, the date of the presale
-    /// @return Whether the creation was successful or not
-    function createToken(
-        address _recipient, 
-        uint _amount,
-        uint _saleDate
-    ) internal returns (bool success);
-
-    /// @notice Function used by the main partner to set the start time of the funding
-    /// @param _startTime The unix start date of the funding 
-    function setFundingStartTime(uint _startTime) external onlyMainPartner;
+    /// @dev Internal function to create a board meeting
+    /// @param _contractorProposalID The index of the proposal if contractor
+    /// @param _daoRulesProposalID The index of the proposal if Dao rules
+    /// @param _fundingProposalID The index of the proposal if funding
+    /// @param _minutesDebatingPeriod The duration in minutes of the meeting
+    /// @return the index of the board meeting
+    function newBoardMeeting(
+        uint _contractorProposalID, 
+        uint _daoRulesProposalID, 
+        uint _fundingProposalID, 
+        uint _minutesDebatingPeriod
+    ) internal returns (uint);
     
-    /// @notice Function used by the main partner to reward shares or tokens
-    /// @param _recipient The address of the recipient of shares or tokens
-    /// @param _amount The amount (in Wei) to calculate the quantity of shares or tokens to create
-    /// @param _date The unix date to consider for the share or token price calculation
-    /// @return Whether the transfer was successful or not
-    function rewardToken(
-        address _recipient, 
-        uint _amount,
-        uint _date
-        ) external onlyMainPartner;
-
-    /// @dev Internal function to close the actual funding
-    function closeFunding() internal;
-    
-    /// @notice Function used by the main partner to set the funding fueled
-    function setFundingFueled() external onlyMainPartner;
-    
-    /// @notice Function to able the transfer of Dao shares or contractor tokens
-    function ableTransfer() external onlyClient;
-
-    /// @notice Function to disable the transfer of Dao shares
-    function disableTransfer() external onlyClient;
-
-    /// @notice Function used by the client to block the transfer of shares from and to a share holder
-    /// @param _shareHolder The address of the share holder
-    /// @param _deadLine When the account will be unblocked
-    function blockTransfer(address _shareHolder, uint _deadLine) external onlyClient;
-    
-    /// @dev Internal function to send `_value` token to `_to` from `_From`
-    /// @param _from The address of the sender
-    /// @param _to The address of the recipient
-    /// @param _value The quantity of shares or tokens to be transferred
-    /// @return Whether the function was successful or not 
-    function transferFromTo(
-        address _from,
-        address _to, 
-        uint256 _value
-        ) internal returns (bool);
-
-    /// @notice send `_value` token to `_to` from `msg.sender`
-    /// @param _to The address of the recipient
-    /// @param _value The quantity of shares or tokens to be transferred
-    function transfer(address _to, uint256 _value);
-
-    /// @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
-    /// @param _from The address of the sender
-    /// @param _to The address of the recipient
-    /// @param _value The quantity of shares or tokens to be transferred
-    function transferFrom(
-        address _from, 
-        address _to, 
-        uint256 _value
-        ) returns (bool success);
-
-    /// @notice `msg.sender` approves `_spender` to spend `_amount` tokens on its behalf
-    /// @param _spender The address of the account able to transfer the tokens
-    /// @param _value The amount of tokens to be approved for transfer
-    /// @return Whether the approval was successful or not
-    function approve(address _spender, uint256 _value) returns (bool success);
-
-    event TokensCreated(address indexed Sender, address indexed TokenHolder, uint Quantity);
-    event FundingRulesSet(address indexed MainPartner, uint indexed FundingProposalId, uint indexed StartTime, uint ClosingTime);
-    event FundingFueled(uint indexed FundingProposalID, uint FundedAmount);
-    event TransferAble();
-    event TransferDisable();
-
-}    
-
-contract PassTokenManager is PassTokenManagerInterface {
-    
-    function TotalSupply() constant external returns (uint256) {
-        return totalSupply;
-    }
-
-     function balanceOf(address _owner) constant external returns (uint256 balance) {
-        return balances[_owner];
-     }
-
-    function allowance(address _owner, address _spender) constant external returns (uint256 remaining) {
-        return allowed[_owner][_spender];
-    }
-
-    function FundedAmount(uint _fundingProposalID) constant external returns (uint) {
-        return fundedAmount[_fundingProposalID];
-    }
-
-    function priceDivisor(uint _saleDate) constant internal returns (uint) {
-        uint _date = _saleDate;
-        
-        if (_saleDate > FundingRules.closingTime) _date = FundingRules.closingTime;
-        if (_saleDate < FundingRules.startTime) _date = FundingRules.startTime;
-
-        return 100 + 100*FundingRules.inflationRate*(_date - FundingRules.startTime)/(100*365 days);
-    }
-    
-    function actualPriceDivisor() constant external returns (uint) {
-        return priceDivisor(now);
-    }
-
-    function fundingMaxAmount(address _mainPartner) constant external returns (uint) {
-        
-        if (now > FundingRules.closingTime
-            || now < FundingRules.startTime
-            || _mainPartner != FundingRules.mainPartner) {
-            return 0;   
-        } else {
-            return FundingRules.maxAmountToFund;
-        }
-        
-    }
-
-    function PassTokenManager(
-        address _creator,
-        address _client,
+    /// @notice Function to make a proposal to work for the Dao
+    /// @param _recipient The beneficiary of the proposal amount
+    /// @param _amount The amount (in wei) to be sent if the proposal is approved
+    /// @param _description String describing the proposal
+    /// @param _hashOfTheDocument The hash of the proposal document
+    /// @param _minutesDebatingPeriod Proposed period in minutes of the board meeting to vote on the proposal
+    /// @param _initialTokenPriceMultiplier The initial price multiplier of contractor tokens (not mandatory)    
+    /// @param _inflationRate If 0, the contractor token price doesn't change during the funding (not mandatory)
+    /// @param _initialSupply If the contractor asks for an initial supply of contractor tokens (not mandatory)
+    /// @param _tokenSymbol The token symbol for display purpose (not mandatory)
+    /// @return The index of the proposal
+    function newContractorProposal(
         address _recipient,
+        uint _amount, 
+        string _description, 
+        bytes32 _hashOfTheDocument,
+        uint _minutesDebatingPeriod,
+        uint _initialTokenPriceMultiplier, 
+        uint _inflationRate,
+        uint256 _initialSupply,
+        string _tokenSymbol
+    ) payable returns (uint);
+    
+    /// @notice Function to make a proposal for a funding of the Dao
+    /// @param _publicShareCreation True if crowdfunding
+    /// @param _mainPartner The address of the funding contract if private (not mandatory if public)
+    /// @param _maxFundingAmount The maximum amount to fund
+    /// @param _initialSharePriceMultiplier The initial price multiplier of shares
+    /// @param _inflationRate If 0, the share price doesn't change during the funding (not mandatory)
+    /// @param _minutesFundingPeriod Period in minutes of the funding
+    /// @param _contractorProposalID Index of the contractor proposal if linked to this funding proposal (not mandatory)
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
+    /// @return The index of the proposal
+    function newFundingProposal(
+        bool _publicShareCreation,
+        address _mainPartner,
+        uint _maxFundingAmount,  
+        uint _initialSharePriceMultiplier,    
+        uint _inflationRate,
+        uint _minutesFundingPeriod,
+        uint _contractorProposalID,
+        uint _minutesDebatingPeriod
+    ) payable returns (uint);
+
+    /// @notice Function to make a proposal to change the Dao rules 
+    /// @param _minQuorumDivisor If 5, the minimum quorum is 20%
+    /// @param _minBoardMeetingFees The amount (in wei) to make a proposal and ask for a board meeting
+    /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
+    /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
+    /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a board meeting
+    /// @param _transferable True if the proposal foresee to allow the transfer of Dao shares
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal    function newDaoRulesProposal(
+    function newDaoRulesProposal(
+        uint _minQuorumDivisor, 
+        uint _minBoardMeetingFees,
+        uint _minutesSetProposalPeriod,
+        uint _minMinutesDebatePeriod,
+        uint _feesRewardInflationRate,
+        bool _transferable,
+        uint _minutesDebatingPeriod
+    ) payable returns (uint);
+    
+    /// @notice Function to vote during a board meeting
+    /// @param _boardMeetingID The index of the board meeting
+    /// @param _supportsProposal True if the proposal is supported
+    function vote(
+        uint _boardMeetingID, 
+        bool _supportsProposal
+    );
+
+    /// @notice Function to execute a board meeting decision and close the board meeting
+    /// @param _boardMeetingID The index of the board meeting
+    /// @return Whether the proposal was executed or not
+    function executeDecision(uint _boardMeetingID) returns (bool);
+    
+    /// @notice Function to withdraw the rewarded board meeting fees
+    /// @return Whether the withdraw was successful or not    
+    function withdrawBoardMeetingFees() returns (bool);
+
+    /// @dev Internal function to send to the Dao account manager the board meeting fees balance
+    /// @param _boardMeetingID The index of the board meeting
+    /// @return Whether the function was successful or not 
+    function takeBoardMeetingFees(uint _boardMeetingID) internal returns (bool);
+
+    /// @return The minimum quorum for proposals to pass 
+    function minQuorum() constant returns (uint);
+
+    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed RecipientManagerAddress, uint ProposalAmount);
+    event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
+    event DaoRulesProposalAdded(uint indexed DaoRulesProposalID, uint MinQuorumDivisor, uint MinBoardMeetingFees, 
+            uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, bool Transferable);
+    event SentToContractor(uint indexed ContractorProposalID, address indexed RecipientManagerAddress, uint AmountSent);
+    event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
+
+}
+
+contract PassDao is PassDaoInterface {
+
+    function PassDao() {
+        creator = msg.sender;
+    }
+    
+    function initDao(
+        address _managerCreator,
+        uint _maxInflationRate,
+        uint _minMinutesPeriods,
+        uint _maxMinutesFundingPeriod,
+        uint _maxMinutesProposalPeriod,
+        uint _minQuorumDivisor,
+        uint _minBoardMeetingFees,
+        uint _minutesSetProposalPeriod,
+        uint _minMinutesDebatePeriod,
+        uint _feesRewardInflationRate,
+        string _shareName
+        ) {
+        
+        if (msg.sender != creator || DaoRules.minQuorumDivisor != 0) throw;
+
+        managerCreator = _managerCreator;
+        daoManager = PassManagerCreator(_managerCreator).createManager
+            (creator, address(this), 0, 1000, _shareName);
+
+        maxInflationRate = _maxInflationRate;
+        minMinutesPeriods = _minMinutesPeriods;
+        maxMinutesFundingPeriod = _maxMinutesFundingPeriod;
+        maxMinutesProposalPeriod = _maxMinutesProposalPeriod;
+        
+        DaoRules.minQuorumDivisor = _minQuorumDivisor;
+        DaoRules.minBoardMeetingFees = _minBoardMeetingFees;
+        DaoRules.minutesSetProposalPeriod = _minutesSetProposalPeriod;
+        DaoRules.minMinutesDebatePeriod = _minMinutesDebatePeriod;
+        DaoRules.feesRewardInflationRate = _feesRewardInflationRate;
+
+        BoardMeetings.length = 1; 
+        ContractorProposals.length = 1;
+        FundingProposals.length = 1;
+        DaoRulesProposals.length = 1;
+        
+    }
+    
+    function newBoardMeeting(
+        uint _contractorProposalID, 
+        uint _daoRulesProposalID, 
+        uint _fundingProposalID, 
+        uint _minutesDebatingPeriod
+    ) internal returns (uint) {
+
+        if (msg.value < DaoRules.minBoardMeetingFees
+            || DaoRules.minutesSetProposalPeriod + _minutesDebatingPeriod > maxMinutesProposalPeriod
+            || _minutesDebatingPeriod < DaoRules.minMinutesDebatePeriod
+            || msg.sender == address(this)) {
+            throw;
+        }
+
+        uint _boardMeetingID = BoardMeetings.length++;
+        BoardMeeting b = BoardMeetings[_boardMeetingID];
+
+        b.creator = msg.sender;
+
+        b.contractorProposalID = _contractorProposalID;
+        b.daoRulesProposalID = _daoRulesProposalID;
+        b.fundingProposalID = _fundingProposalID;
+
+        b.fees = msg.value;
+        
+        b.setDeadline = now + (DaoRules.minutesSetProposalPeriod * 1 minutes);        
+        b.votingDeadline = b.setDeadline + (_minutesDebatingPeriod * 1 minutes); 
+
+        if (b.votingDeadline < now) throw;
+
+        b.open = true; 
+
+        return _boardMeetingID;
+
+    }
+
+    function newContractorProposal(
+        address _recipient,
+        uint _amount, 
+        string _description, 
+        bytes32 _hashOfTheDocument,
+        uint _minutesDebatingPeriod,
+        uint _initialTokenPriceMultiplier, 
+        uint _inflationRate,
         uint256 _initialSupply,
         string _tokenName
-    ) {
-        
-        if (_client == 0 || _recipient == address(this)) throw;
+    ) payable returns (uint) {
 
-        name = _tokenName;
-        decimals = 18;
-
-        client = _client;
-
-        if (_recipient != 0) {
-            transferable = true;
-            TransferAble();
-        }
-
-        if (_initialSupply > 0) {
-            if (_recipient == 0 && _creator != 0)  _recipient = _creator;
-            balances[_recipient] = _initialSupply; 
-            totalSupply = _initialSupply;
-            TokensCreated(msg.sender, _recipient, _initialSupply);
-        }
-        
-   }
-   
-    function setFundingRules(
-        address _mainPartner,
-        bool _publicCreation, 
-        uint _initialPriceMultiplier,
-        uint _maxAmountToFund, 
-        uint _minutesFundingPeriod, 
-        uint _inflationRate,
-        uint _fundingProposalID
-    ) external onlyClient {
-
-        if (now < FundingRules.closingTime
-            || _mainPartner == address(this)
-            || (!_publicCreation && _mainPartner == 0)
-            || (_publicCreation && _mainPartner != 0)
-            || _initialPriceMultiplier == 0
-            || _maxAmountToFund <= 0
-            || _minutesFundingPeriod <= 0
-            || fundedAmount[_fundingProposalID] != 0
+        if (_recipient == 0
+            || _recipient == address(this)
+            || _recipient == address(daoManager)
+            || _amount <= 0
+            || _inflationRate > maxInflationRate
+            || (RecipientManagerAddress[_recipient] != 0 
+                && ((msg.sender != _recipient && !PassManager(RecipientManagerAddress[_recipient]).IsCreator(msg.sender))
+                    || _initialSupply != 0))
             ) throw;
 
-        FundingRules.startTime = now;
-        FundingRules.closingTime = now + _minutesFundingPeriod * 1 minutes;
- 
-        FundingRules.mainPartner = _mainPartner;
-        FundingRules.publicCreation = _publicCreation;
+        uint _contractorProposalID = ContractorProposals.length++;
+        ContractorProposal c = ContractorProposals[_contractorProposalID];
+
+        c.recipient = _recipient;       
+        c.initialSupply = _initialSupply;
+        c.amount = _amount;
+        c.description = _description;
+        c.hashOfTheDocument = _hashOfTheDocument; 
+        c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
+        c.inflationRate = _inflationRate;
         
-        FundingRules.initialPriceMultiplier = _initialPriceMultiplier;
-        FundingRules.inflationRate = _inflationRate;  
+        if (RecipientManagerAddress[_recipient] == 0) {
+            PassManager m = PassManagerCreator(managerCreator).createManager
+                (msg.sender, address(this), c.recipient, c.initialSupply, _tokenName);
+            RecipientManagerAddress[c.recipient] = address(m);
+        }
 
-        FundingRules.fundedAmount = 0;
-        FundingRules.maxAmountToFund = _maxAmountToFund;
+        c.boardMeetingID = newBoardMeeting(_contractorProposalID, 0, 0, _minutesDebatingPeriod);    
 
-        FundingRules.fundingProposalID = _fundingProposalID;
+        ContractorProposalAdded(_contractorProposalID, RecipientManagerAddress[c.recipient], c.amount);
+        
+        return _contractorProposalID;
+        
+    }
 
-        FundingRulesSet(_mainPartner, _fundingProposalID, FundingRules.startTime, FundingRules.closingTime);
+    function newFundingProposal(
+        bool _publicShareCreation,
+        address _mainPartner,
+        uint _maxFundingAmount,  
+        uint _initialSharePriceMultiplier,    
+        uint _inflationRate,
+        uint _minutesFundingPeriod,
+        uint _contractorProposalID,
+        uint _minutesDebatingPeriod
+    ) payable returns (uint) {
 
-    } 
+        if (_mainPartner == address(this)
+            || (_contractorProposalID != 0 && _maxFundingAmount != 0)
+            || _inflationRate > maxInflationRate
+            || _minutesFundingPeriod < minMinutesPeriods
+            || _minutesFundingPeriod > maxMinutesFundingPeriod) throw;
+
+        uint _fundingProposalID = FundingProposals.length++;
+        FundingProposal f = FundingProposals[_fundingProposalID];
+
+        f.mainPartner = _mainPartner;
+        f.publicShareCreation = _publicShareCreation;
+        f.maxFundingAmount = _maxFundingAmount;
+        f.initialSharePriceMultiplier = _initialSharePriceMultiplier;
+        f.inflationRate = _inflationRate;
+        f.contractorProposalID = _contractorProposalID;
+        f.minutesFundingPeriod = _minutesFundingPeriod;
+
+        if (_contractorProposalID != 0) {
+
+            ContractorProposal cf = ContractorProposals[_contractorProposalID];
+            BoardMeeting b = BoardMeetings[cf.boardMeetingID];
+            if (now > b.setDeadline || b.creator != msg.sender) throw;
+
+            cf.fundingProposalID = _fundingProposalID;
+            
+            f.maxFundingAmount = cf.amount;
+
+            uint _fees = b.fees;
+            b.fees = 0;
+            pendingFeesWithdrawals[b.creator] += _fees;
+            
+        }
+        
+        f.boardMeetingID = newBoardMeeting(0, 0, _fundingProposalID, _minutesDebatingPeriod);   
+
+        FundingProposalAdded(_fundingProposalID, _contractorProposalID, f.maxFundingAmount);
+
+        return _fundingProposalID;
+        
+    }
+
+    function newDaoRulesProposal(
+        uint _minQuorumDivisor, 
+        uint _minBoardMeetingFees,
+        uint _minutesSetProposalPeriod,
+        uint _minMinutesDebatePeriod,
+        uint _feesRewardInflationRate,
+        bool _transferable,
+        uint _minutesDebatingPeriod
+    ) payable returns (uint) {
     
-    function createToken(
-        address _recipient, 
-        uint _amount,
-        uint _saleDate
-    ) internal returns (bool success) {
-
-        if (now > FundingRules.closingTime
-            || now < FundingRules.startTime
-            ||_saleDate > FundingRules.closingTime
-            || _saleDate < FundingRules.startTime
-            || FundingRules.fundedAmount + _amount > FundingRules.maxAmountToFund) return;
-
-        uint _quantity = 100*_amount*FundingRules.initialPriceMultiplier/priceDivisor(_saleDate);
-        if (totalSupply + _quantity <= totalSupply) return;
-
-        balances[_recipient] += _quantity;
-        totalSupply += _quantity;
-        FundingRules.fundedAmount += _amount;
-
-        TokensCreated(msg.sender, _recipient, _quantity);
+        if (_minQuorumDivisor <= 1
+            || _minQuorumDivisor > 10
+            || _minutesSetProposalPeriod < minMinutesPeriods
+            || _minMinutesDebatePeriod < minMinutesPeriods
+            || _minutesSetProposalPeriod + _minMinutesDebatePeriod > maxMinutesProposalPeriod
+            || _feesRewardInflationRate > maxInflationRate
+            ) throw; 
         
-        if (FundingRules.fundedAmount == FundingRules.maxAmountToFund) closeFunding();
+        uint _DaoRulesProposalID = DaoRulesProposals.length++;
+        Rules r = DaoRulesProposals[_DaoRulesProposalID];
+
+        r.minQuorumDivisor = _minQuorumDivisor;
+        r.minBoardMeetingFees = _minBoardMeetingFees;
+        r.minutesSetProposalPeriod = _minutesSetProposalPeriod;
+        r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
+        r.feesRewardInflationRate = _feesRewardInflationRate;
+        r.transferable = _transferable;
         
+        r.boardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _minutesDebatingPeriod);     
+
+        DaoRulesProposalAdded(_DaoRulesProposalID, _minQuorumDivisor, _minBoardMeetingFees, 
+            _minutesSetProposalPeriod, _minMinutesDebatePeriod, _feesRewardInflationRate ,_transferable);
+
+        return _DaoRulesProposalID;
+        
+    }
+    
+    function vote(
+        uint _boardMeetingID, 
+        bool _supportsProposal
+    ) {
+        
+        BoardMeeting b = BoardMeetings[_boardMeetingID];
+        if (
+            daoManager.balanceOf(msg.sender) == 0|| 
+            b.hasVoted[msg.sender] 
+            || now < b.setDeadline
+            || now > b.votingDeadline) throw;
+
+        if (b.contractorProposalID != 0 && ContractorProposals[b.contractorProposalID].fundingProposalID != 0) throw;
+
+        b.hasVoted[msg.sender] = true;
+        
+        uint _balance = uint(daoManager.balanceOf(msg.sender));
+
+        if (_supportsProposal) b.yea += _balance;
+        else b.nay += _balance; 
+
+        if (b.fees > 0
+            && (b.contractorProposalID != 0 
+                || (b.fundingProposalID != 0 && FundingProposals[b.fundingProposalID].contractorProposalID != 0))) {
+                    
+            uint _divisor = 100 + 100*DaoRules.feesRewardInflationRate*(now - b.setDeadline)/(100*365 days);
+            
+            uint _rewardedamount = b.fees * (100*_balance/uint(daoManager.TotalSupply())) / _divisor;
+
+            if (b.totalRewardedAmount + _rewardedamount <= b.fees) {
+                b.totalRewardedAmount += _rewardedamount;
+                pendingFeesWithdrawals[msg.sender] += _rewardedamount;
+            }
+            
+        }
+
+        daoManager.blockTransfer(msg.sender, b.votingDeadline);
+
+    }
+
+    function executeDecision(uint _boardMeetingID) returns (bool) {
+
+        BoardMeeting b = BoardMeetings[_boardMeetingID];
+
+        if (now < b.votingDeadline 
+            || !b.open
+            ) throw;
+        
+        uint _fees;
+        uint _fundedAmount;
+
+        if (b.fees > 0
+            && (b.contractorProposalID == 0 
+                && (b.fundingProposalID == 0 || FundingProposals[b.fundingProposalID].contractorProposalID == 0))) {
+
+                if (b.yea + b.nay >= minQuorum()) {
+                    _fees = b.fees;
+                    b.fees = 0;
+                    pendingFeesWithdrawals[b.creator] += _fees;
+
+                }
+        }        
+        
+        if (b.contractorProposalID != 0) {
+            
+            ContractorProposal c = ContractorProposals[b.contractorProposalID];
+            
+            if (c.fundingProposalID != 0) {
+
+                _fundedAmount = daoManager.FundedAmount(c.fundingProposalID);
+                
+                if (_fundedAmount == 0
+                    && (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].open
+                        || (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution != 0
+                            && now < BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution 
+                            + (FundingProposals[c.fundingProposalID].minutesFundingPeriod * 1 minutes)))) {
+                    return;
+                }
+                            
+            }
+            
+        }
+
+        if (!takeBoardMeetingFees(_boardMeetingID)) throw;
+        
+        b.open = false;
+
+        if ((b.yea + b.nay < minQuorum() || b.yea <= b.nay) && (_fundedAmount == 0 || c.fundingProposalID == 0)) {
+            BoardMeetingClosed(_boardMeetingID, _fees, false);
+            return;
+        }
+
+        b.dateOfExecution = now;
+
+        if (b.fundingProposalID != 0) {
+
+            FundingProposal f = FundingProposals[b.fundingProposalID];
+
+            daoManager.setFundingRules(f.mainPartner, f.publicShareCreation, f.initialSharePriceMultiplier, 
+                f.maxFundingAmount, f.minutesFundingPeriod, f.inflationRate, b.fundingProposalID);
+
+            if (f.contractorProposalID != 0 && !f.publicShareCreation) {
+                ContractorProposal cf = ContractorProposals[f.contractorProposalID];
+                
+                if (cf.initialTokenPriceMultiplier != 0) {
+                    PassManager(RecipientManagerAddress[cf.recipient]).setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
+                    f.maxFundingAmount, f.minutesFundingPeriod, cf.inflationRate, b.fundingProposalID);
+                }
+            }
+            
+        }
+        
+        if (b.daoRulesProposalID != 0) {
+
+            Rules r = DaoRulesProposals[b.daoRulesProposalID];
+            DaoRules.boardMeetingID = r.boardMeetingID;
+
+            DaoRules.minQuorumDivisor = r.minQuorumDivisor;
+            DaoRules.minMinutesDebatePeriod = r.minMinutesDebatePeriod; 
+            DaoRules.minBoardMeetingFees = r.minBoardMeetingFees;
+            DaoRules.minutesSetProposalPeriod = r.minutesSetProposalPeriod;
+            DaoRules.feesRewardInflationRate = r.feesRewardInflationRate;
+
+            DaoRules.transferable = r.transferable;
+            if (r.transferable) daoManager.ableTransfer();
+            else daoManager.disableTransfer();
+            
+        }
+            
+        if (b.contractorProposalID != 0) {
+
+            if (c.fundingProposalID == 0) _fundedAmount == c.amount;
+            daoManager.sendTo(PassManager(RecipientManagerAddress[c.recipient]), _fundedAmount);
+            SentToContractor(b.contractorProposalID, RecipientManagerAddress[c.recipient], _fundedAmount);
+
+        }
+
+        BoardMeetingClosed(_boardMeetingID, _fees, true);
+
         return true;
-
-    }
-
-    function setFundingStartTime(uint _startTime) external onlyMainPartner {
-        if (now > FundingRules.closingTime) throw;
-        FundingRules.startTime = _startTime;
+        
     }
     
-    function rewardToken(
-        address _recipient, 
-        uint _amount,
-        uint _date
-        ) external onlyMainPartner {
+    function withdrawBoardMeetingFees() returns (bool) {
 
-        uint _saleDate;
-        if (_date == 0) _saleDate = now; else _saleDate = _date;
-
-        if (!createToken(_recipient, _amount, _saleDate)) throw;
-
-    }
-
-    function closeFunding() internal {
-        fundedAmount[FundingRules.fundingProposalID] += FundingRules.fundedAmount;
-        FundingRules.closingTime = now;
-    }
-    
-    function setFundingFueled() external onlyMainPartner {
-        if (now > FundingRules.closingTime) throw;
-        closeFunding();
-        FundingFueled(FundingRules.fundingProposalID, FundingRules.fundedAmount);
-    }
-    
-    function ableTransfer() external onlyClient {
-        if (!transferable) {
-            transferable = true;
-            TransferAble();
-        }
-    }
-
-    function disableTransfer() external onlyClient {
-        if (transferable) {
-            transferable = false;
-            TransferDisable();
-        }
-    }
-    
-    function blockTransfer(address _shareHolder, uint _deadLine) external onlyClient {
-        if (_deadLine > blockedDeadLine[_shareHolder]) {
-            blockedDeadLine[_shareHolder] = _deadLine;
-        }
-    }
-    
-    function transferFromTo(
-        address _from,
-        address _to, 
-        uint256 _value
-        ) internal returns (bool) {  
-
-        if (transferable
-            && now > blockedDeadLine[_from]
-            && now > blockedDeadLine[_to]
-            && _to != address(this)
-            && balances[_from] >= _value
-            && balances[_to] + _value > balances[_to]
-        ) {
-            balances[_from] -= _value;
-            balances[_to] += _value;
+        uint _amount = pendingFeesWithdrawals[msg.sender];
+        if (_amount <= 0) return true;
+        
+        pendingFeesWithdrawals[msg.sender] = 0;
+        if (msg.sender.send(_amount)) {
             return true;
         } else {
+            pendingFeesWithdrawals[msg.sender] = _amount;
             return false;
         }
-        
-    }
-
-    function transfer(address _to, uint256 _value) {  
-        if (!transferFromTo(msg.sender, _to, _value)) throw;
-    }
-
-    function transferFrom(
-        address _from, 
-        address _to, 
-        uint256 _value
-        ) returns (bool success) { 
-        
-        if (allowed[_from][msg.sender] < _value
-            || !transferFromTo(_from, _to, _value)) throw;
-            
-        allowed[_from][msg.sender] -= _value;
 
     }
 
-    function approve(address _spender, uint256 _value) returns (bool success) {
-        allowed[msg.sender][_spender] = _value;
-        return true;
+    function takeBoardMeetingFees(uint _boardMeetingID) internal returns (bool) {
+
+        BoardMeeting b = BoardMeetings[_boardMeetingID];
+        uint _amount = b.fees - b.totalRewardedAmount;
+        if (_amount <= 0) return true;
+
+        b.totalRewardedAmount = b.fees;
+        if (daoManager.send(_amount)) {
+            return true;
+        } else {
+            b.totalRewardedAmount = b.fees - _amount;
+            return false;
+        }
+
     }
 
-}    
-  
+    function minQuorum() constant returns (uint) {
+        return (uint(daoManager.TotalSupply()) / DaoRules.minQuorumDivisor);
+    }
+    
+}
