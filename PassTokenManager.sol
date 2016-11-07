@@ -37,14 +37,19 @@ contract PassTokenManagerInterface {
         uint fundingProposalID;
     } 
 
+    // Address of the creator of the smart contract
+    address creator;
     // Address of the Dao    
-    address public client;
+    address client;
     
     // The token name for display purpose
     string public name;
+    // The token symbol for display purpose
+    string public symbol;
     // The quantity of decimals for display purpose
     uint8 public decimals;
     // Total amount of tokens
+    
     uint256 totalSupply;
     // The token name for display purpose
 
@@ -61,6 +66,9 @@ contract PassTokenManagerInterface {
     // Map of blocked Dao share accounts. Points to the date when the share holder can transfer shares
     mapping (address => uint) public blockedDeadLine; 
 
+     /// @return The client of this manager
+    function Client() constant external returns (address);
+    
     /// @return The total supply of shares or tokens 
     function TotalSupply() constant external returns (uint256);
 
@@ -97,16 +105,24 @@ contract PassTokenManagerInterface {
     /// @dev The constructor function
     /// @param _creator The address of the creator of the smart contract
     /// @param _client The address of the Dao
-    /// @param _recipient The address of the recipient
-    /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
-    /// @param _tokenName The token name for display purpose
     //function TokenManager(
         //address _creator,
         //address _client,
-        //address _recipient,
-        //uint256 _initialSupply,
-        //string _tokenName
     //);
+
+    /// @param _tokenName The token name for display purpose
+    /// @param _tokenSymbol The token symbol for display purpose
+    /// @param _tokenDecimals The quantity of decimals for display purpose
+    /// @param _initialSupplyRecipient The recipient of the initial supply (not mandatory)
+    /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
+    function initToken(
+        string _tokenName,
+        string _tokenSymbol,
+        uint8 _tokenDecimals,
+        address _initialSupplyRecipient,
+        uint256 _initialSupply,
+        bool _transferable
+       );
    
     /// @notice Function to set a funding. Can be private or public
     /// @param _mainPartner The address of the smart contract to manage a private funding
@@ -159,10 +175,10 @@ contract PassTokenManagerInterface {
     function setFundingFueled() external onlyMainPartner;
     
     /// @notice Function to able the transfer of Dao shares or contractor tokens
-    function ableTransfer() external onlyClient;
+    function ableTransfer() onlyClient;
 
     /// @notice Function to disable the transfer of Dao shares
-    function disableTransfer() external onlyClient;
+    function disableTransfer() onlyClient;
 
     /// @notice Function used by the client to block the transfer of shares from and to a share holder
     /// @param _shareHolder The address of the share holder
@@ -211,6 +227,14 @@ contract PassTokenManagerInterface {
 
 contract PassTokenManager is PassTokenManagerInterface {
     
+    function Creator() constant external returns (address) {
+        return creator;
+    }
+    
+    function Client() constant external returns (address) {
+        return (client);
+    }
+    
     function TotalSupply() constant external returns (uint256) {
         return totalSupply;
     }
@@ -254,31 +278,46 @@ contract PassTokenManager is PassTokenManagerInterface {
 
     function PassTokenManager(
         address _creator,
-        address _client,
-        address _recipient,
-        uint256 _initialSupply,
-        string _tokenName
+        address _client
     ) {
         
-        if (_client == 0 || _recipient == address(this)) throw;
+        if (_creator == 0 || _client == 0) throw;
 
-        name = _tokenName;
-        decimals = 18;
-
+        creator = _creator; 
         client = _client;
 
-        if (_recipient != 0) {
+   }
+   
+   function initToken(
+        string _tokenName,
+        string _tokenSymbol,
+        uint8 _tokenDecimals,
+        address _initialSupplyRecipient,
+        uint256 _initialSupply,
+        bool _transferable
+       ) {
+           
+        if (msg.sender != creator
+            || _initialSupplyRecipient == address(this)
+            || decimals != 0
+            || totalSupply != 0) throw;
+            
+        name = _tokenName;
+        symbol = _tokenSymbol;
+        decimals = _tokenDecimals;
+          
+        if (_transferable) {
             transferable = true;
             TransferAble();
-        }
-
-        if (_initialSupply > 0) {
-            if (_recipient == 0 && _creator != 0)  _recipient = _creator;
-            balances[_recipient] = _initialSupply; 
-            totalSupply = _initialSupply;
-            TokensCreated(msg.sender, _recipient, _initialSupply);
+        } else {
+            transferable = false;
+            TransferDisable();
         }
         
+        balances[_initialSupplyRecipient] = _initialSupply; 
+        totalSupply = _initialSupply;
+        TokensCreated(msg.sender, _initialSupplyRecipient, _initialSupply);
+           
    }
    
     function setFundingRules(
@@ -375,14 +414,14 @@ contract PassTokenManager is PassTokenManagerInterface {
         FundingFueled(FundingRules.fundingProposalID, FundingRules.fundedAmount);
     }
     
-    function ableTransfer() external onlyClient {
+    function ableTransfer() onlyClient {
         if (!transferable) {
             transferable = true;
             TransferAble();
         }
     }
 
-    function disableTransfer() external onlyClient {
+    function disableTransfer() onlyClient {
         if (transferable) {
             transferable = false;
             TransferDisable();
