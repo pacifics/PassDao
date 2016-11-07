@@ -288,7 +288,7 @@ contract PassFunding is PassFundingInterface {
 
         partners.length = 1; 
         
-        }
+    }
 
     function SetPresaleAmountLimits(
         uint _minPresaleAmount,
@@ -300,7 +300,7 @@ contract PassFunding is PassFundingInterface {
         minPresaleAmount = _minPresaleAmount;
         maxPresaleAmount = _maxPresaleAmount;
 
-        }
+    }
 
     function () payable {
         if (!presale()) throw;
