@@ -124,7 +124,7 @@ contract PassDaoInterface {
     // The maximum inflation rate for contractor and funding proposals
     uint public maxInflationRate;
 
-    // The manager creator
+    // The manager creator smart contract
     PassManagerCreator public managerCreator;
     // The Dao manager smart contract
     PassManager public daoManager;
