@@ -18,32 +18,23 @@ pragma solidity ^0.4.2;
 /// @title Manager smart contract of the Pass Decentralized Autonomous Organisation
 contract PassManagerInterface is PassTokenManagerInterface {
     
-    // Address of the creator or this smart contract
-    address creator;
     // Address of the recipient;
-    address public recipient;
+    address recipient;
 
+    /// @return The recipient adress
+    function getRecipient() constant external returns (address);
+    
     /// @dev The constructor function
     /// @param _creator The address of the creator
     /// @param _client The address of the Dao
     /// @param _recipient The address of the recipient. 0 for the Dao
-    /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
-    /// @param _tokenName The token name for display purpose
     //function PassManager(
         //address _creator,
         //address _client,
-        //address _recipient,
-        //uint256 _initialSupply,
-        //string _tokenName
+        //address _recipient
     //) TokenManager(
-        //_creator,
         //_client,
-        //_recipient,
-        //_initialSupply,
-        //_tokenName) {}
-
-     /// @return True if the sender is the creator of this manager
-    function IsCreator(address _sender) constant external returns (bool);
+        //_recipient);
 
     /// @notice Fallback function to allow sending ethers to the manager
     function () payable;
@@ -72,34 +63,27 @@ contract PassManagerInterface is PassTokenManagerInterface {
 }    
 
 contract PassManager is PassManagerInterface, PassTokenManager {
+
+    function getRecipient() constant external returns (address) {
+        return (recipient);
+    }
     
     function PassManager(
         address _creator,
         address _client,
-        address _recipient,
-        uint256 _initialSupply,
-        string _tokenName
+        address _recipient
     ) PassTokenManager(
         _creator,
-        _client,
-        _recipient,
-        _initialSupply,
-        _tokenName
+        _client
         ) {
         
-        if (_creator == 0 || _client == 0) throw;
-        
-        creator = _creator;
         recipient = _recipient;
 
    }
 
-    function IsCreator(address _sender) constant external returns (bool) {
-        if (creator == _sender) return true;
-    }
-
     function () payable {
     }
+
 
     function buyShares() payable {
         buySharesFor(msg.sender);
@@ -133,23 +117,17 @@ contract PassManager is PassManagerInterface, PassTokenManager {
 }    
 
 contract PassManagerCreator {
-    event NewPassManager(address Creator, address Client, address Recipient, 
-        uint256 InitialSupply, string TokenName, address PassManager);
+    event NewPassManager(address Creator, address Client, address Recipient, address PassManager);
     function createManager(
-        address _creator,
         address _client,
-        address _recipient,
-        uint256 _initialSupply,
-        string _tokenName
+        address _recipient
         ) returns (PassManager) {
         PassManager _passManager = new PassManager(
-            _creator,
+            msg.sender,
             _client,
-            _recipient,
-            _initialSupply,
-            _tokenName
+            _recipient
         );
-        NewPassManager(_creator, _client, _recipient, _initialSupply, _tokenName, _passManager);
+        NewPassManager(msg.sender, _client, _recipient, _passManager);
         return _passManager;
     }
 }
