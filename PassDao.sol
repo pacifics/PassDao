@@ -275,11 +275,11 @@ contract PassDaoInterface {
     function minQuorum() constant returns (uint);
     
     event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed RecipientManagerAddress, uint ProposalAmount);
-    event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, uint MaxFundingAmount);
+    event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, address indexed MainPartner, uint MaxFundingAmount);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID, uint MinQuorumDivisor, uint MinBoardMeetingFees, 
             uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, bool Transferable);
     event SentToContractor(uint indexed ContractorProposalID, address indexed RecipientManagerAddress, uint AmountSent);
-    event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool Executed);
+    event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool ProposalExecuted);
 
 }
 
@@ -454,7 +454,7 @@ contract PassDao is PassDaoInterface {
         
         f.boardMeetingID = newBoardMeeting(0, 0, _fundingProposalID, _minutesDebatingPeriod);   
 
-        FundingProposalAdded(_fundingProposalID, _contractorProposalID, f.maxFundingAmount);
+        FundingProposalAdded(_fundingProposalID, f.contractorProposalID, f.mainPartner, f.maxFundingAmount);
 
         return _fundingProposalID;
         
