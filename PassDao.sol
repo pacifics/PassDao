@@ -503,8 +503,8 @@ contract PassDao is PassDaoInterface {
     ) {
         
         BoardMeeting b = BoardMeetings[_boardMeetingID];
-        if (
-            daoManager.balanceOf(msg.sender) == 0|| 
+
+        if (daoManager.balanceOf(msg.sender) == 0|| 
             b.hasVoted[msg.sender] 
             || now < b.setDeadline
             || now > b.votingDeadline) throw;
