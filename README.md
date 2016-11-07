@@ -61,6 +61,8 @@ Smart contract used for the primary funding of the Dao. Each partner who sent hi
 
 Main functions: 
 
+- SetContractorManager: allows to reward contractor tokens when funding the Dao.
+
 - SetPresaleAmountLimits: allows the smart contract creator to set the presale limits (minimum and maximum).
 
 - Fallback and Presale function to send Eth to the Funding smart contract.
