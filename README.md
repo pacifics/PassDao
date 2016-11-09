@@ -121,6 +121,6 @@ Main external functions:
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares.
 
-- There is neither calldata function.  We use a “withdraw” pattern instead of a “send” pattern.
+- There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern.
 
 - In case of bugs or improvements, we can make a contractor proposal to send the Dao balance to a new smart contract. This will "transfer" the Dao balance, shares and reputation tokens (technically creating new shares and tokens) to new manager smart contracts and with a new Dao smart contract as client.
