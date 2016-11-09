@@ -30,12 +30,10 @@ contract PassDaoInterface {
     struct BoardMeeting {        
         // Address who created the board meeting for a proposal
         address creator;  
-        // Index to identify the proposal to pay a contractor
-        uint contractorProposalID;
+        // Index to identify the proposal to pay a contractor or fund the Dao
+        uint proposalID;
         // Index to identify the proposal to update the Dao rules 
         uint daoRulesProposalID; 
-        // Index to identify the proposal for a funding of the Dao
-        uint fundingProposalID;
         // unix timestamp, denoting the end of the set period of a proposal before the board meeting 
         uint setDeadline;
         // Fees (in wei) paid by the creator of the board meeting
@@ -56,42 +54,29 @@ contract PassDaoInterface {
         mapping (address => bool) hasVoted;  
     }
 
-    struct ContractorProposal {
+    struct Proposal {
         // Index to identify the board meeting of the proposal
         uint boardMeetingID;
         // The contractor manager smart contract
         PassManager contractorManager;
-        // The amount (in wei) to transfer to `recipient` if the proposal is accepted.
+        // The index of the contractor proposal
+        uint contractorProposalID;
+        // The amount (in wei) of the proposal
         uint amount; 
-        // A description of the proposal
-        string description;
-        // The hash of the proposal's document
-        bytes32 hashOfTheDocument;
-        // The initial price multiplier of the contractor token
-        uint initialTokenPriceMultiplier;
-        // The inflation rate to calculate the actual contractor token price
-        uint inflationRate;
-        // The index of the funding proposal if linked to the contractor proposal
-        uint fundingProposalID;
-    }
-    
-    struct FundingProposal {
-        // Index to identify the board meeting of the proposal
-        uint boardMeetingID;
+        // True if the proposal foresee a contractor token creation
+        bool tokenCreation;
         // True if crowdfunding
         bool publicShareCreation; 
         // The address which set partners and manage the funding in case of private funding
         address mainPartner;
-        // The maximum amount (in wei) to fund
-        uint maxFundingAmount; 
         // The initial price multiplier of Dao shares
         uint initialSharePriceMultiplier; 
         // The inflation rate to calculate the actual contractor share price
         uint inflationRate;
         // A unix timestamp, denoting the start time of the funding
         uint minutesFundingPeriod;
-        // Index of the contractor proposal if linked to the funding proposal
-        uint contractorProposalID;
+        // True if the proposal is closed
+        bool open; 
     }
 
     struct Rules {
@@ -131,10 +116,8 @@ contract PassDaoInterface {
     // Board meetings to vote for or against a proposal
     BoardMeeting[] public BoardMeetings; 
     // Proposals to pay a contractor
-    ContractorProposal[] public ContractorProposals;
-    // Proposals for a funding of the Dao
-    FundingProposal[] public FundingProposals;
-   // Proposals to update the Dao Rules
+    Proposal[] public Proposals;
+    // Proposals to pay a contractor or for fund the Dao
     Rules[] public DaoRulesProposals;
     // The current Dao rules
     Rules public DaoRules; 
@@ -167,55 +150,36 @@ contract PassDaoInterface {
         );
     
     /// @dev Internal function to create a board meeting
-    /// @param _contractorProposalID The index of the proposal if contractor
+    /// @param _proposalID The index of the proposal if contractor
     /// @param _daoRulesProposalID The index of the proposal if Dao rules
-    /// @param _fundingProposalID The index of the proposal if funding
     /// @param _minutesDebatingPeriod The duration in minutes of the meeting
     /// @return the index of the board meeting
     function newBoardMeeting(
-        uint _contractorProposalID, 
+        uint _proposalID, 
         uint _daoRulesProposalID, 
-        uint _fundingProposalID, 
         uint _minutesDebatingPeriod
     ) internal returns (uint);
     
-    /// @notice Function to make a proposal to work for the Dao
-    /// @param _contractorManager The beneficiary of the proposal amount
-    /// @param _amount The amount (in wei) to be sent if the proposal is approved
-    /// @param _description String describing the proposal
-    /// @param _hashOfTheDocument The hash of the proposal document
-    /// @param _minutesDebatingPeriod Proposed period in minutes of the board meeting to vote on the proposal
+    /// @notice Function to make a proposal to pay a contractor or fund the Dao
     /// @param _contractorManager Address of the contractor manager smart contract
-    /// @param _initialTokenPriceMultiplier The initial price multiplier of contractor tokens (not mandatory)
-    /// @param _inflationRate If 0, the contractor token price doesn't change during the funding (not mandatory)
-    function newContractorProposal(
-        address _contractorManager,
-        uint _amount, 
-        string _description, 
-        bytes32 _hashOfTheDocument,
-        uint _minutesDebatingPeriod,
-        uint _initialTokenPriceMultiplier, 
-        uint _inflationRate
-    ) payable returns (uint);
-    
-    /// @notice Function to make a proposal for a funding of the Dao
+    /// @param _contractorProposalID Index of the contractor proposal
+    /// @param _amount The amount (in wei) of the proposal
     /// @param _publicShareCreation True if crowdfunding
     /// @param _mainPartner The address of the funding contract if private (not mandatory if public)
-    /// @param _maxFundingAmount The maximum amount to fund
     /// @param _initialSharePriceMultiplier The initial price multiplier of shares
     /// @param _inflationRate If 0, the share price doesn't change during the funding (not mandatory)
     /// @param _minutesFundingPeriod Period in minutes of the funding
-    /// @param _contractorProposalID Index of the contractor proposal if linked to this funding proposal (not mandatory)
     /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
     /// @return The index of the proposal
-    function newFundingProposal(
+    function newProposal(
+        address _contractorManager,
+        uint _contractorProposalID,
+        uint _amount, 
         bool _publicShareCreation,
         address _mainPartner,
-        uint _maxFundingAmount,  
-        uint _initialSharePriceMultiplier,  
+        uint _initialSharePriceMultiplier, 
         uint _inflationRate,
         uint _minutesFundingPeriod,
-        uint _contractorProposalID,
         uint _minutesDebatingPeriod
     ) payable returns (uint);
 
@@ -250,6 +214,11 @@ contract PassDaoInterface {
     /// @return Whether the proposal was executed or not
     function executeDecision(uint _boardMeetingID) returns (bool);
     
+    /// @notice Function to order a contractor proposal
+    /// @param _proposalID The index of the proposal
+    /// @return Whether the proposal was ordered and the proposal amount sent or not
+    function orderContractorProposal(uint _proposalID) returns (bool);   
+
     /// @notice Function to withdraw the rewarded board meeting fees
     /// @return Whether the withdraw was successful or not    
     function withdrawBoardMeetingFees() returns (bool);
@@ -257,8 +226,8 @@ contract PassDaoInterface {
     /// @return The minimum quorum for proposals to pass 
     function minQuorum() constant returns (uint);
     
-    event ContractorProposalAdded(uint indexed ContractorProposalID, address indexed ContractorManagerAddress, uint ProposalAmount);
-    event FundingProposalAdded(uint indexed FundingProposalID, uint ContractorProposalID, address indexed MainPartner, uint MaxFundingAmount);
+    event ProposalAdded(uint indexed ProposalID, address indexed ContractorManager, uint ContractorProposalID, 
+        uint amount, address indexed MainPartner, uint InitialSharePriceMultiplier, uint MinutesFundingPeriod);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID, uint MinQuorumDivisor, uint MinBoardMeetingFees, 
             uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, bool Transferable);
     event SentToContractor(uint indexed ContractorProposalID, address indexed ContractorManagerAddress, uint AmountSent);
@@ -301,16 +270,14 @@ contract PassDao is PassDaoInterface {
         DaoRules.feesRewardInflationRate = _feesRewardInflationRate;
 
         BoardMeetings.length = 1; 
-        ContractorProposals.length = 1;
-        FundingProposals.length = 1;
+        Proposals.length = 1;
         DaoRulesProposals.length = 1;
         
     }
     
     function newBoardMeeting(
-        uint _contractorProposalID, 
+        uint _proposalID, 
         uint _daoRulesProposalID, 
-        uint _fundingProposalID, 
         uint _minutesDebatingPeriod
     ) internal returns (uint) {
 
@@ -325,9 +292,8 @@ contract PassDao is PassDaoInterface {
 
         b.creator = msg.sender;
 
-        b.contractorProposalID = _contractorProposalID;
+        b.proposalID = _proposalID;
         b.daoRulesProposalID = _daoRulesProposalID;
-        b.fundingProposalID = _fundingProposalID;
 
         b.fees = msg.value;
         
@@ -340,92 +306,45 @@ contract PassDao is PassDaoInterface {
 
     }
 
-    function newContractorProposal(
+    function newProposal(
         address _contractorManager,
+        uint _contractorProposalID,
         uint _amount, 
-        string _description, 
-        bytes32 _hashOfTheDocument,
-        uint _minutesDebatingPeriod,
-        uint _initialTokenPriceMultiplier, 
-        uint _inflationRate
-    ) payable returns (uint) {
-
-        uint _contractorProposalID = ContractorProposals.length++;
-        ContractorProposal c = ContractorProposals[_contractorProposalID];
-
-        c.contractorManager = PassManager(_contractorManager);       
-        address _client = c.contractorManager.Client();
-
-        if (_contractorManager == 0 
-            || _client != address(this)
-            || _inflationRate > maxInflationRate) throw;
-
-        c.amount = _amount;
-        c.description = _description;
-        c.hashOfTheDocument = _hashOfTheDocument; 
-        
-        c.initialTokenPriceMultiplier = _initialTokenPriceMultiplier;
-        c.inflationRate = _inflationRate;
-            
-        c.boardMeetingID = newBoardMeeting(_contractorProposalID, 0, 0, _minutesDebatingPeriod);    
-
-        ContractorProposalAdded(_contractorProposalID, _contractorManager, c.amount);
-        
-        return _contractorProposalID;
-        
-    }
-
-    function newFundingProposal(
         bool _publicShareCreation,
         address _mainPartner,
-        uint _maxFundingAmount, 
         uint _initialSharePriceMultiplier, 
         uint _inflationRate,
         uint _minutesFundingPeriod,
-        uint _contractorProposalID,
         uint _minutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_mainPartner == address(this)
-            || (_contractorProposalID != 0 && _maxFundingAmount != 0)
-            || _inflationRate > maxInflationRate
-            || _minutesFundingPeriod < minMinutesPeriods
-            || _minutesFundingPeriod > maxMinutesFundingPeriod) throw;
+        if ((_contractorManager == 0 && _contractorProposalID != 0)
+            || (_initialSharePriceMultiplier != 0
+                && (_minutesFundingPeriod < minMinutesPeriods
+                    || _inflationRate > maxInflationRate
+                    || _minutesFundingPeriod > maxMinutesFundingPeriod))) throw;
 
-        if (_contractorProposalID != 0) {
+        uint _proposalID = Proposals.length++;
+        Proposal p = Proposals[_proposalID];
 
-            ContractorProposal cf = ContractorProposals[_contractorProposalID];
-            BoardMeeting b = BoardMeetings[cf.boardMeetingID];
-            
-            if (now > b.setDeadline || b.creator != msg.sender) throw;
+        p.contractorManager = PassManager(_contractorManager);
+        p.contractorProposalID = _contractorProposalID;
+        p.amount = _amount;
 
-            uint _fees = b.fees;
-            b.fees = 0;
-            pendingFeesWithdrawals[b.creator] += _fees;
+        p.publicShareCreation = _publicShareCreation;
+        p.mainPartner = _mainPartner;
+        p.initialSharePriceMultiplier = _initialSharePriceMultiplier;
+        p.inflationRate = _inflationRate;
+        p.minutesFundingPeriod = _minutesFundingPeriod;
 
-        }
+        p.boardMeetingID = newBoardMeeting(_proposalID, 0, _minutesDebatingPeriod);   
 
-        uint _fundingProposalID = FundingProposals.length++;
-        FundingProposal f = FundingProposals[_fundingProposalID];
-
-        f.mainPartner = _mainPartner;
-        f.publicShareCreation = _publicShareCreation;
-        f.maxFundingAmount = _maxFundingAmount;
-        f.initialSharePriceMultiplier = _initialSharePriceMultiplier;
-        f.inflationRate = _inflationRate;
-        f.contractorProposalID = _contractorProposalID;
-        f.minutesFundingPeriod = _minutesFundingPeriod;
-
-        if (_contractorProposalID != 0) {
-            cf.fundingProposalID = _fundingProposalID;
-            f.maxFundingAmount = cf.amount;
-        }
+        p.open = true;
         
-        f.boardMeetingID = newBoardMeeting(0, 0, _fundingProposalID, _minutesDebatingPeriod);   
+        ProposalAdded(_proposalID, p.contractorManager, p.contractorProposalID, p.amount, p.mainPartner, 
+            p.initialSharePriceMultiplier, _minutesFundingPeriod);
 
-        FundingProposalAdded(_fundingProposalID, f.contractorProposalID, f.mainPartner, f.maxFundingAmount);
-
-        return _fundingProposalID;
+        return _proposalID;
         
     }
 
@@ -457,7 +376,7 @@ contract PassDao is PassDaoInterface {
         r.feesRewardInflationRate = _feesRewardInflationRate;
         r.transferable = _transferable;
         
-        r.boardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, 0, _minutesDebatingPeriod);     
+        r.boardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, _minutesDebatingPeriod);     
 
         DaoRulesProposalAdded(_DaoRulesProposalID, _minQuorumDivisor, _minBoardMeetingFees, 
             _minutesSetProposalPeriod, _minMinutesDebatePeriod, _feesRewardInflationRate ,_transferable);
@@ -475,9 +394,7 @@ contract PassDao is PassDaoInterface {
 
         if (b.hasVoted[msg.sender] 
             || now < b.setDeadline
-            || now > b.votingDeadline
-            || (b.contractorProposalID != 0 
-                && ContractorProposals[b.contractorProposalID].fundingProposalID != 0)) throw;
+            || now > b.votingDeadline) throw;
 
         uint _balance = uint(daoManager.balanceOf(msg.sender));
         if (_balance == 0) throw;
@@ -487,17 +404,14 @@ contract PassDao is PassDaoInterface {
         if (_supportsProposal) b.yea += _balance;
         else b.nay += _balance; 
 
-        if (b.fees > 0
-            && (b.contractorProposalID != 0 
-                || (b.fundingProposalID != 0 && FundingProposals[b.fundingProposalID].contractorProposalID != 0))) {
-                    
+        if (b.fees > 0 && b.proposalID != 0 && Proposals[b.proposalID].contractorProposalID != 0) {
+
             uint _rewardedamount = b.fees * (100*_balance/uint(daoManager.TotalSupply())) / 
                 (100 + 100*DaoRules.feesRewardInflationRate*(now - b.setDeadline)/(100*365 days));
 
             if (b.totalRewardedAmount + _rewardedamount > b.fees) _rewardedamount = b.fees - b.totalRewardedAmount;
             b.totalRewardedAmount += _rewardedamount;
             pendingFeesWithdrawals[msg.sender] += _rewardedamount;
-
         }
 
         daoManager.blockTransfer(msg.sender, b.votingDeadline);
@@ -508,77 +422,51 @@ contract PassDao is PassDaoInterface {
 
         BoardMeeting b = BoardMeetings[_boardMeetingID];
 
-        if (now < b.votingDeadline 
-            || !b.open
-            ) throw;
+        if (now < b.votingDeadline || !b.open) throw;
         
+        b.open = false;
+        if (Proposals[b.proposalID].contractorProposalID == 0) p.open = false;
+
         uint _fees;
-        uint _fundedAmount;
         uint _minQuorum = minQuorum();
 
-        if (b.contractorProposalID != 0) {
-            
-            ContractorProposal c = ContractorProposals[b.contractorProposalID];
-            
-            if (c.fundingProposalID != 0) {
-
-                _fundedAmount = daoManager.FundedAmount(c.fundingProposalID);
-                
-                if (_fundedAmount == 0
-                    && (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].open
-                        || (BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution != 0
-                            && now < BoardMeetings[FundingProposals[c.fundingProposalID].boardMeetingID].dateOfExecution 
-                            + (FundingProposals[c.fundingProposalID].minutesFundingPeriod * 1 minutes)))) {
-                    return;
-                }
-                            
-            }
-            
-        }
-
-        b.open = false;
-
         if (b.fees > 0
-            && (b.contractorProposalID == 0 
-                && (b.fundingProposalID == 0 || FundingProposals[b.fundingProposalID].contractorProposalID == 0))) {
+            && (b.proposalID == 0 || Proposals[b.proposalID].contractorProposalID == 0)) {
 
                 if (b.yea + b.nay >= _minQuorum) {
                     _fees = b.fees;
                     b.fees = 0;
                     pendingFeesWithdrawals[b.creator] += _fees;
                 }
-                
         }        
 
         if (!daoManager.send(b.fees - b.totalRewardedAmount)) throw;
 
-        if ((b.yea + b.nay < _minQuorum || b.yea <= b.nay) && _fundedAmount == 0) {
+        if (b.yea + b.nay < _minQuorum || b.yea <= b.nay) {
+            p.open = false;
             BoardMeetingClosed(_boardMeetingID, _fees, false);
             return;
         }
 
         b.dateOfExecution = now;
 
-        if (b.fundingProposalID != 0) {
+        if (b.proposalID != 0) {
 
-            FundingProposal f = FundingProposals[b.fundingProposalID];
-
-            daoManager.setFundingRules(f.mainPartner, f.publicShareCreation, f.initialSharePriceMultiplier, 
-                f.maxFundingAmount, f.minutesFundingPeriod, f.inflationRate, b.fundingProposalID);
-
-            if (f.contractorProposalID != 0 && !f.publicShareCreation) {
-                ContractorProposal cf = ContractorProposals[f.contractorProposalID];
-                
-                if (cf.initialTokenPriceMultiplier != 0) {
-                    cf.contractorManager.setFundingRules(f.mainPartner, false, cf.initialTokenPriceMultiplier, 
-                    f.maxFundingAmount, f.minutesFundingPeriod, cf.inflationRate, b.fundingProposalID);
-                }
-                
-            }
+            Proposal p = Proposals[b.proposalID];
             
-        }
-        
-        if (b.daoRulesProposalID != 0) {
+            if (p.initialSharePriceMultiplier != 0) {
+
+                daoManager.setFundingRules(p.mainPartner, p.publicShareCreation, p.initialSharePriceMultiplier, 
+                    p.amount, p.minutesFundingPeriod, p.inflationRate, b.proposalID);
+
+                if (p.contractorProposalID != 0) {
+                    p.contractorManager.setFundingRules(p.mainPartner, p.publicShareCreation, 0, 
+                        p.amount, p.minutesFundingPeriod, maxInflationRate, b.proposalID);
+                }
+
+            }
+
+        } else {
 
             Rules r = DaoRulesProposals[b.daoRulesProposalID];
             DaoRules.boardMeetingID = r.boardMeetingID;
@@ -592,21 +480,37 @@ contract PassDao is PassDaoInterface {
             DaoRules.transferable = r.transferable;
             if (r.transferable) daoManager.ableTransfer();
             else daoManager.disableTransfer();
-            
         }
             
-        if (b.contractorProposalID != 0) {
-
-            if (c.fundingProposalID == 0) _fundedAmount == c.amount;
-            daoManager.sendTo(c.contractorManager, _fundedAmount);
-            SentToContractor(b.contractorProposalID, address(c.contractorManager), _fundedAmount);
-
-        }
-
         BoardMeetingClosed(_boardMeetingID, _fees, true);
 
         return true;
         
+    }
+    
+    function orderContractorProposal(uint _proposalID) returns (bool) {
+        
+        Proposal p = Proposals[_proposalID];
+        BoardMeeting b = BoardMeetings[p.boardMeetingID];
+
+        if (b.open || !p.open) throw;
+        
+        uint _amount = p.amount;
+
+        if (p.initialSharePriceMultiplier != 0) {
+            _amount = daoManager.FundedAmount(b.proposalID);
+            if (_amount == 0 && now < b.dateOfExecution + (p.minutesFundingPeriod * 1 minutes)) return;
+        }
+        
+        p.open = false;   
+
+        if (_amount == 0 || !p.contractorManager.order(p.contractorProposalID, _amount) return;
+        
+        if (!daoManager.sendTo(p.contractorManager, _amount)) throw;
+        SentToContractor(p.contractorProposalID, address(p.contractorManager), _amount);
+        
+        return true;
+
     }
     
     function withdrawBoardMeetingFees() returns (bool) {
@@ -614,6 +518,7 @@ contract PassDao is PassDaoInterface {
         uint _amount = pendingFeesWithdrawals[msg.sender];
 
         pendingFeesWithdrawals[msg.sender] = 0;
+
         if (msg.sender.send(_amount)) {
             return true;
         } else {
