@@ -17,12 +17,24 @@ pragma solidity ^0.4.2;
 
 /// @title Manager smart contract of the Pass Decentralized Autonomous Organisation
 contract PassManagerInterface is PassTokenManagerInterface {
-    
-    // Address of the recipient;
-    address recipient;
 
-    /// @return The recipient adress
-    function getRecipient() constant external returns (address);
+    struct proposal {
+        // Amount (in wei) of the proposal
+        uint amount;
+        // A description of the proposal
+        string description;
+        // The hash of the proposal's document
+        bytes32 hashOfTheDocument;
+        // A unix timestamp, denoting the date when the proposal was created
+        uint dateOfProposal;
+        // The sum amount (in wei) ordered for this proposal 
+        uint orderAmount;
+        // A unix timestamp, denoting the date of the last order for the approved proposal
+        uint dateOfOrder;
+    }
+        
+    // Proposals to work for the client
+    proposal[] public proposals;
     
     /// @dev The constructor function
     /// @param _creator The address of the creator
@@ -32,12 +44,17 @@ contract PassManagerInterface is PassTokenManagerInterface {
         //address _creator,
         //address _client,
         //address _recipient
-    //) TokenManager(
+    //) PassTokenManager(
+        //_creator,
         //_client,
         //_recipient);
 
     /// @notice Fallback function to allow sending ethers to the manager
     function () payable;
+    
+    /// @notice Function to update the recipent address
+    /// @param _newRecipient The adress of the recipient
+    function updateRecipient(address _newRecipient) onlyContractor;
 
     /// @notice Function to buy Dao shares according to the funding rules 
     /// with `msg.sender` as the beneficiary
@@ -47,43 +64,64 @@ contract PassManagerInterface is PassTokenManagerInterface {
     /// @param _recipient The beneficiary of the created shares
     function buySharesFor(address _recipient) payable;
 
-    /// @dev Function used by the client to send ethers from the Dao manager
+    /// @notice Function to make a proposal to work for the client
+    /// @param _amount The amount (in wei) of the proposal
+    /// @param _description String describing the proposal
+    /// @param _hashOfTheDocument The hash of the proposal document
+    /// @return The index of the contractor proposal
+    function newProposal(
+        uint _amount,
+        string _description, 
+        bytes32 _hashOfTheDocument
+    ) returns (uint);
+    
+    /// @notice Function used by the client to order the contractor proposal
+    /// @param _proposalID The index of the contractor proposal
+    /// @param _amount The amount (in wei) of the order
+    /// @return Whether the order was made or not
+    function order(
+        uint _proposalID,
+        uint _amount
+    ) external onlyClient returns (bool) ;
+    
+    /// @notice Function used by the client to send ethers from the Dao manager
     /// @param _recipient The address to send to
     /// @param _amount The amount (in wei) to send
     /// @return Whether the transfer was successful or not
     function sendTo(
         address _recipient, 
         uint _amount
-    ) external onlyClient;
+    ) external onlyClient returns (bool);
 
     /// @notice Function to allow contractors to withdraw ethers from their manager
     /// @param _amount The amount (in wei) to withdraw
-    function withdraw(uint _amount);
+    function withdraw(uint _amount) onlyContractor;
     
+    event ProposalAdded(uint indexed ProposalID, uint Amount, string Description);
+
 }    
 
 contract PassManager is PassManagerInterface, PassTokenManager {
 
-    function getRecipient() constant external returns (address) {
-        return (recipient);
-    }
-    
     function PassManager(
         address _creator,
         address _client,
         address _recipient
     ) PassTokenManager(
         _creator,
-        _client
+        _client,
+        _recipient
         ) {
-        
-        recipient = _recipient;
-
-   }
+        proposals.length = 1;
+    }
 
     function () payable {
     }
 
+    function updateRecipient(address _newRecipient) onlyContractor {
+        if (recipient == 0 || _newRecipient == client) throw;
+        recipient = _newRecipient;
+    } 
 
     function buyShares() payable {
         buySharesFor(msg.sender);
@@ -92,26 +130,63 @@ contract PassManager is PassManagerInterface, PassTokenManager {
     function buySharesFor(address _recipient) payable {
         
         if (recipient != 0
-            || !FundingRules.publicCreation 
+            || !FundingRules[0].publicCreation 
             || !createToken(_recipient, msg.value, now)) {
             throw;
         }
 
     }
+   
+    function newProposal(
+        uint _amount,
+        string _description, 
+        bytes32 _hashOfTheDocument
+    ) returns (uint) {
+        
+        if (msg.sender != recipient && msg.sender != creator) throw;
 
-    function sendTo(
-        address _recipient, 
-        uint _amount
-    ) external onlyClient {
+        uint _proposalID = proposals.length++;
+        proposal c = proposals[_proposalID];
+
+        c.amount = _amount;
+        c.description = _description;
+        c.hashOfTheDocument = _hashOfTheDocument; 
+        c.dateOfProposal = now;
+        
+        ProposalAdded(_proposalID, c.amount, c.description);
+        
+        return _proposalID;
+        
+    }
     
-        if (!_recipient.send(_amount)) throw;    
+    function order(
+        uint _proposalID,
+        uint _orderAmount
+    ) external onlyClient returns (bool) {
+    
+        proposal c = proposals[_proposalID];
+        
+        if (c.orderAmount + _orderAmount > c.amount) return; 
+
+        c.orderAmount += _orderAmount;
+        c.dateOfOrder = now;
+        
+        return true;
 
     }
 
-    function withdraw(uint _amount) {
-        if ((msg.sender != recipient && msg.sender != creator)
-            || recipient == 0
-            || !recipient.send(_amount)) throw;
+    function sendTo(
+        address _recipient,
+        uint _amount
+    ) external onlyClient returns (bool) {
+    
+        if (_recipient.send(_amount)) return true;
+        else return false;
+
+    }
+   
+    function withdraw(uint _amount) onlyContractor {
+        if (recipient == 0 || !recipient.send(_amount)) throw;
     }
     
 }    
