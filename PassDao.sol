@@ -504,7 +504,7 @@ contract PassDao is PassDaoInterface {
         
         p.open = false;   
 
-        if (_amount == 0 || !p.contractorManager.order(p.contractorProposalID, _amount) return;
+        if (_amount == 0 || !p.contractorManager.order(p.contractorProposalID, _amount)) return;
         
         if (!daoManager.sendTo(p.contractorManager, _amount)) throw;
         SentToContractor(p.contractorProposalID, address(p.contractorManager), _amount);
