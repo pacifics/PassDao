@@ -123,7 +123,7 @@ contract PassDaoInterface {
     Rules public DaoRules; 
     
     /// @dev The constructor function
-    //function PassDao(address _creator);
+    //function PassDao();
 
     /// @dev Function to initialize the Dao
     /// @param _daoManager Address of the Dao manager smart contract
@@ -237,9 +237,7 @@ contract PassDaoInterface {
 
 contract PassDao is PassDaoInterface {
 
-    function PassDao(address _creator) {
-        creator = _creator;
-    }
+    function PassDao() {}
     
     function initDao(
         address _daoManager,
@@ -532,13 +530,4 @@ contract PassDao is PassDaoInterface {
         return (uint(daoManager.TotalSupply()) / DaoRules.minQuorumDivisor);
     }
     
-}
-
-contract PassDaoCreator {
-    event NewPassDao(address Creator);
-    function createPassDao() returns (PassDao) {
-        PassDao _passDao = new PassDao(msg.sender);
-        NewPassDao(msg.sender);
-        return _passDao;
-    }
 }
