@@ -237,8 +237,8 @@ contract PassDaoInterface {
 
 contract PassDao is PassDaoInterface {
 
-    function PassDao() {
-        creator = msg.sender;
+    function PassDao(address _creator) {
+        creator = _creator;
     }
     
     function initDao(
@@ -532,4 +532,13 @@ contract PassDao is PassDaoInterface {
         return (uint(daoManager.TotalSupply()) / DaoRules.minQuorumDivisor);
     }
     
+}
+
+contract PassDaoCreator {
+    event NewPassDao(address Creator);
+    function createPassDao() returns (PassDao) {
+        PassDao _passDao = new PassDao(msg.sender);
+        NewPassDao(msg.sender);
+        return _passDao;
+    }
 }
