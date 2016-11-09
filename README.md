@@ -95,7 +95,7 @@ Main functions:
 
 - We limit the amount to send to the funding smart contract and if fueled we limit the amount to fund to the Dao for each partner. Our first goal is decentralization and we want everyone to be able to become a share holder.
 
-- Prepayments to the contractors are done with ethers and step by step. Each contractor proposal can contains serveral orders from the Dao.
+- Payments to the contractors are done with ethers and step by step. Each contractor proposal can contains serveral orders from the Dao it the total orderd amount is less than the amount of the proposal.
 
 - It is possible to link a funding proposal with a contractor proposal and that will be completed only if the funding is fueled during a predefined period, otherwise the Dao is not funded and the contractor proposal not completed. We use this method for the first Project Manager proposal and the primary funding. For the next steps of the project, we can proceed in the same way and with no ether balance in the Dao after the funding.
 
@@ -121,6 +121,6 @@ Main functions:
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares.
 
-- There is neither calldata function nor send function.  We use a “withdraw” pattern instead of a “send” pattern.
+- There is neither calldata function.  We use a “withdraw” pattern instead of a “send” pattern.
 
 - In case of bugs or improvements, we can make a contractor proposal to send the Dao balance to a new smart contract. This will "transfer" the Dao balance, shares and reputation tokens (technically creating new shares and tokens) to new manager smart contracts and with a new Dao smart contract as client.
