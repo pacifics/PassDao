@@ -25,7 +25,7 @@ Main functions are :
 
 - Set a proposal: every contractor can offer his client (the DAO) to sell products or execute services. The proposal contains a description, a hash of document and the amount of the proposal. 
 
-- Order and sendTo for the order and payment of ethers according to a proposal.
+- Order and sendTo for the order and payment of ethers by the Dao according to a proposal.
 
 - Withdraw function: allows the contractors to withdraw the amounts sent by the Dao.
 
