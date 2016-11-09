@@ -23,7 +23,7 @@ Main functions are :
 
 - BuyToken and BuyTokenFor to buy Dao shares in case of simple public fundings without funding smart contract.
 
-- Set a contractor proposal: every contractor can offer his client (the DAO) to sell products or execute services. The contractor proposal contains a description, a hash of proposal's document and the amount of the proposal. 
+- Set a proposal: every contractor can offer his client (the DAO) to sell products or execute services. The proposal contains a description, a hash of document and the amount of the proposal. 
 
 - Withdraw function: allows the contractors to withdraw the amounts sent by the Dao.
 
@@ -45,7 +45,7 @@ Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a co
 
 Main functions: 
 
-- Set a contractor or funding proposal: the dao sharehoders can propose to order a work of a contractor (set in a contractor proposal of the contractor manager) or/and to fund the Dao with a public or private funding. The funding rules can be set in a separated smart contract and foresee to reward contractor tokens to funders. We use this method for the primary funding that gives to new DAO share holders Pass reputation tokens.
+- Set a contractor or funding proposal: the dao sharehoders can propose to order a work of a contractor (defined in a proposal of the contractor manager) or/and to fund the Dao with a public or private funding. The funding rules can be set in a separated smart contract and foresee to reward contractor tokens to funders. We use this method for the primary funding that gives to new DAO share holders Pass reputation tokens.
 
 - Set a Dao Rules proposal: the dao share holders can propose to change the minimum quorum for proposals, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period, the inflation rate for the reward of fees to voters during board meetings and the date when shares can be transfered.
 
