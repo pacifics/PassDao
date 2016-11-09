@@ -29,6 +29,8 @@ Main functions are :
 
 - Withdraw function: allows the contractors to withdraw the amounts sent by the Dao.
 
+- SetTokenPriceRules: allows the contractors to propose a token price for the creation of contractor tokens.
+
 - SetFundingRules to set the funding rules according to funding proposals approved by the Dao.
 
 - CreateToken according to the funding rules.
