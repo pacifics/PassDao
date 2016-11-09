@@ -21,6 +21,8 @@ Main functions are :
 
 - Fallback function to receive Eth.
 
+- Update recipient: allows th contractor to update the address to withraw ethers fom the manager contract.
+
 - BuyToken and BuyTokenFor to buy Dao shares in case of simple public fundings without funding smart contract.
 
 - Set a proposal: every contractor can offer his client (the DAO) to sell products or execute services. The proposal contains a description, a hash of document and the amount of the proposal. 
