@@ -19,7 +19,7 @@ The Dao Manager smart contract contains the Eth balance of the Dao. A manager sm
 
 Main external functions are : 
 
-- Fallback function to receive Eth.
+- Fallback payable function: allows to send Eth to the manager smart contract.
 
 - Update recipient: allows the contractor to update the address for the withdrawal of ethers fom the manager contract.
 
