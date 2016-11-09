@@ -17,7 +17,7 @@ Pass DAO is open source and used for the project to put together a transparent o
 
 The Dao Manager smart contract contains the Eth balance of the Dao. A manager smart contract is also created for each contractor with proposals to work for the Dao and orders from the Dao. The smart contract derives to the Token Manager smart contract used for the management of Dao shares or contractor tokens. The smart contract is conform to ERC20.
 
-Main external functions are : 
+External functions are : 
 
 - Fallback payable function: allows to send Eth to the manager smart contract.
 
@@ -47,7 +47,7 @@ Main external functions are :
 
 Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). For the contractor proposals, the fees go to the voters according to their share and how quickly they vote after the set period. For the funding and Dao rules proposal, the Dao gives back the fees to the creator of the proposal if the quorum is reached. The balance of fees goes to the Dao manager smart contract.
 
-Main functions: 
+External functions are :
 
 - Set a contractor or funding proposal: the dao sharehoders can propose to order a work of a contractor (defined in a proposal of the contractor manager) or/and to fund the Dao with a public or private funding. The funding rules can be set in a separated smart contract and foresee to reward contractor tokens to funders. We use this method for the primary funding that gives to new DAO share holders Pass reputation tokens.
 
@@ -65,7 +65,7 @@ Main functions:
 
 Smart contract used for the primary funding of the Dao. Each partner who sent his Eth account address by email (for communication and security purposes) can become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. After the primary funding, the smart contract will allow others fundings with for instance Priority Subscription Rights for share holders. The smart contract also foresee a preliminary step for the setting before the voting procedure of the corresponding funding proposal in the Dao. This will allow the share holders to approve a set private funding without allowing the creator of the funding to change  anything.
 
-Main external functions: 
+External functions are :
 
 - SetContractorManager: allows to reward contractor tokens when funding the Dao.
 
