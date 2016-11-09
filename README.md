@@ -23,6 +23,8 @@ Main functions are :
 
 - BuyToken and BuyTokenFor to buy Dao shares in case of simple public fundings without funding smart contract.
 
+- Set a contractor proposal: every contractor can offer his client (the DAO) to sell products or execute services. The contractor proposal contains a description, a hash of proposal's document and the amount of the proposal. 
+
 - Withdraw function: allows the contractors to withdraw the amounts sent by the Dao.
 
 - SetFundingRules to set the funding rules according to funding proposals approved by the Dao.
@@ -43,13 +45,13 @@ Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a co
 
 Main functions: 
 
-- Set a contractor proposal: every contractor can offer the DAO to sell products or execute services.  The contractor proposal can be linked to a funding proposal. We use this method for the primary funding with a funding proposal linked to the first project manager proposal.
-
-- Set a funding proposal: the dao sharehoders can propose to fund the Dao with a public or private funding. The funding rules can be set in a separated smart contract and foresee to reward contractor tokens to funders. We use this method for the primary funding that gives to new DAO share holders Pass reputation tokens.
+- Set a contractor or funding proposal: the dao sharehoders can propose to order a work of a contractor (set in a contractor proposal of the contractor manager) or/and to fund the Dao with a public or private funding. The funding rules can be set in a separated smart contract and foresee to reward contractor tokens to funders. We use this method for the primary funding that gives to new DAO share holders Pass reputation tokens.
 
 - Set a Dao Rules proposal: the dao share holders can propose to change the minimum quorum for proposals, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period, the inflation rate for the reward of fees to voters during board meetings and the date when shares can be transfered.
 
 - Vote for or against a proposal: If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
+
+- Order a contractor proposal: In case of funding proposal linked to a contractor proposal, the amount sent to the contrator management corresponds to the funded amount. Otherwise, the amount sent is the amount of the proposal.
 
 - Withdraw function: allows the share holders to withdraw the board meeting fees sent by the creators of the proposals.
 
@@ -89,7 +91,7 @@ Main functions:
 
 - We limit the amount to send to the funding smart contract and if fueled we limit the amount to fund to the Dao for each partner. Our first goal is decentralization and we want everyone to be able to become a share holder.
 
-- Prepayments to the contractors are done with ethers and step by step for each contractor. Each new step starts with a new contractor proposal which includes a report about the result of the last proposal.  
+- Prepayments to the contractors are done with ethers and step by step. Each contractor proposal can contains serveral orders from the Dao.
 
 - It is possible to link a funding proposal with a contractor proposal and that will be completed only if the funding is fueled during a predefined period, otherwise the Dao is not funded and the contractor proposal not completed. We use this method for the first Project Manager proposal and the primary funding. For the next steps of the project, we can proceed in the same way and with no ether balance in the Dao after the funding.
 
