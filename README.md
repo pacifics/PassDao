@@ -17,11 +17,11 @@ Pass DAO is open source and used for the project to put together a transparent o
 
 The Dao Manager smart contract contains the Eth balance of the Dao. A manager smart contract is also created for each contractor with proposals to work for the Dao and orders from the Dao. The smart contract derives to the Token Manager smart contract used for the management of Dao shares or contractor tokens. The smart contract is conform to ERC20.
 
-Main functions are : 
+Main external functions are : 
 
 - Fallback function to receive Eth.
 
-- Update recipient: allows th contractor to update the address to withraw ethers fom the manager contract.
+- Update recipient: allows the contractor to update the address for the withdrawal of ethers fom the manager contract.
 
 - BuyShares and BuySharesFor in case of public fundings without funding smart contract.
 
@@ -34,8 +34,6 @@ Main functions are :
 - SetTokenPriceProposal: allows the contractors to propose a token price for the creation of contractor tokens.
 
 - SetFundingRules to set the funding rules according to funding proposals approved by the Dao.
-
-- CreateToken according to the funding rules.
 
 - RewardToken to funders by the funding smart contract.
 
@@ -67,7 +65,7 @@ Main functions:
 
 Smart contract used for the primary funding of the Dao. Each partner who sent his Eth account address by email (for communication and security purposes) can become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. After the primary funding, the smart contract will allow others fundings with for instance Priority Subscription Rights for share holders. The smart contract also foresee a preliminary step for the setting before the voting procedure of the corresponding funding proposal in the Dao. This will allow the share holders to approve a set private funding without allowing the creator of the funding to change  anything.
 
-Main functions: 
+Main external functions: 
 
 - SetContractorManager: allows to reward contractor tokens when funding the Dao.
 
