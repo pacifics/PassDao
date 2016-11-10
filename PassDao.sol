@@ -233,9 +233,6 @@ contract PassDaoInterface {
     event SentToContractor(uint indexed ContractorProposalID, address indexed ContractorManagerAddress, uint AmountSent);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool ProposalExecuted);
     
-    event test(address mainPartner, bool publicShareCreation, uint initialSharePriceMultiplier, 
-                    uint amount, uint minutesFundingPeriod, uint inflationRate, uint proposalID);
-
 }
 
 contract PassDao is PassDaoInterface {
@@ -446,7 +443,7 @@ contract PassDao is PassDaoInterface {
                     pendingFeesWithdrawals[b.creator] += _fees;
         }        
 
-        if (b.fees - b.totalRewardedAmount >0 
+        if (b.fees - b.totalRewardedAmount > 0 
             && !daoManager.send(b.fees - b.totalRewardedAmount)) throw;
 
         if (b.yea + b.nay < _minQuorum || b.yea <= b.nay) {
@@ -463,15 +460,13 @@ contract PassDao is PassDaoInterface {
             
             if (p.initialSharePriceMultiplier != 0) {
 
-test(p.mainPartner, p.publicShareCreation, p.initialSharePriceMultiplier, 
+                daoManager.setFundingRules(p.mainPartner, p.publicShareCreation, p.initialSharePriceMultiplier, 
                     p.amount, p.minutesFundingPeriod, p.inflationRate, b.proposalID);
-//                daoManager.setFundingRules(p.mainPartner, p.publicShareCreation, p.initialSharePriceMultiplier, 
-//                    p.amount, p.minutesFundingPeriod, p.inflationRate, b.proposalID);
 
-//                if (p.contractorProposalID != 0) {
-//                    p.contractorManager.setFundingRules(p.mainPartner, p.publicShareCreation, 0, 
-//                        p.amount, p.minutesFundingPeriod, maxInflationRate, b.proposalID);
-//                }
+                if (p.contractorProposalID != 0) {
+                    p.contractorManager.setFundingRules(p.mainPartner, p.publicShareCreation, 0, 
+                        p.amount, p.minutesFundingPeriod, maxInflationRate, b.proposalID);
+                }
 
             }
 
