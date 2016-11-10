@@ -115,8 +115,7 @@ contract PassManager is PassManagerInterface, PassTokenManager {
         proposals.length = 1;
     }
 
-    function () payable {
-    }
+    function () payable {}
 
     function updateRecipient(address _newRecipient) onlyContractor {
 
