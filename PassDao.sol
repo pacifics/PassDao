@@ -232,6 +232,9 @@ contract PassDaoInterface {
             uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, bool Transferable);
     event SentToContractor(uint indexed ContractorProposalID, address indexed ContractorManagerAddress, uint AmountSent);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool ProposalExecuted);
+    
+    event test(address mainPartner, bool publicShareCreation, uint initialSharePriceMultiplier, 
+                    uint amount, uint minutesFundingPeriod, uint inflationRate, uint proposalID);
 
 }
 
@@ -443,7 +446,8 @@ contract PassDao is PassDaoInterface {
                     pendingFeesWithdrawals[b.creator] += _fees;
         }        
 
-        if (!daoManager.send(b.fees - b.totalRewardedAmount)) throw;
+        if (b.fees - b.totalRewardedAmount >0 
+            && !daoManager.send(b.fees - b.totalRewardedAmount)) throw;
 
         if (b.yea + b.nay < _minQuorum || b.yea <= b.nay) {
             p.open = false;
@@ -459,13 +463,15 @@ contract PassDao is PassDaoInterface {
             
             if (p.initialSharePriceMultiplier != 0) {
 
-                daoManager.setFundingRules(p.mainPartner, p.publicShareCreation, p.initialSharePriceMultiplier, 
+test(p.mainPartner, p.publicShareCreation, p.initialSharePriceMultiplier, 
                     p.amount, p.minutesFundingPeriod, p.inflationRate, b.proposalID);
+//                daoManager.setFundingRules(p.mainPartner, p.publicShareCreation, p.initialSharePriceMultiplier, 
+//                    p.amount, p.minutesFundingPeriod, p.inflationRate, b.proposalID);
 
-                if (p.contractorProposalID != 0) {
-                    p.contractorManager.setFundingRules(p.mainPartner, p.publicShareCreation, 0, 
-                        p.amount, p.minutesFundingPeriod, maxInflationRate, b.proposalID);
-                }
+//                if (p.contractorProposalID != 0) {
+//                    p.contractorManager.setFundingRules(p.mainPartner, p.publicShareCreation, 0, 
+//                        p.amount, p.minutesFundingPeriod, maxInflationRate, b.proposalID);
+//                }
 
             }
 
