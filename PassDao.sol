@@ -316,7 +316,10 @@ contract PassDao is PassDaoInterface {
         uint _minutesDebatingPeriod
     ) payable returns (uint) {
 
-        if ((_contractorManager == 0 && _contractorProposalID != 0)
+        if ((_contractorManager != 0 && _contractorProposalID == 0)
+            || (_contractorManager == 0 
+                && (_initialSharePriceMultiplier == 0
+                    || _contractorProposalID != 0)
             || (_initialSharePriceMultiplier != 0
                 && (_minutesFundingPeriod < minMinutesPeriods
                     || _inflationRate > maxInflationRate
@@ -327,6 +330,7 @@ contract PassDao is PassDaoInterface {
 
         p.contractorManager = PassManager(_contractorManager);
         p.contractorProposalID = _contractorProposalID;
+        
         p.amount = _amount;
 
         p.publicShareCreation = _publicShareCreation;
@@ -429,13 +433,11 @@ contract PassDao is PassDaoInterface {
         uint _minQuorum = minQuorum();
 
         if (b.fees > 0
-            && (b.proposalID == 0 || Proposals[b.proposalID].contractorProposalID == 0)) {
-
-                if (b.yea + b.nay >= _minQuorum) {
+            && (b.proposalID == 0 || Proposals[b.proposalID].contractorProposalID == 0)
+            && b.yea + b.nay >= _minQuorum) {
                     _fees = b.fees;
                     b.fees = 0;
                     pendingFeesWithdrawals[b.creator] += _fees;
-                }
         }        
 
         if (!daoManager.send(b.fees - b.totalRewardedAmount)) throw;
