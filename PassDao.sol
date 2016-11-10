@@ -323,7 +323,7 @@ contract PassDao is PassDaoInterface {
             || (_initialSharePriceMultiplier != 0
                 && (_minutesFundingPeriod < minMinutesPeriods
                     || _inflationRate > maxInflationRate
-                    || _minutesFundingPeriod > maxMinutesFundingPeriod))) throw;
+                    || _minutesFundingPeriod > maxMinutesFundingPeriod)))) throw;
 
         uint _proposalID = Proposals.length++;
         Proposal p = Proposals[_proposalID];
