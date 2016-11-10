@@ -441,9 +441,10 @@ contract PassDao is PassDaoInterface {
                     pendingFeesWithdrawals[b.creator] += _fees;
         }        
 
-        if (b.fees - b.totalRewardedAmount > 0)
+        if (b.fees - b.totalRewardedAmount > 0) {
             if (!daoManager.send(b.fees - b.totalRewardedAmount)) throw;
-
+        }
+        
         if (b.yea + b.nay < _minQuorum || b.yea <= b.nay) {
             p.open = false;
             BoardMeetingClosed(_boardMeetingID, _fees, false);
