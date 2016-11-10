@@ -50,7 +50,7 @@ contract PassTokenManagerInterface {
     uint8 public decimals;
 
     // Total amount of tokens
-        uint256 totalSupply;
+    uint256 totalSupply;
 
     // Array with all balances
     mapping (address => uint256) balances;
@@ -65,7 +65,7 @@ contract PassTokenManagerInterface {
     // Map of blocked Dao share accounts. Points to the date when the share holder can transfer shares
     mapping (address => uint) public blockedDeadLine; 
 
-    // Rules for the actual funding and the token price
+    // Rules for the actual funding and the contractor token price
     fundingData[2] public FundingRules;
     
     /// @return The total supply of shares or tokens 
@@ -298,9 +298,9 @@ contract PassTokenManager is PassTokenManagerInterface {
         client = _client;
         recipient = _recipient;
         
-   }
+    }
    
-   function initToken(
+    function initToken(
         string _tokenName,
         string _tokenSymbol,
         uint8 _tokenDecimals,
@@ -329,7 +329,7 @@ contract PassTokenManager is PassTokenManagerInterface {
         totalSupply = _initialSupply;
         TokensCreated(msg.sender, _initialSupplyRecipient, _initialSupply);
            
-   }
+    }
     
     function setTokenPriceProposal(        
         uint _initialPriceMultiplier, 
@@ -369,10 +369,9 @@ contract PassTokenManager is PassTokenManagerInterface {
                 || (recipient != 0 
                     && (_inflationRate < FundingRules[1].inflationRate
                         || now < FundingRules[1].startTime
-                        || (FundingRules[1].closingTime < now + (_minutesFundingPeriod * 1 minutes))))
+                        || FundingRules[1].closingTime < now + (_minutesFundingPeriod * 1 minutes)))
                 || _maxAmountToFund == 0
                 || _minutesFundingPeriod == 0
-                || fundedAmount[0] != 0
                 ) throw;
 
             FundingRules[0].startTime = now;
