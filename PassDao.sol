@@ -237,7 +237,9 @@ contract PassDaoInterface {
 
 contract PassDao is PassDaoInterface {
 
-    function PassDao() {}
+    function PassDao() {
+        creator = msg.sender;
+    }
     
     function initDao(
         address _daoManager,
@@ -251,6 +253,7 @@ contract PassDao is PassDaoInterface {
         uint _minMinutesDebatePeriod,
         uint _feesRewardInflationRate
         ) {
+            
         
         if (msg.sender != creator || DaoRules.minQuorumDivisor != 0) throw;
 
