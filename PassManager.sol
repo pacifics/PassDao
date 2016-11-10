@@ -119,7 +119,11 @@ contract PassManager is PassManagerInterface, PassTokenManager {
     }
 
     function updateRecipient(address _newRecipient) onlyContractor {
-        if (recipient == 0 || _newRecipient == 0 || _newRecipient == client) throw;
+
+        if (recipient == 0 
+            || _newRecipient == 0 
+            || _newRecipient == client) throw;
+
         recipient = _newRecipient;
     } 
 
