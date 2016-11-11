@@ -97,7 +97,7 @@ contract PassDaoInterface {
     } 
 
     // The creator of the Dao
-    address public creator;
+    address creator;
     // The minimum periods in minutes 
     uint public minMinutesPeriods;
     // The maximum period in minutes for proposals (set+debate)
@@ -229,12 +229,12 @@ contract PassDaoInterface {
     function minQuorum() constant returns (uint);
     
     event ProposalAdded(uint indexed ProposalID, address indexed ContractorManager, uint ContractorProposalID, 
-        uint amount, address indexed MainPartner, uint InitialSharePriceMultiplier, uint MinutesFundingPeriod);
+            uint amount, address indexed MainPartner, uint InitialSharePriceMultiplier, uint MinutesFundingPeriod);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID, uint MinQuorumDivisor, uint MinBoardMeetingFees, 
             uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, bool Transferable);
     event SentToContractor(uint indexed ContractorProposalID, address indexed ContractorManagerAddress, uint AmountSent);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool ProposalExecuted);
-
+    
 }
 
 contract PassDao is PassDaoInterface {
@@ -505,7 +505,7 @@ contract PassDao is PassDaoInterface {
         uint _amount = p.amount;
 
         if (p.initialSharePriceMultiplier != 0) {
-            _amount = daoManager.FundedAmount(b.proposalID);
+            _amount = daoManager.FundedAmount(_proposalID);
             if (_amount == 0 && now < b.dateOfExecution + (p.minutesFundingPeriod * 1 minutes)) return;
         }
         
