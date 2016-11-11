@@ -232,7 +232,7 @@ contract PassDaoInterface {
             uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, bool Transferable);
     event SentToContractor(uint indexed ContractorProposalID, address indexed ContractorManagerAddress, uint AmountSent);
     event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool ProposalExecuted);
-    
+
 }
 
 contract PassDao is PassDaoInterface {
@@ -424,17 +424,18 @@ contract PassDao is PassDaoInterface {
     function executeDecision(uint _boardMeetingID) returns (bool) {
 
         BoardMeeting b = BoardMeetings[_boardMeetingID];
-
+        Proposal p = Proposals[b.proposalID];
+        
         if (now < b.votingDeadline || !b.open) throw;
         
         b.open = false;
-        if (Proposals[b.proposalID].contractorProposalID == 0) p.open = false;
+        if (p.contractorProposalID == 0) p.open = false;
 
         uint _fees;
         uint _minQuorum = minQuorum();
 
         if (b.fees > 0
-            && (b.proposalID == 0 || Proposals[b.proposalID].contractorProposalID == 0)
+            && (b.proposalID == 0 || p.contractorProposalID == 0)
             && b.yea + b.nay >= _minQuorum) {
                     _fees = b.fees;
                     b.fees = 0;
@@ -454,8 +455,6 @@ contract PassDao is PassDaoInterface {
         b.dateOfExecution = now;
 
         if (b.proposalID != 0) {
-
-            Proposal p = Proposals[b.proposalID];
             
             if (p.initialSharePriceMultiplier != 0) {
 
