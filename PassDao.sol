@@ -63,7 +63,7 @@ contract PassDaoInterface {
         uint contractorProposalID;
         // The amount (in wei) of the proposal
         uint amount; 
-        // True if the proposal foresee a contractor token creation
+        // True if the proposal foresees a contractor token creation
         bool tokenCreation;
         // True if crowdfunding
         bool publicShareCreation; 
@@ -164,6 +164,7 @@ contract PassDaoInterface {
     /// @param _contractorManager Address of the contractor manager smart contract
     /// @param _contractorProposalID Index of the contractor proposal
     /// @param _amount The amount (in wei) of the proposal
+    /// @param _tokenCreation True if the proposal foresees a contractor token creation
     /// @param _publicShareCreation True if crowdfunding
     /// @param _mainPartner The address of the funding contract if private (not mandatory if public)
     /// @param _initialSharePriceMultiplier The initial price multiplier of shares
@@ -176,6 +177,7 @@ contract PassDaoInterface {
         uint _contractorProposalID,
         uint _amount, 
         bool _publicShareCreation,
+        bool _tokenCreation,
         address _mainPartner,
         uint _initialSharePriceMultiplier, 
         uint _inflationRate,
@@ -309,6 +311,7 @@ contract PassDao is PassDaoInterface {
         address _contractorManager,
         uint _contractorProposalID,
         uint _amount, 
+        bool _tokenCreation,
         bool _publicShareCreation,
         address _mainPartner,
         uint _initialSharePriceMultiplier, 
@@ -333,6 +336,7 @@ contract PassDao is PassDaoInterface {
         p.contractorProposalID = _contractorProposalID;
         
         p.amount = _amount;
+        p.tokenCreation = _tokenCreation;
 
         p.publicShareCreation = _publicShareCreation;
         p.mainPartner = _mainPartner;
@@ -461,7 +465,7 @@ contract PassDao is PassDaoInterface {
                 daoManager.setFundingRules(p.mainPartner, p.publicShareCreation, p.initialSharePriceMultiplier, 
                     p.amount, p.minutesFundingPeriod, p.inflationRate, b.proposalID);
 
-                if (p.contractorProposalID != 0) {
+                if (p.contractorProposalID != 0 && p.tokenCreation) {
                     p.contractorManager.setFundingRules(p.mainPartner, p.publicShareCreation, 0, 
                         p.amount, p.minutesFundingPeriod, maxInflationRate, b.proposalID);
                 }
