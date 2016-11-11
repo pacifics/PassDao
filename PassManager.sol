@@ -134,9 +134,7 @@ contract PassManager is PassManagerInterface, PassTokenManager {
         
         if (recipient != 0
             || !FundingRules[0].publicCreation 
-            || !createToken(_recipient, msg.value, now)) {
-            throw;
-        }
+            || !createToken(_recipient, msg.value, now)) throw;
 
     }
    
