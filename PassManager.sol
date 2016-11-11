@@ -73,7 +73,7 @@ contract PassManagerInterface is PassTokenManagerInterface {
         uint _amount,
         string _description, 
         bytes32 _hashOfTheDocument
-    ) returns (uint);
+    ) returns (uint) onlyContractor;
     
     /// @notice Function used by the client to order the contractor proposal
     /// @param _proposalID The index of the contractor proposal
@@ -142,9 +142,9 @@ contract PassManager is PassManagerInterface, PassTokenManager {
         uint _amount,
         string _description, 
         bytes32 _hashOfTheDocument
-    ) returns (uint) {
+    ) returns (uint) onlyContractor {
         
-        if (msg.sender != recipient && msg.sender != creator) throw;
+        if (recipient == 0) throw;
 
         uint _proposalID = proposals.length++;
         proposal c = proposals[_proposalID];
