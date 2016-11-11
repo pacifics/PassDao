@@ -119,8 +119,7 @@ contract PassManager is PassManagerInterface, PassTokenManager {
 
     function updateRecipient(address _newRecipient) onlyContractor {
 
-        if (recipient == 0 
-            || _newRecipient == 0 
+        if (_newRecipient == 0 
             || _newRecipient == client) throw;
 
         recipient = _newRecipient;
@@ -143,8 +142,6 @@ contract PassManager is PassManagerInterface, PassTokenManager {
         string _description, 
         bytes32 _hashOfTheDocument
     ) returns (uint) onlyContractor {
-        
-        if (recipient == 0) throw;
 
         uint _proposalID = proposals.length++;
         proposal c = proposals[_proposalID];
@@ -187,7 +184,7 @@ contract PassManager is PassManagerInterface, PassTokenManager {
     }
    
     function withdraw(uint _amount) onlyContractor {
-        if (recipient == 0 || !recipient.send(_amount)) throw;
+        if (!recipient.send(_amount)) throw;
     }
     
 }    
