@@ -102,7 +102,7 @@ contract PassTokenManagerInterface {
     modifier onlyMainPartner {if (msg.sender !=  FundingRules[1].mainPartner) throw; _;}
     
     // Modifier that allows only the contractor propose set the token price or withdraw
-    modifier onlyContractor {if (msg.sender != recipient && msg.sender != creator) throw; _;}
+    modifier onlyContractor {if (recipient == 0 || (msg.sender != recipient && msg.sender != creator)) throw; _;}
     
     /// @dev The constructor function
     /// @param _creator The address of the creator of the smart contract
@@ -306,11 +306,11 @@ contract PassTokenManager is PassTokenManagerInterface {
         uint8 _tokenDecimals,
         address _initialSupplyRecipient,
         uint256 _initialSupply,
-        bool _transferable
-       ) onlyContractor {
+        bool _transferable) {
            
         if (_initialSupplyRecipient == address(this)
             || decimals != 0
+            || msg.sender != creator
             || totalSupply != 0) throw;
             
         name = _tokenName;
@@ -338,8 +338,7 @@ contract PassTokenManager is PassTokenManagerInterface {
     ) onlyContractor {
         
         if (_closingTime < now 
-            || now < FundingRules[1].closingTime 
-            || recipient == 0) throw;
+            || now < FundingRules[1].closingTime) throw;
         
         FundingRules[1].initialPriceMultiplier = _initialPriceMultiplier;
         FundingRules[1].inflationRate = _inflationRate;
