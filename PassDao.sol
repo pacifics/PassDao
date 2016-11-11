@@ -324,6 +324,7 @@ contract PassDao is PassDaoInterface {
             || (_contractorManager == 0 
                 && (_initialSharePriceMultiplier == 0
                     || _contractorProposalID != 0)
+            || (_tokenCreation && _publicShareCreation)
             || (_initialSharePriceMultiplier != 0
                 && (_minutesFundingPeriod < minMinutesPeriods
                     || _inflationRate > maxInflationRate
