@@ -425,13 +425,15 @@ contract PassFunding is PassFundingInterface {
 
     function setFunding(uint _to) onlyCreator returns (bool _success) {
         
+        uint _fundingMaxAmount = DaoManager.fundingMaxAmount(address(this));
+        
         if (!limitSet 
-            || DaoManager.fundingMaxAmount(address(this)) < minFundingAmount
+            || _fundingMaxAmount < minFundingAmount
             || setFromPartner > _to 
             || _to > partners.length - 1) throw;
             
         DaoManager.setFundingStartTime(startTime);
-        if (address(contractorManager) != 0) PassManager(contractorManager).setFundingStartTime(startTime);
+        if (address(contractorManager) != 0) contractorManager.setFundingStartTime(startTime);
         
         if (setFromPartner == 1) sumOfFundingAmountLimits = 0;
         
@@ -451,7 +453,7 @@ contract PassFunding is PassFundingInterface {
             setFromPartner = 1;
 
             if (sumOfFundingAmountLimits < minFundingAmount 
-                || sumOfFundingAmountLimits > DaoManager.fundingMaxAmount(address(this))) {
+                || sumOfFundingAmountLimits > _fundingMaxAmount) {
 
                 maxPresaleAmount = 0;
                 IsfundingAborted = true; 
@@ -495,7 +497,7 @@ contract PassFunding is PassFundingInterface {
                 DaoManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
 
                 if (address(contractorManager) != 0) {
-                    PassManager(contractorManager).rewardToken(_partner, _amountToFund, partners[i].presaleDate);
+                    contractorManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
                 }
 
             }
@@ -510,7 +512,7 @@ contract PassFunding is PassFundingInterface {
 
         if (totalFunded >= sumOfFundingAmountLimits) {
             DaoManager.setFundingFueled(); 
-            if (address(contractorManager) != 0) PassManager(contractorManager).setFundingFueled(); 
+            if (address(contractorManager) != 0) contractorManager.setFundingFueled(); 
             Fueled();
         }
         
