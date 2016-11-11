@@ -357,43 +357,40 @@ contract PassTokenManager is PassTokenManagerInterface {
         uint _proposalID
     ) external onlyClient {
 
-        if (recipient == 0 || (!_publicCreation && FundingRules[1].initialPriceMultiplier != 0)) {
+        if (now < FundingRules[0].closingTime
+            || _mainPartner == address(this)
+            || _mainPartner == client
+            || (!_publicCreation && _mainPartner == 0)
+            || (_publicCreation && _mainPartner != 0)
+            || (recipient == 0 && _initialPriceMultiplier == 0)
+            || (recipient != 0 
+                && (FundingRules[1].initialPriceMultiplier != 0
+                    || _inflationRate < FundingRules[1].inflationRate
+                    || now < FundingRules[1].startTime
+                    || FundingRules[1].closingTime < now + (_minutesFundingPeriod * 1 minutes)))
+            || _maxAmountToFund == 0
+            || _minutesFundingPeriod == 0
+            ) throw;
 
-            if (now < FundingRules[0].closingTime
-                || _mainPartner == address(this)
-                || _mainPartner == client
-                || (!_publicCreation && _mainPartner == 0)
-                || (_publicCreation && _mainPartner != 0)
-                || (recipient == 0 && _initialPriceMultiplier == 0)
-                || (recipient != 0 
-                    && (_inflationRate < FundingRules[1].inflationRate
-                        || now < FundingRules[1].startTime
-                        || FundingRules[1].closingTime < now + (_minutesFundingPeriod * 1 minutes)))
-                || _maxAmountToFund == 0
-                || _minutesFundingPeriod == 0
-                ) throw;
-
-            FundingRules[0].startTime = now;
-            FundingRules[0].closingTime = now + _minutesFundingPeriod * 1 minutes;
+        FundingRules[0].startTime = now;
+        FundingRules[0].closingTime = now + _minutesFundingPeriod * 1 minutes;
             
-            FundingRules[0].mainPartner = _mainPartner;
-            FundingRules[0].publicCreation = _publicCreation;
+        FundingRules[0].mainPartner = _mainPartner;
+        FundingRules[0].publicCreation = _publicCreation;
         
-            if (recipient == 0) FundingRules[0].initialPriceMultiplier = _initialPriceMultiplier;
-            else FundingRules[0].initialPriceMultiplier = FundingRules[1].initialPriceMultiplier;
+        if (recipient == 0) FundingRules[0].initialPriceMultiplier = _initialPriceMultiplier;
+        else FundingRules[0].initialPriceMultiplier = FundingRules[1].initialPriceMultiplier;
         
-            if (recipient == 0) FundingRules[0].inflationRate = _inflationRate;
-            else FundingRules[0].inflationRate = FundingRules[1].inflationRate;
+        if (recipient == 0) FundingRules[0].inflationRate = _inflationRate;
+        else FundingRules[0].inflationRate = FundingRules[1].inflationRate;
         
-            FundingRules[0].fundedAmount = 0;
-            FundingRules[0].maxAmountToFund = _maxAmountToFund;
+        FundingRules[0].fundedAmount = 0;
+        FundingRules[0].maxAmountToFund = _maxAmountToFund;
 
-            FundingRules[0].proposalID = _proposalID;
+        FundingRules[0].proposalID = _proposalID;
 
-            FundingRulesSet(_mainPartner, _proposalID, FundingRules[0].startTime, FundingRules[0].closingTime);
+        FundingRulesSet(_mainPartner, _proposalID, FundingRules[0].startTime, FundingRules[0].closingTime);
             
-        }    
-
     } 
     
     function createToken(
