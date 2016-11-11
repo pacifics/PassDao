@@ -364,7 +364,7 @@ contract PassTokenManager is PassTokenManagerInterface {
             || (_publicCreation && _mainPartner != 0)
             || (recipient == 0 && _initialPriceMultiplier == 0)
             || (recipient != 0 
-                && (FundingRules[1].initialPriceMultiplier != 0
+                && (FundingRules[1].initialPriceMultiplier == 0
                     || _inflationRate < FundingRules[1].inflationRate
                     || now < FundingRules[1].startTime
                     || FundingRules[1].closingTime < now + (_minutesFundingPeriod * 1 minutes)))
