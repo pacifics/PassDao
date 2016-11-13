@@ -80,9 +80,9 @@ contract PassTokenManagerInterface {
     /// @return Quantity of remaining tokens of _owner that _spender is allowed to spend
     function allowance(address _owner, address _spender) constant external returns (uint256 remaining);
 
-    /// @param _fundingProposalID The index of the Dao funding proposal
-    /// @return The result (in wei) of the funding proposal
-    function FundedAmount(uint _fundingProposalID) constant external returns (uint);
+    /// @param _proposalID The index of the Dao proposal
+    /// @return The result (in wei) of the funding
+    function FundedAmount(uint _proposalID) constant external returns (uint);
 
     /// @param _saleDate in case of presale, the date of the presale
     /// @return the share or token price divisor condidering the sale date and the inflation rate
@@ -99,7 +99,7 @@ contract PassTokenManagerInterface {
     modifier onlyClient {if (msg.sender != client) throw; _;}
 
     // Modifier that allows only the main partner to manage the actual funding
-    modifier onlyMainPartner {if (msg.sender !=  FundingRules[1].mainPartner) throw; _;}
+    modifier onlyMainPartner {if (msg.sender !=  FundingRules[0].mainPartner) throw; _;}
     
     // Modifier that allows only the contractor propose set the token price or withdraw
     modifier onlyContractor {if (recipient == 0 || (msg.sender != recipient && msg.sender != creator)) throw; _;}
@@ -237,6 +237,8 @@ contract PassTokenManagerInterface {
     event TransferAble();
     event TransferDisable();
 
+    event test(uint ClosingTime, uint StartTime, uint StartTime0);
+
 }    
 
 contract PassTokenManager is PassTokenManagerInterface {
@@ -253,8 +255,8 @@ contract PassTokenManager is PassTokenManagerInterface {
         return allowed[_owner][_spender];
     }
 
-    function FundedAmount(uint _fundingProposalID) constant external returns (uint) {
-        return fundedAmount[_fundingProposalID];
+    function FundedAmount(uint _proposalID) constant external returns (uint) {
+        return fundedAmount[_proposalID];
     }
 
     function priceDivisor(uint _saleDate) constant internal returns (uint) {
@@ -405,8 +407,13 @@ contract PassTokenManager is PassTokenManagerInterface {
             || _saleDate < FundingRules[0].startTime
             || FundingRules[0].fundedAmount + _amount > FundingRules[0].maxAmountToFund) return;
 
-        uint _quantity = 100*_amount*FundingRules[0].initialPriceMultiplier/priceDivisor(_saleDate);
-        if (totalSupply + _quantity <= totalSupply) return;
+        uint _a = _amount*FundingRules[0].initialPriceMultiplier;
+        uint _multiplier = 100*_a;
+        uint _quantity = _multiplier/priceDivisor(_saleDate);
+        if (_a/_amount != FundingRules[0].initialPriceMultiplier
+            || _multiplier/100 != _a
+            || totalSupply + _quantity <= totalSupply 
+            || totalSupply + _quantity <= _quantity) return;
 
         balances[_recipient] += _quantity;
         totalSupply += _quantity;
@@ -481,6 +488,7 @@ contract PassTokenManager is PassTokenManagerInterface {
             && _to != address(this)
             && balances[_from] >= _value
             && balances[_to] + _value > balances[_to]
+            && balances[_to] + _value > _value
         ) {
             balances[_from] -= _value;
             balances[_to] += _value;
