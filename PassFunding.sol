@@ -32,6 +32,8 @@ contract PassFundingInterface {
     address public creator;
     // The manager smart contract to fund
     PassManager public DaoManager;
+    // True if contractor token creation
+    bool tokenCreation;            
     // The manager smart contract for the reward of contractor tokens
     PassManager public contractorManager;
     // Minimum amount (in wei) to fund
@@ -296,8 +298,8 @@ contract PassFunding is PassFundingInterface {
             || creator == _contractorManager
             || _contractorManager == address(DaoManager)) throw;
             
+        tokenCreation =true;            
         contractorManager = PassManager(_contractorManager);
-        
         ContractorManagerSet(_contractorManager);
         
     }
@@ -424,17 +426,17 @@ contract PassFunding is PassFundingInterface {
     }
 
     function setFunding(uint _to) onlyCreator returns (bool _success) {
-        
+
         uint _fundingMaxAmount = DaoManager.fundingMaxAmount(address(this));
-        
+
         if (!limitSet 
             || _fundingMaxAmount < minFundingAmount
             || setFromPartner > _to 
             || _to > partners.length - 1) throw;
-            
+
         DaoManager.setFundingStartTime(startTime);
-        if (address(contractorManager) != 0) contractorManager.setFundingStartTime(startTime);
-        
+        if (tokenCreation) contractorManager.setFundingStartTime(startTime);
+
         if (setFromPartner == 1) sumOfFundingAmountLimits = 0;
         
         for (uint i = setFromPartner; i <= _to; i++) {
@@ -496,7 +498,7 @@ contract PassFunding is PassFundingInterface {
 
                 DaoManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
 
-                if (address(contractorManager) != 0) {
+                if (tokenCreation) {
                     contractorManager.rewardToken(_partner, _amountToFund, partners[i].presaleDate);
                 }
 
@@ -510,9 +512,9 @@ contract PassFunding is PassFundingInterface {
 
         totalFunded += _sumAmountToFund;
 
-        if (totalFunded >= sumOfFundingAmountLimits) {
+        if (totalFunded == sumOfFundingAmountLimits) {
             DaoManager.setFundingFueled(); 
-            if (address(contractorManager) != 0) contractorManager.setFundingFueled(); 
+            if (tokenCreation) contractorManager.setFundingFueled(); 
             Fueled();
         }
         
@@ -640,9 +642,16 @@ contract PassFunding is PassFundingInterface {
                 if (_amount > _amount1) _amount = _amount1; 
                 }
 
-            if (_divisorSharesLimit > 0) {
-                _amount1 = uint(DaoManager.balanceOf(t.partnerAddress))*_multiplierSharesLimit/_divisorSharesLimit;
+            if (_multiplierSharesLimit > 0 && _divisorSharesLimit > 0) {
+
+                uint _balance = uint(DaoManager.balanceOf(t.partnerAddress));
+
+                uint _multiplier = _balance*_multiplierSharesLimit;
+                if (_multiplier/_balance != _multiplierSharesLimit) throw;
+
+                _amount1 = _multiplier/_divisorSharesLimit;
                 if (_amount > _amount1) _amount = _amount1; 
+
                 }
 
             if (_amount > _maxAmountLimit) _amount = _maxAmountLimit;
