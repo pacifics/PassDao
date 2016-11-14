@@ -127,4 +127,4 @@ External functions are :
 
 # Upgrading Procedure
 
-In case of bugs or improvements, the funding smart contract can be updated and called in new Dao proposals. We can also make a contractor proposal to send the Dao balance to a new smart contract. This will "transfer" the Dao balance, shares and reputation tokens (technically creating new shares and tokens) to new manager smart contracts and with a new Dao smart contract as client.
+In case of bugs or improvements, the funding smart contract can be updated and called in new Dao proposals. Share holders can also make a contractor proposal to send the Dao balance to a new smart contract. This will "transfer" the Dao balance, shares and reputation tokens (technically creating new shares and tokens) to new manager smart contracts and with a new Dao smart contract as client.
