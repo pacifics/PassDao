@@ -240,8 +240,6 @@ contract PassTokenManagerInterface {
     event TransferAble();
     event TransferDisable();
 
-    event test(address sender, uint ClosingTime, uint StartTime, uint StartTime0);
-
 }    
 
 contract PassTokenManager is PassTokenManagerInterface {
