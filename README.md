@@ -123,4 +123,8 @@ External functions are :
 
 - There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern.
 
-- In case of bugs or improvements, the funding smart contract can be updated and called in new Dao proposals. We can also make a contractor proposal to send the Dao balance to a new smart contract. This will "transfer" the Dao balance, shares and reputation tokens (technically creating new shares and tokens) to new manager smart contracts and with a new Dao smart contract as client.
+=
+
+# Upgrading Procedure
+
+In case of bugs or improvements, the funding smart contract can be updated and called in new Dao proposals. We can also make a contractor proposal to send the Dao balance to a new smart contract. This will "transfer" the Dao balance, shares and reputation tokens (technically creating new shares and tokens) to new manager smart contracts and with a new Dao smart contract as client.
