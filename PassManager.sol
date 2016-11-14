@@ -129,10 +129,9 @@ contract PassManager is PassManagerInterface, PassTokenManager {
         buySharesFor(msg.sender);
     } 
     
-    function buySharesFor(address _recipient) payable {
+    function buySharesFor(address _recipient) payable onlyDao {
         
-        if (recipient != 0
-            || !FundingRules[0].publicCreation 
+        if (!FundingRules[0].publicCreation 
             || !createToken(_recipient, msg.value, now)) throw;
 
     }
