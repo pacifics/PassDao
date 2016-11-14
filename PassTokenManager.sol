@@ -104,6 +104,9 @@ contract PassTokenManagerInterface {
     // Modifier that allows only the contractor propose set the token price or withdraw
     modifier onlyContractor {if (recipient == 0 || (msg.sender != recipient && msg.sender != creator)) throw; _;}
     
+    // Modifier for Dao functions
+    modifier onlyDao {if (recipient != 0) throw; _;}
+    
     /// @dev The constructor function
     /// @param _creator The address of the creator of the smart contract
     /// @param _client The address of the client or Dao
