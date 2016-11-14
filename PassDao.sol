@@ -415,8 +415,8 @@ contract PassDao is PassDaoInterface {
         if (b.fees > 0 && b.proposalID != 0 && Proposals[b.proposalID].contractorProposalID != 0) {
 
             uint _a = 100*b.fees;
-            if ((_a/100 != b.fees) || (_a*_balance/_a != _balance)) throw;
-            uint _multiplier = _a*_balance/uint(daoManager.TotalSupply());
+            if ((_a/100 != b.fees) || ((_a*_balance)/_a != _balance)) throw;
+            uint _multiplier = (_a*_balance)/uint(daoManager.TotalSupply());
 
             uint _divisor = 100 + 100*DaoRules.feesRewardInflationRate*(now - b.setDeadline)/(100*365 days);
 
