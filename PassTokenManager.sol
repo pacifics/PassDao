@@ -237,6 +237,8 @@ contract PassTokenManagerInterface {
     event TransferAble();
     event TransferDisable();
 
+    event test(address sender, uint ClosingTime, uint StartTime, uint StartTime0);
+
 }    
 
 contract PassTokenManager is PassTokenManagerInterface {
@@ -444,14 +446,14 @@ contract PassTokenManager is PassTokenManagerInterface {
     }
 
     function closeFunding() internal {
-        fundedAmount[FundingRules[0].proposalID] += FundingRules[0].fundedAmount;
+        if (recipient == 0) fundedAmount[FundingRules[0].proposalID] += FundingRules[0].fundedAmount;
         FundingRules[0].closingTime = now;
     }
     
     function setFundingFueled() external onlyMainPartner {
         if (now > FundingRules[0].closingTime) throw;
         closeFunding();
-        FundingFueled(FundingRules[0].proposalID, FundingRules[0].fundedAmount);
+        if (recipient == 0) FundingFueled(FundingRules[0].proposalID, FundingRules[0].fundedAmount);
     }
     
     function ableTransfer() onlyClient {
