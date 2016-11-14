@@ -447,7 +447,7 @@ contract PassTokenManager is PassTokenManagerInterface {
     }
 
     function closeFunding() internal {
-        if (recipient == 0) fundedAmount[FundingRules[0].proposalID] += FundingRules[0].fundedAmount;
+        if (recipient == 0) fundedAmount[FundingRules[0].proposalID] = FundingRules[0].fundedAmount;
         FundingRules[0].closingTime = now;
     }
     
