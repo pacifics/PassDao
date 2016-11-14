@@ -489,7 +489,7 @@ contract PassTokenManager is PassTokenManagerInterface {
             && _to != address(this)
             && balances[_from] >= _value
             && balances[_to] + _value > balances[_to]
-            && balances[_to] + _value > _value
+            && balances[_to] + _value >= _value
         ) {
             balances[_from] -= _value;
             balances[_to] += _value;
