@@ -95,7 +95,7 @@ External functions are :
 
 - We limit the amount to send to the funding smart contract and if fueled we limit the amount to fund to the Dao for each partner. Our first goal is decentralization and we want everyone to be able to become a share holder.
 
-- Payments to the contractors are done with ethers and step by step. Each contractor proposal can contains serveral orders from the Dao it the total orderd amount is less than the amount of the proposal.
+- Payments to the contractors are done with ethers and step by step. Each contractor proposal can contains serveral orders from the Dao if the total ordered amount is less than the amount of the proposal.
 
 - It is possible to link a funding proposal with a contractor proposal and that will be completed only if the funding is fueled during a predefined period, otherwise the Dao is not funded and the contractor proposal not completed. We use this method for the first Project Manager proposal and the primary funding. For the next steps of the project, we can proceed in the same way and with no ether balance in the Dao after the funding.
 
