@@ -15,9 +15,9 @@ pragma solidity ^0.4.2;
 contract PassTokenManagerInterface {
     
     struct fundingData {
-        // True if crowdfunding
+        // True if public funding without a main partner
         bool publicCreation; 
-        // The address which create partners and manage the funding in case of private funding
+        // The address which sets partners and manages the funding in case of private funding
         address mainPartner;
         // The maximum amount (in wei) of the funding
         uint maxAmountToFund;
