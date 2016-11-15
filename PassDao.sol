@@ -1,6 +1,6 @@
 import "PassManager.sol";
 
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.4;
 
 /*
 This file is part of Pass DAO.
