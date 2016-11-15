@@ -49,7 +49,7 @@ contract PassManagerInterface is PassTokenManagerInterface {
         //_client,
         //_recipient);
 
-    /// @notice Fallback function to allow sending ethers to the manager
+    /// @notice Fallback function to allow sending ethers to this smart contract
     function () payable;
     
     /// @notice Function to update the recipent address
@@ -75,7 +75,7 @@ contract PassManagerInterface is PassTokenManagerInterface {
         bytes32 _hashOfTheDocument
     ) onlyContractor returns (uint);
     
-    /// @notice Function used by the client to order the contractor proposal
+    /// @notice Function used by the client to order according to the contractor proposal
     /// @param _proposalID The index of the contractor proposal
     /// @param _amount The amount (in wei) of the order
     /// @return Whether the order was made or not
@@ -93,7 +93,7 @@ contract PassManagerInterface is PassTokenManagerInterface {
         uint _amount
     ) external onlyClient returns (bool);
 
-    /// @notice Function to allow contractors to withdraw ethers from their manager
+    /// @notice Function to allow contractors to withdraw ethers
     /// @param _amount The amount (in wei) to withdraw
     function withdraw(uint _amount) onlyContractor;
     
