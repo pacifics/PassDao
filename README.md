@@ -13,6 +13,12 @@ Pass DAO is open source and used for the project to put together a transparent o
 
 =
 
+## Bug Bounty Program
+
+In case of bug, we will send up to 500 eth (serious security bug) to the first who found it. Start date : 16 november 2016.
+
+=
+
 ## The Manager Smart Contract
 
 The Dao Manager smart contract contains the Eth balance of the Dao. A manager smart contract is also created for each contractor with proposals to work for the Dao and orders from the Dao. The smart contract derives to the Token Manager smart contract used for the management of Dao shares or contractor tokens. The smart contract is conform to ERC20.
