@@ -28,7 +28,7 @@ to automate organizational governance and decision-making.
 contract PassDaoInterface {
 
     struct BoardMeeting {        
-        // Address who created the board meeting for a proposal
+        // Address of the creator of the board meeting for a proposal
         address creator;  
         // Index to identify the proposal to pay a contractor or fund the Dao
         uint proposalID;
@@ -65,11 +65,11 @@ contract PassDaoInterface {
         uint amount; 
         // True if the proposal foresees a contractor token creation
         bool tokenCreation;
-        // True if crowdfunding
+        // True if public funding without a main partner
         bool publicShareCreation; 
-        // The address which set partners and manage the funding in case of private funding
+        // The address which sets partners and manage the funding in case of private funding
         address mainPartner;
-        // The initial price multiplier of Dao shares
+        // The initial price multiplier of Dao shares at the beginning of the funding
         uint initialSharePriceMultiplier; 
         // The inflation rate to calculate the actual contractor share price
         uint inflationRate;
@@ -80,7 +80,7 @@ contract PassDaoInterface {
     }
 
     struct Rules {
-        // Index to identify the board meeting that decided to apply the rules
+        // Index to identify the board meeting that decides to apply or not the Dao rules
         uint boardMeetingID;  
         // The quorum needed for each proposal is calculated by totalSupply / minQuorumDivisor
         uint minQuorumDivisor;  
@@ -104,7 +104,7 @@ contract PassDaoInterface {
     uint public maxMinutesProposalPeriod;
     // The maximum funding period in minutes for funding proposals
     uint public maxMinutesFundingPeriod;
-    // The maximum inflation rate for contractor and funding proposals
+    // The maximum inflation rate for share price or rewards to voters
     uint public maxInflationRate;
 
     // The Dao manager smart contract
@@ -115,9 +115,9 @@ contract PassDaoInterface {
 
     // Board meetings to vote for or against a proposal
     BoardMeeting[] public BoardMeetings; 
-    // Proposals to pay a contractor
+    // Proposals to pay a contractor or fund the Dao
     Proposal[] public Proposals;
-    // Proposals to pay a contractor or for fund the Dao
+    // Proposals to update the Dao rules
     Rules[] public DaoRulesProposals;
     // The current Dao rules
     Rules public DaoRules; 
@@ -133,7 +133,7 @@ contract PassDaoInterface {
     /// @param _maxMinutesProposalPeriod The maximum period in minutes for proposals (set+debate)
     /// @param _minQuorumDivisor The initial minimum quorum divisor for the proposals
     /// @param _minBoardMeetingFees The amount (in wei) to make a proposal and ask for a board meeting
-    /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
+    /// @param _minutesSetProposalPeriod The minimum period in minutes before a board meeting
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
     /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a board meeting
     function initDao(
@@ -150,7 +150,7 @@ contract PassDaoInterface {
         );
     
     /// @dev Internal function to create a board meeting
-    /// @param _proposalID The index of the proposal if contractor
+    /// @param _proposalID The index of the proposal if for a contractor or for a funding
     /// @param _daoRulesProposalID The index of the proposal if Dao rules
     /// @param _minutesDebatingPeriod The duration in minutes of the meeting
     /// @return the index of the board meeting
@@ -162,11 +162,12 @@ contract PassDaoInterface {
     
     /// @notice Function to make a proposal to pay a contractor or fund the Dao
     /// @param _contractorManager Address of the contractor manager smart contract
-    /// @param _contractorProposalID Index of the contractor proposal
+    /// @param _contractorProposalID Index of the contractor proposal of the contractor manager
     /// @param _amount The amount (in wei) of the proposal
     /// @param _tokenCreation True if the proposal foresees a contractor token creation
-    /// @param _publicShareCreation True if crowdfunding
-    /// @param _mainPartner The address of the funding contract if private (not mandatory if public)
+    /// @param _publicShareCreation True if public funding without a main partner
+    /// @param _mainPartner The address which sets partners and manage the funding 
+    /// in case of private funding (not mandatory)
     /// @param _initialSharePriceMultiplier The initial price multiplier of shares
     /// @param _inflationRate If 0, the share price doesn't change during the funding (not mandatory)
     /// @param _minutesFundingPeriod Period in minutes of the funding
@@ -191,8 +192,8 @@ contract PassDaoInterface {
     /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
     /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a board meeting
-    /// @param _transferable True if the proposal foresee to allow the transfer of Dao shares
-    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal    function newDaoRulesProposal(
+    /// @param _transferable True if the proposal foresees to allow the transfer of Dao shares
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
     function newDaoRulesProposal(
         uint _minQuorumDivisor, 
         uint _minBoardMeetingFees,
