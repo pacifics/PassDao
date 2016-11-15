@@ -83,6 +83,10 @@ External functions are :
 
 - SetShareHolders: allows organizing a private funding for the share holders.
 
+- AbortFunding: allows the smart contract creator to abort the funding before the closing time.
+
+- Pause: allows the smart contract creator to stop the presale without aborting the funding.
+
 - SetLimits: allows the smart contract creator to set the funding limits for all partners.
 
 - SetFunding : sets the amounts to fund for each partner according to the presale amounts, the set limits and the funding amount of the approved Dao funding proposal.
