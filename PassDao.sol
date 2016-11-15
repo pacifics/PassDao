@@ -67,7 +67,7 @@ contract PassDaoInterface {
         bool tokenCreation;
         // True if public funding without a main partner
         bool publicShareCreation; 
-        // The address which sets partners and manage the funding in case of private funding
+        // The address which sets partners and manages the funding in case of private funding
         address mainPartner;
         // The initial price multiplier of Dao shares at the beginning of the funding
         uint initialSharePriceMultiplier; 
