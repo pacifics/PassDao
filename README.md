@@ -27,7 +27,7 @@ External functions are :
 
 - Set a new proposal: every contractor can offer his client (the DAO) to sell products or execute services. The proposal contains a description, a hash of document and the amount of the proposal. 
 
-- Order and sendTo for the order and payment of ethers by the Dao manager according to a proposal.
+- Order and sendTo for the order and payment of ethers to the contractor manager by the Dao manager according to a proposal.
 
 - Withdraw function: allows the contractors to withdraw the amounts sent by the Dao manager.
 
