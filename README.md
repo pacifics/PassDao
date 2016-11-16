@@ -77,7 +77,7 @@ External functions are :
 
 - SetPresaleAmountLimits: allows the smart contract creator to set the presale limits (minimum and maximum).
 
-- Fallback and Presale function to send Eth to the Funding smart contract.
+- Fallback and Presale functions to send Eth to the Funding smart contract.
 
 - SetPartners: allows the smart contract creator to set Eth account addresses.
 
@@ -91,9 +91,9 @@ External functions are :
 
 - SetFunding : sets the amounts to fund for each partner according to the presale amounts, the set limits and the funding amount of the approved Dao funding proposal.
 
-- FundDaoFor: to send Eth from the Funding smart contract.
+- FundDaoFor and FundDao: to send Eth from the Funding smart contract to the Dao manager.
 
-- RefundForValidPartners and RefundForAll: to refund the amount that did not fund the Dao (priority to the valid addresses).
+- RefundForValidPartners, Refund and RefundForAll: to refund the amount that did not fund the Dao (priority to the valid addresses).
 
 - AbortFunding: allows the smart contract creator to abort the funding and refund at any time during the presale.
 
