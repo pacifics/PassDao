@@ -690,22 +690,22 @@ contract PassFunding is PassFundingInterface {
 }
 
 contract PassFundingCreator {
-    event NewFunding(address creator, address DaoAccountManager, 
+    event NewFunding(address creator, address DaoManager, 
         uint MinFundingAmount, uint StartTime, uint ClosingTime, address FundingContractAddress);
     function createFunding(
-        address _DaoAccountManager,
+        address _DaoManager,
         uint _minFundingAmount,
         uint _startTime,
         uint _closingTime
         ) returns (PassFunding) {
         PassFunding _newFunding = new PassFunding(
             msg.sender,
-            _DaoAccountManager,        
+            _DaoManager,        
             _minFundingAmount,
             _startTime,
             _closingTime
         );
-        NewFunding(msg.sender, _DaoAccountManager,  
+        NewFunding(msg.sender, _DaoManager,  
             _minFundingAmount, _startTime, _closingTime, address(_newFunding));
         return _newFunding;
     }
