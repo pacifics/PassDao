@@ -98,6 +98,8 @@ contract PassManagerInterface is PassTokenManagerInterface {
     function withdraw(uint _amount) onlyContractor;
     
     event ProposalAdded(uint indexed ProposalID, uint Amount, string Description);
+    event Order(uint indexed ProposalID, uint Amount);
+    event Withdawal(address indexed Recipient, uint Amount);
 
 }    
 
@@ -171,6 +173,8 @@ contract PassManager is PassManagerInterface, PassTokenManager {
         c.orderAmount = _sum;
         c.dateOfOrder = now;
         
+        Order(_proposalID, _orderAmount);
+        
         return true;
 
     }
@@ -187,6 +191,7 @@ contract PassManager is PassManagerInterface, PassTokenManager {
    
     function withdraw(uint _amount) onlyContractor {
         if (!recipient.send(_amount)) throw;
+        Withdawal(recipient, _amount);
     }
     
 }    
