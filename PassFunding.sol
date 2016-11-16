@@ -294,6 +294,7 @@ contract PassFunding is PassFundingInterface {
     function SetContractorManager(address _contractorManager) onlyCreator {
         
         if (_contractorManager == 0
+            || limitSet
             || address(contractorManager) != 0
             || creator == _contractorManager
             || _contractorManager == address(DaoManager)) throw;
