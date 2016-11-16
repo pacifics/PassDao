@@ -87,7 +87,7 @@ External functions are :
 
 - Pause: allows the smart contract creator to stop the presale without aborting the funding.
 
-- SetLimits: allows the smart contract creator to set the funding limits for all partners.
+- SetLimits: allows the smart contract creator to set the funding limits which allows to calculate the funding limits for all valid addresses.
 
 - SetFunding : sets the amounts to fund for each partner according to the presale amounts, the set limits and the funding amount of the approved Dao funding proposal.
 
