@@ -39,7 +39,7 @@ External functions are :
 
 - SetTokenPriceProposal: allows the contractors to propose a token price for the creation of contractor tokens.
 
-- SetFundingRules to set the funding rules according to funding proposals approved by the Dao.
+- SetFundingRules according to funding proposals approved by the Dao.
 
 - RewardToken to funders by the funding smart contract.
 
