@@ -83,7 +83,7 @@ External functions are :
 
 - SetShareHolders: allows organizing a private funding for the share holders.
 
-- AbortFunding: allows the smart contract creator to abort the funding before the closing time.
+- AbortFunding: allows the smart contract creator to abort the funding before the closing time of the presale.
 
 - Pause: allows the smart contract creator to stop the presale without aborting the funding.
 
@@ -94,8 +94,6 @@ External functions are :
 - FundDaoFor and FundDao: to send Eth from the Funding smart contract to the Dao manager.
 
 - RefundForValidPartners, Refund and RefundForAll: to refund the amount that did not fund the Dao (priority to the valid addresses).
-
-- AbortFunding: allows the smart contract creator to abort the funding and refund at any time during the presale.
 
 =
 
