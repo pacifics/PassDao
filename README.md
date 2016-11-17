@@ -13,7 +13,7 @@ Pass DAO is open source and used for the project to put together a transparent o
 
 =
 
-## Bug Bounty Program
+## Bug Bounty
 
 In case of bug, we will send up to 500 eth (serious security bug) to the first who found it. Start date : 16 november 2016.
 
