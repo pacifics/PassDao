@@ -1,4 +1,4 @@
-# Our Decentralized Autonomous Organization
+# Pass Decentralized Autonomous Organization
 
 =
 
