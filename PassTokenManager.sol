@@ -414,7 +414,7 @@ contract PassTokenManager is PassTokenManagerInterface {
         if (_a/_amount != FundingRules[0].initialPriceMultiplier
             || _multiplier/100 != _a
             || totalSupply + _quantity <= totalSupply 
-            || totalSupply + _quantity <= _quantity) return;
+            || totalSupply + _quantity < _quantity) return;
 
         balances[_recipient] += _quantity;
         totalSupply += _quantity;
