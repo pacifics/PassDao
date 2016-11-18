@@ -61,7 +61,7 @@ External functions are :
 
 - Vote for or against a proposal: If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
 
-- Order a contractor proposal: In case of funding proposal linked to a contractor proposal, the amount sent to the contrator management corresponds to the funded amount. Otherwise, the amount sent is the amount of the proposal.
+- Order a contractor proposal: In case of funding proposal linked to a contractor proposal, the amount sent to the contractor manager corresponds to the funded amount. Otherwise, the amount sent is the amount of the proposal.
 
 - Withdraw function: allows the share holders to withdraw the board meeting fees sent by the creators of the proposals.
 
