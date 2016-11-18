@@ -69,7 +69,7 @@ External functions are :
 
 ## The Funding Smart Contract
 
-Smart contract used for the primary funding of the Dao. Each partner who sent his Eth account address by email (for communication and security purposes) can become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. After the primary funding, the smart contract will allow others fundings with for instance Priority Subscription Rights for share holders. The smart contract also foresees a preliminary step for the setting before the voting procedure of the corresponding funding proposal in the Dao. This will allow the share holders to approve a set private funding without allowing the creator of the funding to change  anything.
+Smart contract used for the primary funding of the Dao. Each partner who sent his Eth account address by email (for communication and security purposes) can become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. After the primary funding, the smart contract will allow others fundings with for instance Priority Subscription Rights for share holders. The smart contract also foresees a preliminary step for the setting before the voting procedure of the corresponding funding proposal in the Dao. This will allow the share holders to approve a set private funding without allowing the creator of the funding to change anything.
 
 External functions are :
 
@@ -103,7 +103,7 @@ External functions are :
 
 - We limit the amount to send to the funding smart contract and if fueled we limit the amount to fund to the Dao for each partner. Our first goal is decentralization and we want everyone to be able to become a share holder.
 
-- Payments to the contractors are done with ethers and step by step. Each contractor proposal can contains serveral orders from the Dao if the total ordered amount is less than the amount of the proposal.
+- Payments to the contractors are done with ethers and step by step. Each contractor proposal can contain serveral orders from the Dao if the total ordered amount is less than the amount of the proposal.
 
 - It is possible to link a funding proposal with a contractor proposal and that will be completed only if the funding is fueled during a predefined period, otherwise the Dao is not funded and the contractor proposal not completed. We use this method for the first Project Manager proposal and the primary funding. For the next steps of the project, we can proceed in the same way and with no ether balance in the Dao after the funding.
 
