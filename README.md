@@ -27,7 +27,7 @@ External functions are :
 
 - Fallback payable function: allows to send Eth to the manager smart contract.
 
-- Update recipient: allows the contractor to update the address for the withdrawal of ethers fom the manager contract.
+- Update recipient: allows the contractor to update the address for the withdrawal of ethers fom his manager contract.
 
 - BuyShares and BuySharesFor in case of public fundings without funding smart contract.
 
