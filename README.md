@@ -63,13 +63,13 @@ External functions are :
 
 - Order a contractor proposal: In case of funding proposal linked to a contractor proposal, the amount sent to the contractor manager corresponds to the funded amount. Otherwise, the amount sent is the amount of the proposal.
 
-- Withdraw function: allows the share holders to withdraw the board meeting fees sent by the creators of the proposals.
+- Withdraw function: allows the shareholders to withdraw the board meeting fees sent by the creators of the proposals.
 
 =
 
 ## The Funding Smart Contract
 
-Smart contract used for the primary funding of the Dao. Each partner who sent his Eth account address by email (for communication and security purposes) can become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. After the primary funding, the smart contract will allow others fundings with for instance Priority Subscription Rights for share holders. The smart contract also foresees a preliminary step for the setting before the voting procedure of the corresponding funding proposal in the Dao. This will allow the share holders to approve a set private funding without allowing the creator of the funding to change anything.
+Smart contract used for the primary funding of the Dao. Each partner who sent his Eth account address by email (for communication and security purposes) can become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. After the primary funding, the smart contract will allow others fundings with for instance Priority Subscription Rights for shareholders. The smart contract also foresees a preliminary step for the setting before the voting procedure of the corresponding funding proposal in the Dao. This will allow the shareholders to approve a set private funding without allowing the creator of the funding to change anything.
 
 External functions are :
 
@@ -81,7 +81,7 @@ External functions are :
 
 - SetPartners: allows the smart contract creator to set Eth account addresses.
 
-- SetShareHolders: allows organizing a private funding for the share holders.
+- SetShareHolders: allows organizing a private funding for the shareholders.
 
 - AbortFunding: allows the smart contract creator to abort the funding before the closing time of the presale.
 
@@ -101,7 +101,7 @@ External functions are :
 
 - This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
 
-- We limit the amount to send to the funding smart contract and if fueled we limit the amount to fund to the Dao for each partner. Our first goal is decentralization and we want everyone to be able to become a share holder.
+- We limit the amount to send to the funding smart contract and if fueled we limit the amount to fund to the Dao for each partner. Our first goal is decentralization and we want everyone to be able to become a shareholder.
 
 - Payments to the contractors are done with ethers and step by step. Each contractor proposal can contain serveral orders from the Dao if the total ordered amount is less than the amount of the proposal.
 
@@ -135,4 +135,4 @@ External functions are :
 
 # Upgrading Procedure
 
-In case of bugs or improvements, the funding smart contract can be updated and called in new Dao proposals. Share holders can also make a contractor proposal to send the Dao balance to a new smart contract. This will "transfer" the Dao balance, shares and reputation tokens (technically creating new shares and tokens) to new manager smart contracts and with a new Dao smart contract as client.
+In case of bugs or improvements, the funding smart contract can be updated and called in new Dao proposals. Shareholders can also make a contractor proposal to send the Dao balance to a new smart contract. This will "transfer" the Dao balance, shares and reputation tokens (technically creating new shares and tokens) to new manager smart contracts and with a new Dao smart contract as client.
