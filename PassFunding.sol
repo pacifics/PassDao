@@ -99,7 +99,7 @@ contract PassFundingInterface {
 
     /// @notice Function used by the creator to set the contractor manager smart contract
     /// @param _contractorManager The address of the contractor manager smart contract
-    function SetContractorManager(address _contractorManager) onlyCreator;
+    function SetContractorManager(address _contractorManager);
     
     /// @notice Function used by the creator to set the presale limits
     /// @param _minPresaleAmount Minimum amount (in wei) that partners can send
@@ -107,7 +107,7 @@ contract PassFundingInterface {
     function SetPresaleAmountLimits(
         uint _minPresaleAmount,
         uint _maxPresaleAmount
-        ) onlyCreator;
+        );
 
     /// @dev Fallback function
     function () payable;
@@ -124,7 +124,7 @@ contract PassFundingInterface {
             bool _valid,
             uint _from,
             uint _to
-        ) onlyCreator;
+        );
 
     /// @notice Function used by the creator to set the addresses of Dao share holders
     /// @param _valid True if the address can fund the Dao
@@ -134,13 +134,13 @@ contract PassFundingInterface {
             bool _valid,
             uint _from,
             uint _to
-        ) onlyCreator;
+        );
     
     /// @notice Function to allow the creator to abort the funding before the closing time
-    function abortFunding() onlyCreator;
+    function abortFunding();
     
     /// @notice Function To allow the creator to pause during the presale
-    function pause(uint _pauseClosingTime) onlyCreator {
+    function pause(uint _pauseClosingTime) {
         pauseClosingTime = _pauseClosingTime;
     }
 
@@ -156,12 +156,12 @@ contract PassFundingInterface {
             uint _divisorBalanceLimit,
             uint _multiplierSharesLimit,
             uint _divisorSharesLimit
-    ) onlyCreator;
+    );
 
     /// @notice Function used to set the funding limits for partners
     /// @param _to The index of the last partner to set
     /// @return Whether the set was successful or not
-    function setFunding(uint _to) onlyCreator returns (bool _success);
+    function setFunding(uint _to) returns (bool _success);
 
     /// @notice Function for the funding of the Dao by a group of partners
     /// @param _from The index of the first partner
@@ -299,7 +299,7 @@ contract PassFunding is PassFundingInterface {
             || creator == _contractorManager
             || _contractorManager == address(DaoManager)) throw;
             
-        tokenCreation =true;            
+        tokenCreation = true;            
         contractorManager = PassManager(_contractorManager);
         ContractorManagerSet(_contractorManager);
         
@@ -366,9 +366,9 @@ contract PassFunding is PassFundingInterface {
             uint _to
         ) onlyCreator {
 
-        if (limitSet) throw;
-        
-        if (_from < 1 || _to > partners.length - 1) throw;
+        if (limitSet
+            ||_from < 1 
+            || _to > partners.length - 1) throw;
         
         for (uint i = _from; i <= _to; i++) {
             Partner t = partners[i];
