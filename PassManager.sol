@@ -54,7 +54,7 @@ contract PassManagerInterface is PassTokenManagerInterface {
     
     /// @notice Function to update the recipent address
     /// @param _newRecipient The adress of the recipient
-    function updateRecipient(address _newRecipient) onlyContractor;
+    function updateRecipient(address _newRecipient);
 
     /// @notice Function to buy Dao shares according to the funding rules 
     /// with `msg.sender` as the beneficiary
@@ -73,7 +73,7 @@ contract PassManagerInterface is PassTokenManagerInterface {
         uint _amount,
         string _description, 
         bytes32 _hashOfTheDocument
-    ) onlyContractor returns (uint);
+    ) returns (uint);
     
     /// @notice Function used by the client to order according to the contractor proposal
     /// @param _proposalID The index of the contractor proposal
@@ -82,7 +82,7 @@ contract PassManagerInterface is PassTokenManagerInterface {
     function order(
         uint _proposalID,
         uint _amount
-    ) external onlyClient returns (bool) ;
+    ) external returns (bool) ;
     
     /// @notice Function used by the client to send ethers from the Dao manager
     /// @param _recipient The address to send to
@@ -91,11 +91,11 @@ contract PassManagerInterface is PassTokenManagerInterface {
     function sendTo(
         address _recipient, 
         uint _amount
-    ) external onlyClient returns (bool);
+    ) external returns (bool);
 
     /// @notice Function to allow contractors to withdraw ethers
     /// @param _amount The amount (in wei) to withdraw
-    function withdraw(uint _amount) onlyContractor;
+    function withdraw(uint _amount);
     
     event ProposalAdded(uint indexed ProposalID, uint Amount, string Description);
     event Order(uint indexed ProposalID, uint Amount);
@@ -182,7 +182,7 @@ contract PassManager is PassManagerInterface, PassTokenManager {
     function sendTo(
         address _recipient,
         uint _amount
-    ) external onlyClient returns (bool) {
+    ) external onlyClient onlyDao returns (bool) {
     
         if (_recipient.send(_amount)) return true;
         else return false;
