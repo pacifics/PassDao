@@ -130,7 +130,7 @@ contract PassTokenManagerInterface {
         address _initialSupplyRecipient,
         uint256 _initialSupply,
         bool _transferable
-       ) onlyContractor;
+       );
 
     /// @param _initialPriceMultiplier The initial price multiplier of contractor tokens
     /// @param _inflationRate If 0, the contractor token price doesn't change during the funding
@@ -139,8 +139,8 @@ contract PassTokenManagerInterface {
         uint _initialPriceMultiplier, 
         uint _inflationRate,
         uint _closingTime
-    ) onlyContractor;
-    
+    );
+
     /// @notice Function to set a funding. Can be private or public
     /// @param _mainPartner The address of the smart contract to manage a private funding
     /// @param _publicCreation True if public funding
@@ -157,7 +157,7 @@ contract PassTokenManagerInterface {
         uint _minutesFundingPeriod, 
         uint _inflationRate,
         uint _proposalID
-    ) onlyClient external;
+    ) external;
     
     /// @dev Internal function for the creation of shares or tokens
     /// @param _recipient The recipient address of shares or tokens
@@ -172,8 +172,8 @@ contract PassTokenManagerInterface {
 
     /// @notice Function used by the main partner to set the start time of the funding
     /// @param _startTime The unix start date of the funding 
-    function setFundingStartTime(uint _startTime) external onlyMainPartner;
-    
+    function setFundingStartTime(uint _startTime) external;
+
     /// @notice Function used by the main partner to reward shares or tokens
     /// @param _recipient The address of the recipient of shares or tokens
     /// @param _amount The amount (in Wei) to calculate the quantity of shares or tokens to create
@@ -183,25 +183,25 @@ contract PassTokenManagerInterface {
         address _recipient, 
         uint _amount,
         uint _date
-        ) external onlyMainPartner;
+        ) external;
 
     /// @dev Internal function to close the actual funding
     function closeFunding() internal;
     
     /// @notice Function used by the main partner to set the funding fueled
-    function setFundingFueled() external onlyMainPartner;
-    
+    function setFundingFueled() external;
+
     /// @notice Function to able the transfer of Dao shares or contractor tokens
-    function ableTransfer() onlyClient;
+    function ableTransfer();
 
     /// @notice Function to disable the transfer of Dao shares
-    function disableTransfer() onlyClient;
+    function disableTransfer();
 
     /// @notice Function used by the client to block the transfer of shares from and to a share holder
     /// @param _shareHolder The address of the share holder
     /// @param _deadLine When the account will be unblocked
-    function blockTransfer(address _shareHolder, uint _deadLine) external onlyClient;
-    
+    function blockTransfer(address _shareHolder, uint _deadLine) external;
+
     /// @dev Internal function to send `_value` token to `_to` from `_From`
     /// @param _from The address of the sender
     /// @param _to The address of the recipient
@@ -414,7 +414,7 @@ contract PassTokenManager is PassTokenManagerInterface {
         if (_a/_amount != FundingRules[0].initialPriceMultiplier
             || _multiplier/100 != _a
             || totalSupply + _quantity <= totalSupply 
-            || totalSupply + _quantity < _quantity) return;
+            || totalSupply + _quantity <= _quantity) return;
 
         balances[_recipient] += _quantity;
         totalSupply += _quantity;
@@ -471,7 +471,7 @@ contract PassTokenManager is PassTokenManagerInterface {
         }
     }
     
-    function blockTransfer(address _shareHolder, uint _deadLine) external onlyClient {
+    function blockTransfer(address _shareHolder, uint _deadLine) external onlyClient onlyDao {
         if (_deadLine > blockedDeadLine[_shareHolder]) {
             blockedDeadLine[_shareHolder] = _deadLine;
         }
