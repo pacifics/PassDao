@@ -1,6 +1,6 @@
 import "PassManager.sol";
 
-pragma solidity ^0.4.4;
+pragma solidity ^0.4.2;
 
 /*
  *
