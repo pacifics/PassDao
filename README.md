@@ -19,6 +19,13 @@ In case of bug, we will send up to 500 eth (serious security bug) to the first w
 
 =
 
+## Homestead address
+
+PassDao: https://etherscan.io/address/0x3730117F77ac04Eec364BF72a656010FA4703D76#code
+PassManagerCreator: https://etherscan.io/address/0xd62a7c1F32af500d2214A6d6D9b25dd65B398B7d#code
+PassFundingCreator: https://etherscan.io/address/0x055a9c349cDC2A598439d6A45D0A83CAd3864FDc#code
+
+
 ## The Manager Smart Contract
 
 The Dao Manager smart contract contains the Eth balance of the Dao. A manager smart contract is also created for each contractor with proposals to work for the Dao and orders from the Dao. The smart contract derives to the Token Manager smart contract used for the management of Dao shares or contractor tokens. The smart contract is conform to ERC20.
