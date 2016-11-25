@@ -19,13 +19,25 @@ In case of bug, we will send up to 500 eth (serious security bug) to the first w
 
 =
 
-## Addresses and verified contract source Code on Homestead
+## HomesteadVerified contract source Code
 
 PassDao: https://etherscan.io/address/0x3730117F77ac04Eec364BF72a656010FA4703D76#code
 
 PassManagerCreator: https://etherscan.io/address/0xd62a7c1F32af500d2214A6d6D9b25dd65B398B7d#code
 
 PassFundingCreator: https://etherscan.io/address/0x055a9c349cDC2A598439d6A45D0A83CAd3864FDc#code
+
+=
+
+## Homestead Smart contracts
+
+DAO: 0x3730117F77ac04Eec364BF72a656010FA4703D76
+
+DAO shares: 0x09BC331C4938215e3Cc221be26757DD4679A4ACd
+
+Reputation tokens: 0x58f16DF245E4dA2171c20947633b48873E4157F9
+
+Funding smart contract: 0xB66D7272aADCf034CE8776Cf115583baf916C50a
 
 =
 
