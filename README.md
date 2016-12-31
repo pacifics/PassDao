@@ -31,7 +31,7 @@ PassFundingCreator: https://etherscan.io/address/0x055a9c349cDC2A598439d6A45D0A8
 
 ## Homestead Smart contracts
 
-DAO: 0x3730117F77ac04Eec364BF72a656010FA4703D76
+DAO: https://etherscan.io/address/0x3730117F77ac04Eec364BF72a656010FA4703D76#readContract
 
 DAO shares Manager: https://etherscan.io/address/0x09BC331C4938215e3Cc221be26757DD4679A4ACd#readContract
 
