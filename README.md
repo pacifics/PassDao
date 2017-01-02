@@ -29,7 +29,7 @@ PassFundingCreator: https://etherscan.io/address/0x055a9c349cDC2A598439d6A45D0A8
 
 =
 
-## Homestead Smart contracts
+## Homestead Smart contracts Information
 
 DAO: https://etherscan.io/address/0x3730117F77ac04Eec364BF72a656010FA4703D76#readContract
 
