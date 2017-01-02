@@ -43,7 +43,9 @@ Primary Funding: https://etherscan.io/address/0xB66D7272aADCf034CE8776Cf115583ba
 
 ## The Manager Smart Contract
 
-The Dao Manager smart contract contains the Eth balance of the Dao. A manager smart contract is also created for each contractor with proposals to work for the Dao and orders from the Dao. The smart contract derives to the Token Manager smart contract used for the management of Dao shares or contractor tokens. The smart contract is conform to ERC20.
+The Dao Manager smart contract contains the Eth balance of the Dao. A manager smart contract is also created for each contractor with proposals to work for the Dao and orders from the Dao. The smart contract derives to the Token Manager smart contract used for the management of Dao shares or contractor tokens. The smart contract is conform to ERC20 (except for transfer and approve events *).
+
+* Why I need to see the transfers and allowances of others? When I buy shares in the market, I don't inform others ! The information is not secret but we think that it has not to be published in the contract log.
 
 External functions are : 
 
