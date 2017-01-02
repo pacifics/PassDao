@@ -33,9 +33,9 @@ PassFundingCreator: https://etherscan.io/address/0x055a9c349cDC2A598439d6A45D0A8
 
 DAO shares Manager: https://etherscan.io/address/0x09BC331C4938215e3Cc221be26757DD4679A4ACd#readContract
 
-DAO: https://etherscan.io/address/0x3730117F77ac04Eec364BF72a656010FA4703D76#readContract
-
 Pass tokens Manager: https://etherscan.io/address/0x58f16DF245E4dA2171c20947633b48873E4157F9#readContract
+
+DAO: https://etherscan.io/address/0x3730117F77ac04Eec364BF72a656010FA4703D76#readContract
 
 Primary Funding: https://etherscan.io/address/0xB66D7272aADCf034CE8776Cf115583baf916C50a#readContract
 
