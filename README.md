@@ -37,7 +37,7 @@ DAO shares Manager: https://etherscan.io/address/0x09BC331C4938215e3Cc221be26757
 
 Pass tokens Manager: https://etherscan.io/address/0x58f16DF245E4dA2171c20947633b48873E4157F9#readContract
 
-Primary Funding: 0xB66D7272aADCf034CE8776Cf115583baf916C50a
+Primary Funding: https://etherscan.io/address/0xB66D7272aADCf034CE8776Cf115583baf916C50a#readContract
 
 =
 
