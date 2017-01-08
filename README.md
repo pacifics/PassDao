@@ -37,15 +37,11 @@ The Dao Manager smart contract contains the Eth balance of the Dao. A manager sm
 
 External functions are : 
 
-- Clone Proposal, clone tokens, update client, create initial tokens, close set up: setting functions in case of upgrade or clone.
+- Clone proposal, clone tokens, update client, create initial tokens, close set up: setting functions in case of upgrade or clone.
 
 - Receive fees for the Dao manager: allow the Dao receiving fees.
 
-- Receive deposit and Withdraw for the contractor managers: allow the contractors using their manager as account with deposits and withdrawals.
-
-- Fallback payable function: allows to send Eth to the manager smart contract.
-
-- Update recipient: allows the contractor to update the address for the withdrawal of ethers fom his manager contract.
+- Receive deposit, Withdraw and Update recipient: allow the contractors using their manager as account with deposits and withdrawals.
 
 - BuyShares and BuySharesFor in case of public fundings without funding smart contract.
 
@@ -81,7 +77,7 @@ External functions are :
 
 - Order a contractor proposal: In case of funding proposal linked to a contractor proposal, the amount sent to the contractor manager corresponds to the funded amount. Otherwise, the amount sent is the amount of the proposal.
 
-- Update Client Of Contractor Managers: In case of upgrade, this will allowing updating the contractor managers.
+- Update Client Of Contractor Managers: In case of upgrade, this will allowing updating the contractor managers linked to the Dao.
 
 - Withdraw function: allows the shareholders to withdraw the board meeting fees sent by the creators of the proposals.
 
