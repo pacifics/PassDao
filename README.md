@@ -81,7 +81,7 @@ Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a co
 
 External functions are :
 
-- Clone contractors and init Dao: set up procedure after an upgrade or clone.
+- Clone contractors and init Dao: setting functions in case of upgrade or clone.
 
 - Set a contractor or funding proposal: the dao sharehoders can propose to order a work of a contractor (defined in a proposal of the contractor manager) or/and to fund the Dao with a public or private funding. The proposal can foresee the payment of funded ethers to a contractor. The funding rules can be set in a separated smart contract and foresee to reward contractor tokens to funders. We use this method for the primary funding that gives to new DAO shareholders Pass reputation tokens.
 
