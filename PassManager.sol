@@ -225,7 +225,7 @@ contract PassManager is PassManagerInterface, PassTokenManager {
         
         if (smartContractStartDate != 0) throw;
 
-        PassManager _clonedFrom = PassManager(_clonedFrom);
+        PassManager _clonedFrom = PassManager(clonedFrom);
 
         if (_from < 1 || _to > _clonedFrom.numberOfHolders()) throw;
 
