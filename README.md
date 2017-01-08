@@ -77,7 +77,7 @@ External functions are :
 
 - Order a contractor proposal: In case of funding proposal linked to a contractor proposal, the amount sent to the contractor manager corresponds to the funded amount. Otherwise, the amount sent is the amount of the proposal.
 
-- Update Client Of Contractor Managers: In case of upgrade, this will allowing updating the contractor managers linked to the Dao.
+- Update Client Of Contractor Managers: In case of upgrade, this will allow updating the contractor managers linked to the Dao.
 
 - Withdraw function: allows the shareholders to withdraw the board meeting fees sent by the creators of the proposals.
 
