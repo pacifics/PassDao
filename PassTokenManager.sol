@@ -358,7 +358,8 @@ contract PassTokenManager is PassTokenManagerInterface {
         uint _quantity
     ) {
 
-        if (smartContractStartDate != 0) throw;
+        if (smartContractStartDate != 0 
+        || (msg.sender != creator && msg.sender != address(this))) throw;
 
         if (_quantity > 0 && balances[_holder] == 0) {
             addHolder(_holder);
