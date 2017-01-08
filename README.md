@@ -41,7 +41,7 @@ External functions are :
 
 - Receive fees: allow the Dao receiving fees from customers the Dao serves.
 
-- Receive deposit, Withdraw and Update recipient: allow the contractors using their manager as account with deposits and withdrawals.
+- Receive deposit, Withdraw and Update recipient: allow the contractors using their manager as an account with deposits and withdrawals.
 
 - BuyShares and BuySharesFor in case of public fundings without funding smart contract.
 
