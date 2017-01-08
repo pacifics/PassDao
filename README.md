@@ -47,6 +47,12 @@ The Dao Manager smart contract contains the Eth balance of the Dao. A manager sm
 
 External functions are : 
 
+- Clone Proposal, clone tokens, update client, create initial tokens, close set up: setting functions in case of upgrade or clone.
+
+- Receive fees for the Dao manager: allow the Dao receiving fees.
+
+- Receive deposit and Withdraw for the contractor managers: allow the contractors using their manager as account with deposits and withdrawals.
+
 - Fallback payable function: allows to send Eth to the manager smart contract.
 
 - Update recipient: allows the contractor to update the address for the withdrawal of ethers fom his manager contract.
@@ -56,8 +62,6 @@ External functions are :
 - Set a new proposal: every contractor can offer his client (the DAO) to sell products or execute services. The proposal contains a description, a hash of document and the amount of the proposal. 
 
 - Order and sendTo for the order and payment of ethers to the contractor manager by the Dao manager according to a proposal.
-
-- Withdraw function: allows the contractors to withdraw the amounts sent by the Dao manager.
 
 - SetTokenPriceProposal: allows the contractors to propose a token price for the creation of contractor tokens.
 
@@ -77,13 +81,17 @@ Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a co
 
 External functions are :
 
+- Clone contractors and init Dao: set up procedure after an upgrade or clone.
+
 - Set a contractor or funding proposal: the dao sharehoders can propose to order a work of a contractor (defined in a proposal of the contractor manager) or/and to fund the Dao with a public or private funding. The proposal can foresee the payment of funded ethers to a contractor. The funding rules can be set in a separated smart contract and foresee to reward contractor tokens to funders. We use this method for the primary funding that gives to new DAO shareholders Pass reputation tokens.
 
-- Set a Dao Rules proposal: the dao shareholders can propose to change the minimum quorum for proposals, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period, the inflation rate for the reward of fees to voters during board meetings and the date when shares can be transfered.
+- Set a Dao Rules proposal: the dao shareholders can propose to change the minimum quorum for proposals, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period, the inflation rate for the reward of fees to voters during board meetings, the date when shares can be transfered and the new Dao smart contract in case of upgrade.
 
 - Vote for or against a proposal: If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
 
 - Order a contractor proposal: In case of funding proposal linked to a contractor proposal, the amount sent to the contractor manager corresponds to the funded amount. Otherwise, the amount sent is the amount of the proposal.
+
+- Update Client Of Contractor Managers: In case of upgrade, this will allowing updating the contractor managers.
 
 - Withdraw function: allows the shareholders to withdraw the board meeting fees sent by the creators of the proposals.
 
@@ -157,4 +165,8 @@ External functions are :
 
 # Upgrading Procedure
 
-In case of bugs or improvements, the funding smart contract can be updated and called in new Dao proposals. Shareholders can also make a contractor proposal to send the Dao balance to a new smart contract. This will "transfer" the Dao balance, shares and reputation tokens (technically creating new shares and tokens) to new manager smart contracts and with a new Dao smart contract as client.
+In case of bugs or improvements, the funding smart contract can be updated and called in new Dao proposals. 
+
+Shareholders can also upgrade the Dao smart contract by vote without migrating the manager smart contracts. This is tchnically an easy procedure which will allow improving how the Dao works.
+
+It is also possible to clone the shares and tokens and to send the Dao balance to a new Dao manager smart contract. In this way, we can create others Dao projects for our Community. Each project will have its own DAO which is linked to a Community and which can move with time. Therefore, this is a way to split the DAO.
