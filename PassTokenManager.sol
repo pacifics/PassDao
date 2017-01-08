@@ -1,4 +1,4 @@
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.6;
 
 /*
  *
@@ -49,8 +49,11 @@ contract PassTokenManagerInterface {
     // The quantity of decimals for display purpose
     uint8 public decimals;
 
+    // End date of the setup procedure
+    uint public smartContractStartDate;
+    
     // Total amount of tokens
-    uint256 totalSupply;
+    uint256 totalTokenSupply;
 
     // Array with all balances
     mapping (address => uint256) balances;
@@ -59,17 +62,22 @@ contract PassTokenManagerInterface {
 
     // Map of the result (in wei) of fundings
     mapping (uint => uint) fundedAmount;
-    
+
+    // Array of token or share holders
+    address[] holders;
+    // Map with the indexes of the holders
+    mapping (address => uint) public holderID;
+
     // If true, the shares or tokens can be transfered
     bool public transferable;
     // Map of blocked Dao share accounts. Points to the date when the share holder can transfer shares
     mapping (address => uint) public blockedDeadLine; 
-
+    
     // Rules for the actual funding and the contractor token price
     fundingData[2] public FundingRules;
     
     /// @return The total supply of shares or tokens 
-    function TotalSupply() constant external returns (uint256);
+    function totalSupply() constant external returns (uint256);
 
     /// @param _owner The address from which the balance will be retrieved
     /// @return The balance
@@ -94,6 +102,13 @@ contract PassTokenManagerInterface {
     /// @return The maximal amount a main partner can fund at this moment
     /// @param _mainPartner The address of the main parner
     function fundingMaxAmount(address _mainPartner) constant external returns (uint);
+    
+    /// @return The number of share or token holders 
+    function numberOfHolders() constant returns (uint);
+
+    /// @param _index The index of the holder
+    /// @return the address of the an holder
+    function HolderAddress(uint _index) constant returns (address);
 
     // Modifier that allows only the client to manage this account manager
     modifier onlyClient {if (msg.sender != client) throw; _;}
@@ -111,27 +126,28 @@ contract PassTokenManagerInterface {
     /// @param _creator The address of the creator of the smart contract
     /// @param _client The address of the client or Dao
     /// @param _recipient The recipient of this manager
-    //function TokenManager(
-        //address _creator,
-        //address _client,
-        //address _recipient
-    //);
-
     /// @param _tokenName The token name for display purpose
     /// @param _tokenSymbol The token symbol for display purpose
     /// @param _tokenDecimals The quantity of decimals for display purpose
-    /// @param _initialSupplyRecipient The recipient of the initial supply (not mandatory)
-    /// @param _initialSupply The initial supply of tokens for the recipient (not mandatory)
     /// @param _transferable True if allows the transfer of tokens
-    function initToken(
-        string _tokenName,
-        string _tokenSymbol,
-        uint8 _tokenDecimals,
-        address _initialSupplyRecipient,
-        uint256 _initialSupply,
-        bool _transferable
-       );
+    //function PassTokenManager(
+    //    address _creator,
+    //    address _client,
+    //    address _recipient,
+    //    string _tokenName,
+    //    string _tokenSymbol,
+    //    uint8 _tokenDecimals,
+    //    bool _transferable);
 
+    /// @notice Function to create initial tokens    
+    /// @param _holder The beneficiary of the created tokens
+    /// @param _quantity The quantity of tokens to create
+    function createInitialTokens(address _holder, uint _quantity);
+
+    /// @notice Function to close the setup procedure of this contract
+    function closeSetup();
+    
+    /// @notice Function that allow the contractor to propose a token price
     /// @param _initialPriceMultiplier The initial price multiplier of contractor tokens
     /// @param _inflationRate If 0, the contractor token price doesn't change during the funding
     /// @param _closingTime The initial price and inflation rate can be changed after this date
@@ -158,6 +174,10 @@ contract PassTokenManagerInterface {
         uint _inflationRate,
         uint _proposalID
     ) external;
+
+    /// @dev Internal function to add a new token or share holder
+    /// @param _holder The address of the token or share holder
+    function addHolder(address _holder) internal;
     
     /// @dev Internal function for the creation of shares or tokens
     /// @param _recipient The recipient address of shares or tokens
@@ -211,12 +231,13 @@ contract PassTokenManagerInterface {
         address _from,
         address _to, 
         uint256 _value
-        ) internal returns (bool);
+        ) internal returns (bool success);
 
     /// @notice send `_value` token to `_to` from `msg.sender`
     /// @param _to The address of the recipient
     /// @param _value The quantity of shares or tokens to be transferred
-    function transfer(address _to, uint256 _value);
+    /// @return Whether the function was successful or not 
+    function transfer(address _to, uint256 _value) returns (bool success);
 
     /// @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
     /// @param _from The address of the sender
@@ -233,19 +254,23 @@ contract PassTokenManagerInterface {
     /// @param _value The amount of tokens to be approved for transfer
     /// @return Whether the approval was successful or not
     function approve(address _spender, uint256 _value) returns (bool success);
-
+    
+    event TokenPriceProposalSet(uint InitialPriceMultiplier, uint InflationRate, uint ClosingTime);
+    event holderAdded(uint Index, address Holder);
     event TokensCreated(address indexed Sender, address indexed TokenHolder, uint Quantity);
     event FundingRulesSet(address indexed MainPartner, uint indexed FundingProposalId, uint indexed StartTime, uint ClosingTime);
     event FundingFueled(uint indexed FundingProposalID, uint FundedAmount);
     event TransferAble();
     event TransferDisable();
+    event Transfer(address indexed _from, address indexed _to, uint256 _value);
+    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
 
 }    
 
 contract PassTokenManager is PassTokenManagerInterface {
     
-    function TotalSupply() constant external returns (uint256) {
-        return totalSupply;
+    function totalSupply() constant external returns (uint256) {
+        return totalTokenSupply;
     }
 
      function balanceOf(address _owner) constant external returns (uint256 balance) {
@@ -285,11 +310,22 @@ contract PassTokenManager is PassTokenManagerInterface {
         
     }
 
+    function numberOfHolders() constant returns (uint) {
+        return holders.length - 1;
+    }
+    
+    function HolderAddress(uint _index) constant returns (address) {
+        return holders[_index];
+    }
+
     function PassTokenManager(
         address _creator,
         address _client,
-        address _recipient
-    ) {
+        address _recipient,
+        string _tokenName,
+        string _tokenSymbol,
+        uint8 _tokenDecimals,
+        bool _transferable) {
         
         if (_creator == 0 
             || _client == 0 
@@ -301,21 +337,8 @@ contract PassTokenManager is PassTokenManagerInterface {
         client = _client;
         recipient = _recipient;
         
-    }
-   
-    function initToken(
-        string _tokenName,
-        string _tokenSymbol,
-        uint8 _tokenDecimals,
-        address _initialSupplyRecipient,
-        uint256 _initialSupply,
-        bool _transferable) {
-           
-        if (_initialSupplyRecipient == address(this)
-            || decimals != 0
-            || msg.sender != creator
-            || totalSupply != 0) throw;
-            
+        holders.length = 1;
+        
         name = _tokenName;
         symbol = _tokenSymbol;
         decimals = _tokenDecimals;
@@ -328,10 +351,26 @@ contract PassTokenManager is PassTokenManagerInterface {
             TransferDisable();
         }
         
-        balances[_initialSupplyRecipient] = _initialSupply; 
-        totalSupply = _initialSupply;
-        TokensCreated(msg.sender, _initialSupplyRecipient, _initialSupply);
-           
+    }
+
+    function createInitialTokens(
+        address _holder, 
+        uint _quantity
+    ) {
+
+        if (smartContractStartDate != 0) throw;
+
+        if (_quantity > 0 && balances[_holder] == 0) {
+            addHolder(_holder);
+            balances[_holder] = _quantity; 
+            totalTokenSupply += _quantity;
+            TokensCreated(msg.sender, _holder, _quantity);
+        }
+        
+    }
+    
+    function closeSetup() {
+        smartContractStartDate = now;
     }
     
     function setTokenPriceProposal(        
@@ -348,6 +387,7 @@ contract PassTokenManager is PassTokenManagerInterface {
         FundingRules[1].startTime = now;
         FundingRules[1].closingTime = _closingTime;
         
+        TokenPriceProposalSet(_initialPriceMultiplier, _inflationRate, _closingTime);
     }
     
     function setFundingRules(
@@ -396,6 +436,19 @@ contract PassTokenManager is PassTokenManagerInterface {
             
     } 
     
+    function addHolder(address _holder) internal {
+        
+        if (holderID[_holder] == 0) {
+            
+            uint _holderID = holders.length++;
+            holders[_holderID] = _holder;
+            holderID[_holder] = _holderID;
+            holderAdded(_holderID, _holder);
+
+        }
+        
+    }
+    
     function createToken(
         address _recipient, 
         uint _amount,
@@ -413,11 +466,12 @@ contract PassTokenManager is PassTokenManagerInterface {
         uint _quantity = _multiplier/priceDivisor(_saleDate);
         if (_a/_amount != FundingRules[0].initialPriceMultiplier
             || _multiplier/100 != _a
-            || totalSupply + _quantity <= totalSupply 
-            || totalSupply + _quantity <= _quantity) return;
+            || totalTokenSupply + _quantity <= totalTokenSupply 
+            || totalTokenSupply + _quantity <= _quantity) return;
 
+        addHolder(_recipient);
         balances[_recipient] += _quantity;
-        totalSupply += _quantity;
+        totalTokenSupply += _quantity;
         FundingRules[0].fundedAmount += _amount;
 
         TokensCreated(msg.sender, _recipient, _quantity);
@@ -481,7 +535,7 @@ contract PassTokenManager is PassTokenManagerInterface {
         address _from,
         address _to, 
         uint256 _value
-        ) internal returns (bool) {  
+        ) internal returns (bool success) {  
 
         if (transferable
             && now > blockedDeadLine[_from]
@@ -493,6 +547,8 @@ contract PassTokenManager is PassTokenManagerInterface {
         ) {
             balances[_from] -= _value;
             balances[_to] += _value;
+            Transfer(_from, _to, _value);
+            addHolder(_to);
             return true;
         } else {
             return false;
@@ -500,8 +556,9 @@ contract PassTokenManager is PassTokenManagerInterface {
         
     }
 
-    function transfer(address _to, uint256 _value) {  
+    function transfer(address _to, uint256 _value) returns (bool success) {  
         if (!transferFromTo(msg.sender, _to, _value)) throw;
+        return true;
     }
 
     function transferFrom(
@@ -514,13 +571,13 @@ contract PassTokenManager is PassTokenManagerInterface {
             || !transferFromTo(_from, _to, _value)) throw;
             
         allowed[_from][msg.sender] -= _value;
-
+        return true;
     }
 
     function approve(address _spender, uint256 _value) returns (bool success) {
         allowed[msg.sender][_spender] = _value;
         return true;
     }
-
+    
 }    
   
