@@ -1,6 +1,6 @@
 import "PassManager.sol";
 
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.6;
 
 /*
 This file is part of Pass DAO.
@@ -54,6 +54,13 @@ contract PassDaoInterface {
         mapping (address => bool) hasVoted;  
     }
 
+    struct Contractor {
+        // The address of the contractor manager smart contract
+        address contractorManager;
+        // The date of the first order for the contractor
+        uint creationDate;
+    }
+        
     struct Proposal {
         // Index to identify the board meeting of the proposal
         uint boardMeetingID;
@@ -94,10 +101,20 @@ contract PassDaoInterface {
         uint feesRewardInflationRate;
         // True if the dao rules allow the transfer of shares
         bool transferable;
+        // Address of the effective Dao smart contract (can be different of this Dao in case of upgrade)
+        address dao;
     } 
-
+    
     // The creator of the Dao
-    address creator;
+    address public creator;
+    // The name of the project
+    string public projectName;
+    // The address of the last Dao before upgrade (not mandatory)
+    address public lastDao;
+    // End date of the setup procedure
+    uint public smartContractStartDate;
+    // The Dao manager smart contract
+    PassManager public daoManager;
     // The minimum periods in minutes 
     uint public minMinutesPeriods;
     // The maximum period in minutes for proposals (set+debate)
@@ -106,15 +123,16 @@ contract PassDaoInterface {
     uint public maxMinutesFundingPeriod;
     // The maximum inflation rate for share price or rewards to voters
     uint public maxInflationRate;
-
-    // The Dao manager smart contract
-    PassManager public daoManager;
     
     // Map to allow the share holders to withdraw board meeting fees
-    mapping (address => uint) public pendingFeesWithdrawals;
+    mapping (address => uint) pendingFees;
 
     // Board meetings to vote for or against a proposal
     BoardMeeting[] public BoardMeetings; 
+    // Contractors of the Dao
+    Contractor[] public Contractors;
+    // Map with the indexes of the contractors
+    mapping (address => uint) contractorID;
     // Proposals to pay a contractor or fund the Dao
     Proposal[] public Proposals;
     // Proposals to update the Dao rules
@@ -123,7 +141,28 @@ contract PassDaoInterface {
     Rules public DaoRules; 
     
     /// @dev The constructor function
-    //function PassDao();
+    /// @param _projectName The name of the Dao
+    /// @param _lastDao The address of the last Dao before upgrade (not mandatory)
+    //function PassDao(
+    //    string _projectName,
+    //    address _lastDao);
+    
+    /// @dev Internal function to add a new contractor
+    /// @param _contractorManager The address of the contractor manager
+    /// @param _creationDate The date of the first order
+    function addContractor(address _contractorManager, uint _creationDate) internal;
+
+    /// @dev Function to clone a contractor from the last Dao in case of upgrade 
+    /// @param _contractorManager The address of the contractor manager
+    /// @param _creationDate The date of the first order
+    function cloneContractor(address _contractorManager, uint _creationDate);
+    
+    /// @notice Function to update the client of the contractor managers in case of upgrade
+    /// @param _from The index of the first contractor manager to update
+    /// @param _to The index of the last contractor manager to update
+    function updateClientOfContractorManagers(
+        uint _from, 
+        uint _to);
 
     /// @dev Function to initialize the Dao
     /// @param _daoManager Address of the Dao manager smart contract
@@ -148,7 +187,7 @@ contract PassDaoInterface {
         uint _minMinutesDebatePeriod,
         uint _feesRewardInflationRate
         );
-    
+        
     /// @dev Internal function to create a board meeting
     /// @param _proposalID The index of the proposal if for a contractor or for a funding
     /// @param _daoRulesProposalID The index of the proposal if Dao rules
@@ -193,6 +232,7 @@ contract PassDaoInterface {
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
     /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a board meeting
     /// @param _transferable True if the proposal foresees to allow the transfer of Dao shares
+    /// @param _dao Address of a new Dao smart contract in case of upgrade (not mandatory)    
     /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
     function newDaoRulesProposal(
         uint _minQuorumDivisor, 
@@ -201,6 +241,7 @@ contract PassDaoInterface {
         uint _minMinutesDebatePeriod,
         uint _feesRewardInflationRate,
         bool _transferable,
+        address _dao,
         uint _minutesDebatingPeriod
     ) payable returns (uint);
     
@@ -226,21 +267,73 @@ contract PassDaoInterface {
     /// @return Whether the withdraw was successful or not    
     function withdrawBoardMeetingFees() returns (bool);
 
+    /// @param _shareHolder Address of the shareholder
+    /// @return The amount in wei the shareholder can withdraw    
+    function PendingFees(address _shareHolder) constant returns (uint);
+    
     /// @return The minimum quorum for proposals to pass 
     function minQuorum() constant returns (uint);
-    
-    event ProposalAdded(uint indexed ProposalID, address indexed ContractorManager, uint ContractorProposalID, 
-            uint amount, address indexed MainPartner, uint InitialSharePriceMultiplier, uint MinutesFundingPeriod);
-    event DaoRulesProposalAdded(uint indexed DaoRulesProposalID, uint MinQuorumDivisor, uint MinBoardMeetingFees, 
-            uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, bool Transferable);
-    event SentToContractor(uint indexed ContractorProposalID, address indexed ContractorManagerAddress, uint AmountSent);
-    event BoardMeetingClosed(uint indexed BoardMeetingID, uint FeesGivenBack, bool ProposalExecuted);
+
+    /// @return The number of contractors 
+   function numberOfContractors() constant returns (uint);
+
+    /// @return The number of board meetings (or proposals) 
+    function numberOfBoardMeetings() constant returns (uint);
+
+    event ContractorProposalAdded(uint indexed ProposalID, uint boardMeetingID, address indexed ContractorManager, 
+        uint indexed ContractorProposalID, uint amount);
+    event FundingProposalAdded(uint indexed ProposalID, uint boardMeetingID, bool indexed LinkedToContractorProposal, 
+        uint amount, address MainPartner, uint InitialSharePriceMultiplier, uint InflationRate, uint MinutesFundingPeriod);
+    event DaoRulesProposalAdded(uint indexed DaoRulesProposalID, uint boardMeetingID, uint MinQuorumDivisor, 
+        uint MinBoardMeetingFees, uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, 
+        bool Transferable, address NewDao);
+    event Voted(uint indexed boardMeetingID, uint ProposalID, uint DaoRulesProposalID, bool position, address indexed voter);
+    event ProposalClosed(uint indexed ProposalID, uint indexed DaoRulesProposalID, uint boardMeetingID, 
+        uint FeesGivenBack, bool ProposalExecuted, uint BalanceSentToDaoManager);
+    event SentToContractor(uint indexed ProposalID, uint indexed ContractorProposalID, address indexed ContractorManagerAddress, uint AmountSent);
+    event Withdrawal(address indexed Recipient, uint Amount);
+    event DaoUpgraded(address NewDao);
     
 }
 
 contract PassDao is PassDaoInterface {
 
-    function PassDao() {}
+    function PassDao(
+        string _projectName,
+        address _lastDao) {
+
+        lastDao = _lastDao;
+        creator = msg.sender;
+        projectName =_projectName;
+
+        Contractors.length = 1;
+        BoardMeetings.length = 1;
+        Proposals.length = 1;
+        DaoRulesProposals.length = 1; 
+        
+    }
+    
+    function addContractor(address _contractorManager, uint _creationDate) internal {
+        
+        if (contractorID[_contractorManager] == 0) {
+
+            uint _contractorID = Contractors.length++;
+            Contractor c = Contractors[_contractorID];
+            
+            contractorID[_contractorManager] = _contractorID;
+            c.contractorManager = _contractorManager;
+            c.creationDate = _creationDate;
+        }
+        
+    }
+    
+    function cloneContractor(address _contractorManager, uint _creationDate) {
+        
+        if (DaoRules.minQuorumDivisor != 0) throw;
+
+        addContractor(_contractorManager, _creationDate);
+        
+    }
     
     function initDao(
         address _daoManager,
@@ -256,9 +349,7 @@ contract PassDao is PassDaoInterface {
         ) {
             
         
-        if (DaoRules.minQuorumDivisor != 0) throw;
-
-        daoManager = PassManager(_daoManager);
+        if (smartContractStartDate != 0) throw;
 
         maxInflationRate = _maxInflationRate;
         minMinutesPeriods = _minMinutesPeriods;
@@ -270,10 +361,21 @@ contract PassDao is PassDaoInterface {
         DaoRules.minutesSetProposalPeriod = _minutesSetProposalPeriod;
         DaoRules.minMinutesDebatePeriod = _minMinutesDebatePeriod;
         DaoRules.feesRewardInflationRate = _feesRewardInflationRate;
-
-        BoardMeetings.length = 1; 
-        Proposals.length = 1;
-        DaoRulesProposals.length = 1;
+        daoManager = PassManager(_daoManager);
+        
+        smartContractStartDate = now;
+        
+    }
+    
+    function updateClientOfContractorManagers(
+        uint _from,
+        uint _to) {
+        
+        if (_from < 1 || _to > Contractors.length - 1) throw;
+        
+        for (uint i = _from; i <= _to; i++) {
+            PassManager(Contractors[i].contractorManager).updateClient(DaoRules.dao);
+        }
         
     }
     
@@ -350,8 +452,17 @@ contract PassDao is PassDaoInterface {
 
         p.open = true;
         
-        ProposalAdded(_proposalID, p.contractorManager, p.contractorProposalID, p.amount, p.mainPartner, 
-            p.initialSharePriceMultiplier, _minutesFundingPeriod);
+        if (_contractorProposalID != 0) {
+            ContractorProposalAdded(_proposalID, p.boardMeetingID, p.contractorManager, p.contractorProposalID, p.amount);
+            if (_initialSharePriceMultiplier != 0) {
+                FundingProposalAdded(_proposalID, p.boardMeetingID, true, p.amount, p.mainPartner, 
+                    p.initialSharePriceMultiplier, _inflationRate, _minutesFundingPeriod);
+            }
+        }
+        else if (_initialSharePriceMultiplier != 0) {
+                FundingProposalAdded(_proposalID, p.boardMeetingID, false, p.amount, p.mainPartner, 
+                    p.initialSharePriceMultiplier, _inflationRate, _minutesFundingPeriod);
+        }
 
         return _proposalID;
         
@@ -364,6 +475,7 @@ contract PassDao is PassDaoInterface {
         uint _minMinutesDebatePeriod,
         uint _feesRewardInflationRate,
         bool _transferable,
+        address _newDao,
         uint _minutesDebatingPeriod
     ) payable returns (uint) {
     
@@ -384,11 +496,12 @@ contract PassDao is PassDaoInterface {
         r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
         r.feesRewardInflationRate = _feesRewardInflationRate;
         r.transferable = _transferable;
-        
+        r.dao = _newDao;
+
         r.boardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, _minutesDebatingPeriod);     
 
-        DaoRulesProposalAdded(_DaoRulesProposalID, _minQuorumDivisor, _minBoardMeetingFees, 
-            _minutesSetProposalPeriod, _minMinutesDebatePeriod, _feesRewardInflationRate ,_transferable);
+        DaoRulesProposalAdded(_DaoRulesProposalID, r.boardMeetingID, _minQuorumDivisor, _minBoardMeetingFees, 
+            _minutesSetProposalPeriod, _minMinutesDebatePeriod, _feesRewardInflationRate ,_transferable, _newDao);
 
         return _DaoRulesProposalID;
         
@@ -417,7 +530,7 @@ contract PassDao is PassDaoInterface {
 
             uint _a = 100*b.fees;
             if ((_a/100 != b.fees) || ((_a*_balance)/_a != _balance)) throw;
-            uint _multiplier = (_a*_balance)/uint(daoManager.TotalSupply());
+            uint _multiplier = (_a*_balance)/uint(daoManager.totalSupply());
 
             uint _divisor = 100 + 100*DaoRules.feesRewardInflationRate*(now - b.setDeadline)/(100*365 days);
 
@@ -425,9 +538,11 @@ contract PassDao is PassDaoInterface {
             
             if (b.totalRewardedAmount + _rewardedamount > b.fees) _rewardedamount = b.fees - b.totalRewardedAmount;
             b.totalRewardedAmount += _rewardedamount;
-            pendingFeesWithdrawals[msg.sender] += _rewardedamount;
+            pendingFees[msg.sender] += _rewardedamount;
         }
 
+        Voted(_boardMeetingID, b.proposalID, b.daoRulesProposalID, _supportsProposal, msg.sender);
+        
         daoManager.blockTransfer(msg.sender, b.votingDeadline);
 
     }
@@ -450,16 +565,17 @@ contract PassDao is PassDaoInterface {
             && b.yea + b.nay >= _minQuorum) {
                     _fees = b.fees;
                     b.fees = 0;
-                    pendingFeesWithdrawals[b.creator] += _fees;
+                    pendingFees[b.creator] += _fees;
         }        
 
-        if (b.fees - b.totalRewardedAmount > 0) {
-            if (!daoManager.send(b.fees - b.totalRewardedAmount)) throw;
+        uint _balance = b.fees - b.totalRewardedAmount;
+        if (_balance > 0) {
+            if (!daoManager.send(_balance)) throw;
         }
         
         if (b.yea + b.nay < _minQuorum || b.yea <= b.nay) {
             p.open = false;
-            BoardMeetingClosed(_boardMeetingID, _fees, false);
+            ProposalClosed(b.proposalID, b.daoRulesProposalID, _boardMeetingID, _fees, false, _balance);
             return;
         }
 
@@ -478,7 +594,7 @@ contract PassDao is PassDaoInterface {
                 }
 
             }
-
+            
         } else {
 
             Rules r = DaoRulesProposals[b.daoRulesProposalID];
@@ -493,10 +609,17 @@ contract PassDao is PassDaoInterface {
             DaoRules.transferable = r.transferable;
             if (r.transferable) daoManager.ableTransfer();
             else daoManager.disableTransfer();
-        }
             
-        BoardMeetingClosed(_boardMeetingID, _fees, true);
+            if ((r.dao != 0) && (r.dao != address(this))) {
+                DaoRules.dao = r.dao;
+                daoManager.updateClient(r.dao);
+                DaoUpgraded(r.dao);
+            }
 
+        }
+
+        ProposalClosed(b.proposalID, b.daoRulesProposalID, _boardMeetingID ,_fees, true, _balance);
+            
         return true;
         
     }
@@ -517,10 +640,12 @@ contract PassDao is PassDaoInterface {
         
         p.open = false;   
 
-        if (_amount == 0 || !p.contractorManager.order(p.contractorProposalID, _amount)) return;
+        if (_amount == 0 || !p.contractorManager.order(_proposalID, p.contractorProposalID, _amount)) return;
         
         if (!daoManager.sendTo(p.contractorManager, _amount)) throw;
-        SentToContractor(p.contractorProposalID, address(p.contractorManager), _amount);
+        SentToContractor(_proposalID, p.contractorProposalID, address(p.contractorManager), _amount);
+        
+        addContractor(address(p.contractorManager), now);
         
         return true;
 
@@ -528,21 +653,34 @@ contract PassDao is PassDaoInterface {
     
     function withdrawBoardMeetingFees() returns (bool) {
 
-        uint _amount = pendingFeesWithdrawals[msg.sender];
+        uint _amount = pendingFees[msg.sender];
 
-        pendingFeesWithdrawals[msg.sender] = 0;
+        pendingFees[msg.sender] = 0;
 
         if (msg.sender.send(_amount)) {
+            Withdrawal(msg.sender, _amount);
             return true;
         } else {
-            pendingFeesWithdrawals[msg.sender] = _amount;
+            pendingFees[msg.sender] = _amount;
             return false;
         }
 
     }
 
+    function PendingFees(address _shareHolder) constant returns (uint) {
+        return (pendingFees[_shareHolder]);
+    }
+    
     function minQuorum() constant returns (uint) {
-        return (uint(daoManager.TotalSupply()) / DaoRules.minQuorumDivisor);
+        return (uint(daoManager.totalSupply()) / DaoRules.minQuorumDivisor);
+    }
+
+    function numberOfContractors() constant returns (uint) {
+        return Contractors.length - 1;
+    }
+    
+    function numberOfBoardMeetings() constant returns (uint) {
+        return BoardMeetings.length - 1;
     }
     
 }
