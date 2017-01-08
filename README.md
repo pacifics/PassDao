@@ -9,7 +9,7 @@ Website : http://pacifics.org/dao
 =
 
 ## Overview
-Pass DAO is open source and used for the project to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. The source includes three separated smart contracts : the manager smart contract for the management of Eth accounts and shares or tokens, the Dao smart contract to make decision on proposals and the Funding smart contract to fund the Dao.
+Pass DAO is open source and used for the project to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. The source includes three separated smart contracts : the manager smart contract for the management of Eth accounts and shares or tokens, the Dao smart contract to make decision on proposals and the Funding smart contract to fund the Dao with rules redefined in the Blockchain.
 
 =
 
