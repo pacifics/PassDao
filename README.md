@@ -79,7 +79,7 @@ External functions are :
 
 - Update Client Of Contractor Managers: In case of upgrade, this will allow updating the contractor managers linked to the Dao.
 
-- Withdraw function: allows the shareholders to withdraw the board meeting fees sent by the creators of the proposals.
+- Withdraw function: allows the voters to withdraw the board meeting fees sent by the creators of the proposals.
 
 =
 
