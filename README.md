@@ -149,7 +149,7 @@ External functions are :
 
 =
 
-# Upgrading Procedure
+# Upgrading, cloning and splitting Procedures
 
 In case of bugs or improvements, the funding smart contract can be updated and called in new Dao proposals. 
 
