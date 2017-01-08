@@ -85,7 +85,9 @@ External functions are :
 
 ## The Funding Smart Contract
 
-Smart contract for private fundings or fundings with terms predefined in the Blockchain. This smart contract was used for the ICO and the primary funding of the Dao. Each partner who sent his Eth account address by email (for communication and security purposes) can become a shareholder of the Dao. All Eth addresses can refund for the amount sent and not funded. After the primary funding, the smart contract will allow others fundings with for instance Priority Subscription Rights for shareholders. The smart contract also foresees a preliminary step for the setting before the voting procedure of the corresponding funding proposal in the Dao. This will allow the shareholders to approve a set private funding without allowing the creator of the funding to change anything.
+Smart contract for private fundings or fundings with terms predefined in the Blockchain. This smart contract was used for the ICO and the primary funding of the Dao. The conditions was to send his Eth account address by email (for communication and security purposes) and to send between 1 and 100 Eth to the primary funding smart contract. The smart contract allows others fundings with for instance Priority Subscription Rights for shareholders. 
+
+Note: The smart contract also foresees a preliminary step for the setting before the voting procedure of the corresponding funding proposal in the Dao. This will allow the shareholders to approve a set private funding without allowing the creator of the funding to change anything.
 
 External functions are :
 
