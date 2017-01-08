@@ -39,7 +39,7 @@ External functions are :
 
 - Clone proposal, clone tokens, update client, create initial tokens, close set up: setting functions in case of upgrade or clone.
 
-- Receive fees for the Dao manager: allow the Dao receiving fees.
+- Receive fees: allow the Dao receiving fees from customers the Dao serves.
 
 - Receive deposit, Withdraw and Update recipient: allow the contractors using their manager as account with deposits and withdrawals.
 
