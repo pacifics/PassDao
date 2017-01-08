@@ -167,6 +167,6 @@ External functions are :
 
 In case of bugs or improvements, the funding smart contract can be updated and called in new Dao proposals. 
 
-Shareholders can also upgrade the Dao smart contract by vote without migrating the manager smart contracts. This is technically an easy procedure which will allow improving how the Dao works.
+Shareholders can also upgrade the Dao smart contract by vote without migrating the manager smart contracts. This is technically an easy procedure which will allow improving how the Dao works without cloning the shares ans tokens.
 
-It is also possible to clone the shares and tokens and to send the Dao balance to a new Dao manager smart contract. In this way, we can upgrade or create others Dao projects for our Community. Each project will have its own DAO which is linked to a Community and which can move with time. Therefore, this is a way to split the DAO.
+It is also possible to to send the Dao balance to a new Dao manager smart contract and to clone the shares and tokens. In this way, we can upgrade manager smart contracts or create others Dao projects for our Community. Each project will have its own DAO which is linked to a Community and which can move with time. Therefore, this is a way to split the DAO.
