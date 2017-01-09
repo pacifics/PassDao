@@ -101,8 +101,10 @@ contract PassDaoInterface {
         uint feesRewardInflationRate;
         // True if the dao rules allow the transfer of shares
         bool transferable;
-        // Address of the effective Dao smart contract (can be different of this Dao in case of upgrade)
-        address dao;
+        // Address of the new Dao smart contract after an upgrade
+        address newdao;
+        // The period in minutes for the cloning procedure of shares and tokens
+        uint minutesForTokensCloning;
     } 
     
     // The creator of the Dao
@@ -140,6 +142,9 @@ contract PassDaoInterface {
     // The current Dao rules
     Rules public DaoRules; 
     
+    // Date when shares and tokens can be transferred after cloning
+    uint public closingTimeForCloning;
+    
     /// @dev The constructor function
     /// @param _projectName The name of the Dao
     /// @param _lastDao The address of the last Dao before upgrade (not mandatory)
@@ -157,13 +162,6 @@ contract PassDaoInterface {
     /// @param _creationDate The date of the first order
     function cloneContractor(address _contractorManager, uint _creationDate);
     
-    /// @notice Function to update the client of the contractor managers in case of upgrade
-    /// @param _from The index of the first contractor manager to update
-    /// @param _to The index of the last contractor manager to update
-    function updateClientOfContractorManagers(
-        uint _from, 
-        uint _to);
-
     /// @dev Function to initialize the Dao
     /// @param _daoManager Address of the Dao manager smart contract
     /// @param _maxInflationRate The maximum inflation rate for contractor and funding proposals
@@ -232,7 +230,8 @@ contract PassDaoInterface {
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
     /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a board meeting
     /// @param _transferable True if the proposal foresees to allow the transfer of Dao shares
-    /// @param _dao Address of a new Dao smart contract in case of upgrade (not mandatory)    
+    /// @param _newdao Address of a new Dao smart contract in case of upgrade (not mandatory)   
+    /// @param _minutesForTokensCloning The period in minutes for the cloning procedure of shares and tokens
     /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
     function newDaoRulesProposal(
         uint _minQuorumDivisor, 
@@ -241,7 +240,8 @@ contract PassDaoInterface {
         uint _minMinutesDebatePeriod,
         uint _feesRewardInflationRate,
         bool _transferable,
-        address _dao,
+        address _newdao,
+        uint _minutesForTokensCloning,
         uint _minutesDebatingPeriod
     ) payable returns (uint);
     
@@ -280,13 +280,14 @@ contract PassDaoInterface {
     /// @return The number of board meetings (or proposals) 
     function numberOfBoardMeetings() constant returns (uint);
 
+    event ContractorAdded(uint indexed ContractorID, address ContractorManager, uint CreationDate);
     event ContractorProposalAdded(uint indexed ProposalID, uint boardMeetingID, address indexed ContractorManager, 
         uint indexed ContractorProposalID, uint amount);
     event FundingProposalAdded(uint indexed ProposalID, uint boardMeetingID, bool indexed LinkedToContractorProposal, 
         uint amount, address MainPartner, uint InitialSharePriceMultiplier, uint InflationRate, uint MinutesFundingPeriod);
     event DaoRulesProposalAdded(uint indexed DaoRulesProposalID, uint boardMeetingID, uint MinQuorumDivisor, 
         uint MinBoardMeetingFees, uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, 
-        bool Transferable, address NewDao);
+        bool Transferable, address NewDao, uint MinutesForTokensCloning);
     event Voted(uint indexed boardMeetingID, uint ProposalID, uint DaoRulesProposalID, bool position, address indexed voter);
     event ProposalClosed(uint indexed ProposalID, uint indexed DaoRulesProposalID, uint boardMeetingID, 
         uint FeesGivenBack, bool ProposalExecuted, uint BalanceSentToDaoManager);
@@ -323,13 +324,15 @@ contract PassDao is PassDaoInterface {
             contractorID[_contractorManager] = _contractorID;
             c.contractorManager = _contractorManager;
             c.creationDate = _creationDate;
+            
+            ContractorAdded(_contractorID, c.contractorManager, c.creationDate);
         }
         
     }
     
     function cloneContractor(address _contractorManager, uint _creationDate) {
         
-        if (DaoRules.minQuorumDivisor != 0) throw;
+        if (DaoRules.minQuorumDivisor != 0 || msg.sender != creator) throw;
 
         addContractor(_contractorManager, _creationDate);
         
@@ -364,18 +367,6 @@ contract PassDao is PassDaoInterface {
         daoManager = PassManager(_daoManager);
         
         smartContractStartDate = now;
-        
-    }
-    
-    function updateClientOfContractorManagers(
-        uint _from,
-        uint _to) {
-        
-        if (_from < 1 || _to > Contractors.length - 1) throw;
-        
-        for (uint i = _from; i <= _to; i++) {
-            PassManager(Contractors[i].contractorManager).updateClient(DaoRules.dao);
-        }
         
     }
     
@@ -476,6 +467,7 @@ contract PassDao is PassDaoInterface {
         uint _feesRewardInflationRate,
         bool _transferable,
         address _newDao,
+        uint _minutesForTokensCloning,
         uint _minutesDebatingPeriod
     ) payable returns (uint) {
     
@@ -496,12 +488,13 @@ contract PassDao is PassDaoInterface {
         r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
         r.feesRewardInflationRate = _feesRewardInflationRate;
         r.transferable = _transferable;
-        r.dao = _newDao;
+        r.newdao = _newDao;
+        r.minutesForTokensCloning = _minutesForTokensCloning;
 
         r.boardMeetingID = newBoardMeeting(0, _DaoRulesProposalID, _minutesDebatingPeriod);     
 
         DaoRulesProposalAdded(_DaoRulesProposalID, r.boardMeetingID, _minQuorumDivisor, _minBoardMeetingFees, 
-            _minutesSetProposalPeriod, _minMinutesDebatePeriod, _feesRewardInflationRate ,_transferable, _newDao);
+            _minutesSetProposalPeriod, _minMinutesDebatePeriod, _feesRewardInflationRate ,_transferable, _newDao ,_minutesForTokensCloning);
 
         return _DaoRulesProposalID;
         
@@ -608,14 +601,19 @@ contract PassDao is PassDaoInterface {
 
             DaoRules.transferable = r.transferable;
             if (r.transferable) daoManager.ableTransfer();
-            else daoManager.disableTransfer();
+            else daoManager.disableTransfer(0);
             
-            if ((r.dao != 0) && (r.dao != address(this))) {
-                DaoRules.dao = r.dao;
-                daoManager.updateClient(r.dao);
-                DaoUpgraded(r.dao);
+            if (r.minutesForTokensCloning != 0) {
+                closingTimeForCloning = now + (r.minutesForTokensCloning * 1 minutes);
+                daoManager.disableTransfer(closingTimeForCloning);
             }
 
+            if ((r.newdao != 0) && (r.newdao != address(this))) {
+                DaoRules.newdao = r.newdao;
+                daoManager.updateClient(r.newdao);
+                DaoUpgraded(r.newdao);
+            }
+            
         }
 
         ProposalClosed(b.proposalID, b.daoRulesProposalID, _boardMeetingID ,_fees, true, _balance);
