@@ -31,13 +31,15 @@ The Dao Manager smart contract contains the Eth balance of the Dao. A manager sm
 
 External functions are : 
 
-- Clone proposal, create initial tokens, clone tokens, update client, close set up: setting functions in case of upgrade or clone.
+- Clone proposal, create initial tokens, clone tokens, close set up: setting functions in case of upgrade or clone.
 
 - Receive fees: allows the Dao receiving fees from customers the Dao serves.
 
 - BuyShares and BuySharesFor in case of public fundings without funding smart contract.
 
 - Update recipient, Receive deposit, Withdraw: allows the contractors using their manager as an account with deposits and withdrawals.
+
+- update client: allows the client to upgrade without cloning shares and tokens
 
 - Set a new proposal: every contractor can offer his client (the DAO) to sell products or execute services. The proposal contains a description, a hash of document and the amount of the proposal. 
 
