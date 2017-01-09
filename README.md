@@ -33,11 +33,9 @@ External functions are :
 
 - Clone proposal, create initial tokens, clone tokens, close set up: setting functions in case of upgrade or clone.
 
-- Receive fees: allows the Dao receiving fees from customers the Dao serves.
+- Receive amount: allows the Manager receiving fees, payments or deposits.
 
-- BuyShares and BuySharesFor in case of public fundings without funding smart contract.
-
-- Update recipient, Receive deposit, Withdraw: allows the contractors using their manager as an account with deposits and withdrawals.
+- Update recipient, Withdraw: allows the contractors using their manager as an account with deposits and withdrawals.
 
 - update client: allows the client to upgrade without cloning shares and tokens
 
@@ -50,6 +48,8 @@ External functions are :
 - SetFundingRules according to funding proposals approved by the Dao.
 
 - RewardToken to funders by the funding smart contract.
+
+- BuyShares and BuySharesFor in case of public fundings without funding smart contract.
 
 - Transfer and TransferFrom for the transfer of tokens or shares.
 
