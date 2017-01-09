@@ -13,12 +13,6 @@ Pass DAO is open source and used for the project to put together a transparent o
 
 =
 
-## Bug Bounty
-
-In case of bug, we will send up to 500 eth (serious security bug) to the first who found it. Start date : 16 november 2016.
-
-=
-
 ## Homestead Smart contracts Information
 
 DAO: https://etherscan.io/address/0x3730117F77ac04Eec364BF72a656010FA4703D76#readContract
