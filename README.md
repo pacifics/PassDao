@@ -15,7 +15,7 @@ Pass DAO is open source and used for the project to put together a transparent o
 
 ## Homestead Smart contracts Information
 
-DAO:https://etherscan.io/address/0x58f792248d5fe5cadcc8cc222eaa97c1f4089f8b#readContract
+DAO: https://etherscan.io/address/0x58f792248d5fe5cadcc8cc222eaa97c1f4089f8b#readContract
 
 DAO shares Manager: https://etherscan.io/address/0x145fc2d0eed33ed8ba02eef980b166c43c9eebb3#readContract
 
