@@ -60,6 +60,10 @@ contract PassManagerInterface {
 
     // The address of the last Manager before cloning
     address public clonedFrom;
+    // Unix date when shares and tokens can be transferred after cloning (for the Dao manager)
+    uint closingTimeForCloning;
+    // End date of the setup procedure
+    uint public smartContractStartDate;
 
     // Address of the creator of the smart contract
     address public creator;
@@ -77,10 +81,8 @@ contract PassManagerInterface {
     // The quantity of decimals for display purpose
     uint8 public decimals;
 
-    // End date of the setup procedure
-    uint public smartContractStartDate;
-    // Unix date when shares and tokens can be transferred after cloning (for the Dao manager)
-    uint closingTimeForCloning;
+    // True if the initial token supply is over
+    bool initialTokenSupplyDone;
     
     // Total amount of tokens
     uint256 totalTokenSupply;
@@ -165,7 +167,17 @@ contract PassManagerInterface {
     //    uint8 _tokenDecimals,
     //    bool _transferable);
     
-    /// @notice Function to clone a proposal from another manager contract
+    /// @dev Function to create initial tokens    
+    /// @param _recipient The beneficiary of the created tokens
+    /// @param _quantity The quantity of tokens to create    
+    /// @param _last True if the initial token suppy is over
+    /// @return Whether the function was successful or not     
+    function initialTokenSupply(
+        address _recipient, 
+        uint _quantity,
+        bool _last) returns (bool success);
+        
+    /// @notice Function to clone a proposal from the last manager
     /// @param _amount Amount (in wei) of the proposal
     /// @param _description A description of the proposal
     /// @param _hashOfTheDocument The hash of the proposal's document
@@ -183,14 +195,6 @@ contract PassManagerInterface {
         uint _orderAmount,
         uint _dateOfOrder) returns (bool success);
     
-    /// @dev Function to create initial tokens    
-    /// @param _recipient The beneficiary of the created tokens
-    /// @param _quantity The quantity of tokens to create    
-    /// @return Whether the function was successful or not     
-    function initialTokenSupply(
-        address _recipient, 
-        uint _quantity) returns (bool success);
-        
     /// @notice Function to clone tokens from a manager
     /// @param _from The index of the first holder
     /// @param _to The index of the last holder
@@ -516,6 +520,21 @@ contract PassManager is PassManagerInterface {
 
 // Setting functions
 
+    function initialTokenSupply(
+        address _recipient, 
+        uint _quantity,
+        bool _last) returns (bool success) {
+
+        if (smartContractStartDate != 0 || initialTokenSupplyDone) throw;
+        
+        if (_recipient != 0 && _quantity != 0) {
+            return (createInitialTokens(_recipient, _quantity));
+        }
+        
+        if (_last) initialTokenSupplyDone = true;
+            
+    }
+
     function cloneProposal(
         uint _amount,
         string _description,
@@ -543,18 +562,6 @@ contract PassManager is PassManagerInterface {
         ProposalCloned(_lastClientProposalID, _proposalID, c.amount, c.description, c.hashOfTheDocument);
         
         return true;
-            
-    }
-
-    function initialTokenSupply(
-        address _recipient, 
-        uint _quantity) returns (bool success) {
-
-        if (smartContractStartDate != 0 || msg.sender != creator) throw;
-        
-        if (_recipient != 0 && _quantity != 0) {
-            return (createInitialTokens(_recipient, _quantity));
-        }
             
     }
 
