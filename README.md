@@ -57,7 +57,7 @@ Public functions are :
 
 - Submit a Funding proposal
 
-- Submit a question to the vote of the Community
+- Submit a question to a vote by the Community of shareholders
 
 - Propose to change the Dao rules
 
