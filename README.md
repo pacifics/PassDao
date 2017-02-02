@@ -19,7 +19,7 @@ Smart contracts used for the display and management of the upgrades and projects
 
 ## Pass DAO Contractor Smart Contract
 
-Smart contract used for the management of the project managers and contractors of the application.
+Smart contract used by the project managers and contractors of the application.
 
 Public functions are : 
 
@@ -27,29 +27,27 @@ Public functions are :
 
 - Update recipient and withdraw: allows the contractors using their manager as an account with deposits and withdrawals.
 
-- Set a new proposal: every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. Each contractor proposal can contain serveral orders from the Dao if the total ordered amount is less than the amount of the proposal.
+- Set a new proposal: every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. 
 
 =
 
 ## Pass DAO Manager and Pass DAO Token Manager Smart Contract
 
-Smart contract used for the management of shares and tokens. The Dao Manager smart contract contains the Eth balance of the Dao. The smart contract derives to the Token Manager smart contract used for the management of Dao shares or contractor tokens. The smart contract is conform to ERC20.
+Smart contract used for the management of tokens. The smart contract derives to the Token Manager smart contract used for the management of tokens. The smart contract is conform to ERC20.
 
 Public functions are : 
 
 - Buy Tokens, Sell Tokens and Remove buy orders: allows to buy and sell transferable tokens using the application.
 
-- Buy tokens and promote a proposals: allows to buy shares or tokens for a contractor according to an approved proposal.
+- Buy tokens and promote proposals: allows to buy tokens in order to pay a project manager according to an approved proposal.
 
-- Transfer and Transfer From of tokens
-
-- Approve tokens allowance by a token owner to a spender third party. 
+- Transfer tokens and Approve tokens allowance: ERC20 functions.
 
 =
 
 ## The Committee Room Smart Contract
 
-Smart contract used to submit proposals to vote and to execute decisions of the shareholders/
+Smart contract used to submit proposals to vote and to execute decisions of the shareholders.
 
 Public functions are :
 
@@ -63,11 +61,11 @@ Public functions are :
 
 - Propose to change the Dao rules
 
-- Propose to upgrade one or all the smart contracts (except Pass DAO)
+- Propose to upgrade one or all the smart contracts (except Pass DAO who can't be updated)
 
 - Vote (for shareholders)
 
-- Buy shares 
+- Buy shares and promote proposals:  allows to buy sharesin order to pay a contractor according to an approved proposal.
 
 =
 
