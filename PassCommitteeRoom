@@ -147,6 +147,9 @@ contract PassCommitteeRoomInterface {
     /// @return the effective token manager
     function TokenManager() constant returns (PassManager);
 
+    /// return the balance of the DAO
+    function Balance() constant returns (uint);
+    
     /// @param _boardMeetingID The index of the board meeting
     /// @param _shareHolder The shareholder (not mandatory, default : msg.sender)
     /// @return true if the shareholder has voted at a board meeting
@@ -408,6 +411,10 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
     
     function TokenManager() constant returns (PassManager) {
         return PassManager(passDao.ActualTokenManager());
+    }
+    
+    function Balance() constant returns (uint) {
+        return passDao.ActualShareManager().balance;
     }
 
     function HasVoted(uint _boardMeetingID, address _shareHolder) constant external returns (bool) {
