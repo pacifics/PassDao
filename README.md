@@ -27,7 +27,7 @@ Public functions are :
 
 - Update recipient and withdraw: allows the contractors using their smart contract as an account manager with deposits and withdrawals.
 
-- Set a new proposal: every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. 
+- Set a new proposal: every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. For each step, the PASS DAO shareholders decide to continue or to stop ordering work from the contractor.  
 
 =
 
