@@ -47,7 +47,7 @@ Public functions are :
 
 ## The Committee Room Smart Contract
 
-Smart contract used to submit proposals to vote and to execute the decisions of the shareholders.
+Smart contract used to submit proposals, to vote and to execute the decisions of the shareholders.
 
 Public functions are :
 
@@ -64,6 +64,8 @@ Public functions are :
 - Propose to upgrade one or all the smart contracts (except Pass DAO which can't be updated)
 
 - Vote (for shareholders)
+
+- Execute decision and order for a contractor
 
 - Buy shares and promote proposals:  allows to buy shares in order to pay a contractor according to an approved proposal.
 
