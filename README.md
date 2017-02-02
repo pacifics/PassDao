@@ -2,110 +2,72 @@
 
 =
 
-## The Project : A DAO for a distributed courier system
-
-Website : http://pacifics.org/dao
+Website : http://forum.passdao.org/
 
 =
 
 ## Overview
-Pass DAO is open source and used for the project to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. The source includes three separated smart contracts : the manager smart contract for the management of Eth accounts and shares or tokens, the Dao smart contract to make decision on proposals and the Funding smart contract to fund the Dao with rules redefined in the Blockchain.
+Pass DAO is an open source Decentralized Application used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. The source includes six separated smart contracts.
 
 =
 
-## Homestead Smart contracts Information
+## Pass DAO and Pass DAO Project Smart Contracts
 
-DAO: https://etherscan.io/address/0x58f792248d5fe5cadcc8cc222eaa97c1f4089f8b#readContract
-
-DAO shares Manager: https://etherscan.io/address/0x145fc2d0eed33ed8ba02eef980b166c43c9eebb3#readContract
-
-Pass tokens Manager: https://etherscan.io/address/0x687b8760ffdc4b6649f457173647b855fcb32268#readContract
-
-Primary Funding: https://etherscan.io/address/0xB66D7272aADCf034CE8776Cf115583baf916C50a#readContract
+Smart contracts used for the display and management of the upgrades and projects of Pass DAO from the beginning of the application.
 
 =
 
-## The Manager Smart Contract
+## Pass DAO Contractor Smart Contract
 
-The Dao Manager smart contract contains the Eth balance of the Dao. A manager smart contract is also created for each contractor with proposals to work for the Dao and orders from the Dao. The smart contract derives to the Token Manager smart contract used for the management of Dao shares or contractor tokens. The smart contract is conform to ERC20.
+Smart contract used for the management of the project managers and contractors of the application.
 
-External functions are : 
+Public functions are : 
 
-- Clone proposal, create initial tokens, clone tokens, close set up: setting functions in case of upgrade or clone.
+- Update Project Decsription (for the project manager).
 
-- Receive amount: allows the Manager receiving fees, payments or deposits.
+- Update recipient and withdraw: allows the contractors using their manager as an account with deposits and withdrawals.
 
-- Update recipient, Withdraw: allows the contractors using their manager as an account with deposits and withdrawals.
+- Set a new proposal: every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. Each contractor proposal can contain serveral orders from the Dao if the total ordered amount is less than the amount of the proposal.
 
-- update client: allows the client to upgrade without cloning shares and tokens
+=
 
-- Set a new proposal: every contractor can offer his client (the DAO) to sell products or execute services. The proposal contains a description, a hash of document and the amount of the proposal. 
+## Pass DAO Manager and Pass DAO Token Manager Smart Contract
 
-- Order and sendTo for the order and payment of ethers to the contractor manager by the Dao manager according to a proposal.
+Smart contract used for the management of shares and tokens. The Dao Manager smart contract contains the Eth balance of the Dao. The smart contract derives to the Token Manager smart contract used for the management of Dao shares or contractor tokens. The smart contract is conform to ERC20.
 
-- SetTokenPriceProposal: allows the contractors to propose a token price for the creation of contractor tokens.
+Public functions are : 
 
-- SetFundingRules according to funding proposals approved by the Dao.
+- Buy Tokens, Sell Tokens and Remove buy orders: allows to buy and sell transferable tokens using the application.
 
-- RewardToken to funders by the funding smart contract.
+- Buy tokens and promote a proposals: allows to buy shares or tokens for a contractor according to an approved proposal.
 
-- BuyShares and BuySharesFor in case of public fundings without funding smart contract.
-
-- Transfer and TransferFrom for the transfer of tokens or shares.
+- Transfer and Transfer From of tokens
 
 - Approve tokens allowance by a token owner to a spender third party. 
 
 =
 
-## The Dao Smart Contract
+## The Committee Room Smart Contract
 
-Proposals can be to fund the Dao, to change the Dao rules or to send Eth to a contractor. For each proposal, shareholders vote after a set period and during a debate period called board meeting. To make a new proposal and organize a board meeting will cost minimum 10 ethers (to avoid useless proposals, minimum value can be updated by voting). For the contractor proposals, the fees go to the voters according to their share and how quickly they vote after the set period. For the funding and Dao rules proposal, the Dao gives back the fees to the creator of the proposal if the quorum is reached. The balance of fees goes to the Dao manager smart contract.
+Smart contract used to submit proposals to vote and to execute decisions of the shareholders/
 
-External functions are :
+Public functions are :
 
-- Clone contractors and init Dao: setting functions in case of upgrade or clone.
+- Propose to create a new project
 
-- Set a contractor or funding proposal: the dao sharehoders can propose to order a work of a contractor (defined in a proposal of the contractor manager) or/and to fund the Dao with a public or private funding. The proposal can foresee the payment of funded ethers to a contractor. The funding rules can be set in a separated smart contract and foresee to reward contractor tokens to funders. We use this method for the primary funding that gives to new DAO shareholders Pass reputation tokens.
+- Propose to be a contractor
 
-- Set a Dao Rules proposal: the dao shareholders can propose to change the minimum quorum for proposals, the board meeting fees, the period before the board meeting to set or consider a proposal, the minimum debate period, the inflation rate for the reward of fees to voters during board meetings, the date when shares can be transfered and the new Dao smart contract in case of upgrade.
+- Submit a Funding proposal
 
-- Vote for or against a proposal: If the quorum is more than 20% (minimal quorum can be updated by voting) and the positive votes are more than 50%, the proposal is approved and can be completed. 
+- Submit a question to the vote of the Community
 
-- Order a contractor proposal: In case of funding proposal linked to a contractor proposal, the amount sent to the contractor manager corresponds to the funded amount. Otherwise, the amount sent is the amount of the proposal.
+- Propose to change the Dao rules
 
-- Withdraw function: allows the voters to withdraw the board meeting fees sent by the creators of the contractor proposals.
+- Propose to upgrade one or all the smart contracts (except Pass DAO)
 
-=
+- Vote (for shareholders)
 
-## The Funding Smart Contract
-
-Smart contract for private fundings or fundings with terms predefined in the Blockchain. This smart contract was used for the ICO and the primary funding of the Dao. The conditions was to send his Eth account address by email (for communication and security purposes) and to send between 1 and 100 Eth to the primary funding smart contract. The smart contract allows others fundings with for instance Priority Subscription Rights for shareholders. 
-
-Note: The smart contract also foresees a preliminary step for the setting before the voting procedure of the corresponding funding proposal in the Dao. This will allow the shareholders to approve a set private funding without allowing the creator of the funding to change anything.
-
-External functions are :
-
-- SetContractorManager: allows to reward contractor tokens when funding the Dao.
-
-- SetPresaleAmountLimits: allows the smart contract creator to set the presale limits (minimum and maximum).
-
-- Fallback and Presale functions to send Eth to the Funding smart contract.
-
-- SetPartners: allows the smart contract creator to set Eth account addresses.
-
-- SetShareHolders: allows organizing a private funding for the shareholders.
-
-- AbortFunding: allows the smart contract creator to abort the funding before the closing time of the presale.
-
-- Pause: allows the smart contract creator to stop the presale without aborting the funding.
-
-- SetLimits: allows the smart contract creator to set the funding limits which allows to calculate the funding limits for all valid addresses.
-
-- SetFunding : sets the amounts to fund for each partner according to the presale amounts, the set limits and the funding amount of the approved Dao funding proposal.
-
-- FundDaoFor and FundDao: to send Eth from the Funding smart contract to the Dao manager.
-
-- RefundForValidPartners, Refund and RefundForAll: to refund the amount that did not fund the Dao (priority to the valid addresses).
+- Buy shares 
 
 =
 
@@ -113,42 +75,16 @@ External functions are :
 
 - This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
 
-- We limit the amount to send to the funding smart contract and if fueled we limit the amount to fund to the Dao for each partner. Our first goal is decentralization and we want everyone to be able to become a shareholder.
+- If the work of a contractor allows the development of the projects, it should increase the value of shares and Pass reputation tokens which belongs to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
 
-- Payments to the contractors are done with ethers and step by step. Each contractor proposal can contain serveral orders from the Dao if the total ordered amount is less than the amount of the proposal.
-
-- It is possible to link a funding proposal with a contractor proposal and that will be completed only if the funding is fueled during a predefined period, otherwise the Dao is not funded and the contractor proposal not completed. We use this method for the first Project Manager proposal and the primary funding. For the next steps of the project, we can proceed in the same way and with no ether balance in the Dao after the funding.
-
-- If the work of a contractor allows the development of our project, it should increase the value of Pass reputation tokens which belongs to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
-
-- Make a proposal will cost board meeting fees. In case of funding or Dao rules proposals, the fees return to the creator of the proposal if the quorum is reached. 
+- Make a proposal will cost board meeting fees. In case of funding or Dao rules proposals, the creator of the proposal will receive shares if the proposal is estimated (but not necessarily approved).
 
 - The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees. 
-
-- A period to consider or set the proposal is foreseen before each board meeting.
-
-- After a vote, the share holders are not able to transfer tokens until the end of the board meeting. 
 
 =
 
 # About Security
 
-- It is necessary to be included in the mailing list in order to participate in the first funding. It will avoid the possibility to fund using "hundreds" addresses and allow to check that partners's addresses are not related to a smart contract. 
-
 - By allowing fundings (public or private) for each step of the project and by limiting the presale and funding amounts, we limit the amount of money "at risk" and avoid useless blocked ethers in the Dao.
 
-- In case of any bug or exploit during the primary funding, the project manager (who is confident in the security of the smart contract) promises to do his best to complete the work foreseen in his proposal without asking for additional funds. He can also abort the funding and refund before the closing time of the funding.
-
 - Only the Dao shareholders can decide by vote to allow the transfer of shares.
-
-- There is no calldata function.  We use a “withdraw” pattern instead of a “send” pattern.
-
-=
-
-# Upgrading, cloning and splitting procedures
-
-In case of bugs or improvements, the funding smart contract can be updated and called in new Dao proposals. 
-
-Shareholders can also upgrade the Dao smart contract by vote without migrating the manager smart contracts. This is technically an easy procedure which will allow improving how the Dao works without cloning the shares ans tokens.
-
-It is also possible to send the Dao balance to a new Dao manager smart contract and to clone the shares and tokens. In this way, we can upgrade the manager smart contracts or create others Dao projects for our Community. Each project will have its own DAO which is linked to a Community and which can move with time. Therefore, this is a way to split DAOs.
