@@ -65,7 +65,7 @@ Public functions are :
 
 - Vote (for shareholders)
 
-- Buy shares and promote proposals:  allows to buy sharesin order to pay a contractor according to an approved proposal.
+- Buy shares and promote proposals:  allows to buy shares in order to pay a contractor according to an approved proposal.
 
 =
 
