@@ -1,0 +1,933 @@
+import "PassManager.sol";
+import "PassContractor.sol";
+
+pragma solidity ^0.4.6;
+
+/*
+ *
+ * This file is part of Pass DAO.
+ *
+
+/*
+Smart contract for a Decentralized Autonomous Organization (DAO)
+to automate organizational governance and decision-making.
+*/
+
+/// @title Pass Committee Room
+contract PassCommitteeRoomInterface {
+
+    // The Pass Dao smart contract
+    PassDao public passDao;
+
+    enum ProposalTypes { contractor, question, daoRules, upgrade }
+
+    struct BoardMeeting {        
+        // Address of the creator of the board meeting for a proposal
+        address creator;  
+        // The type of the proposal
+        ProposalTypes proposalType;
+        // Index to identify the proposal
+        uint proposalID;
+        // unix timestamp, denoting the end of the set period of a proposal before the board meeting 
+        uint setDeadline;
+        // Fees (in wei) paid by the creator of the board meeting
+        uint fees;
+        // Total of fees (in wei) rewarded to the voters or to the Dao account manager for the balance
+        uint totalRewardedAmount;
+        // A unix timestamp, denoting the end of the voting period
+        uint votingDeadline;
+        // True if the proposal's votes have yet to be counted, otherwise False
+        bool open; 
+        // A unix timestamp, denoting the date of the execution of the approved proposal
+        uint dateOfExecution;
+        // Number of shares in favor of the proposal
+        uint yea; 
+        // Number of shares opposed to the proposal
+        uint nay; 
+    }
+    // Board meetings to vote for or against a proposal
+    BoardMeeting[] public BoardMeetings; 
+    // mapping to indicate if a shareholder has voted at a board meeting or not
+    mapping (uint => mapping (address => bool)) hasVoted;
+
+    struct Proposal {
+        // Index to identify the board meeting
+        uint boardMeetingID;
+        // The contractor smart contract
+        PassContractor contractor;
+        // The index of the contractor proposal in the contractor contract
+        uint contractorProposalID;
+        // The amount of the proposal from the share manager balance
+        uint amount;
+        // The address which sets partners and manages the funding (not mandatory)
+        address moderator;
+        // Amount from the sale of shares
+        uint amountForShares;
+        // The initial price multiplier of Dao shares at the beginning of the funding
+        uint initialSharePriceMultiplier; 
+        // The inflation rate to calculate the actual contractor share price
+        uint sharePriceInflationRate;
+        // Amount from the sale of tokens
+        uint amountForTokens;
+        // A unix timestamp, denoting the start time of the funding
+        uint minutesFundingPeriod;
+        // True if the proposal is closed
+        bool open; 
+    }
+    // Proposals to pay a contractor with or without a funding
+    Proposal[] public Proposals;
+
+    struct Question {
+        // Index to identify the board meeting
+        uint boardMeetingID; 
+        // The project smart contract
+        PassProject project;
+        // The name of the question for display purpose
+        string name;
+        // A description of the question
+        string description;
+    }
+    // Questions linked to a project and submitted for a vote 
+    Question[] public ResolutionProposals;
+    
+    struct Rules {
+        // Index to identify the board meeting
+        uint boardMeetingID;  
+        // The quorum needed for each proposal is calculated by totalSupply / minQuorumDivisor
+        uint minQuorumDivisor;  
+        // Minimum fees (in wei) to create a proposal
+        uint minBoardMeetingFees; 
+        // Maximum fees (in wei) to create a proposal
+        uint maxBoardMeetingFees; 
+        // Minimum percentage of votes for a proposal to reward the creator
+        uint minPercentageOfLikes;
+        // Period in minutes to consider or set a proposal before the voting procedure
+        uint minutesSetProposalPeriod; 
+        // The minimum debate period in minutes that a generic proposal can have
+        uint minMinutesDebatePeriod;
+        // The inflation rate to calculate the reward of fees to voters during a board meeting 
+        uint feesRewardInflationRate;
+        // The inflation rate to calculate the token price for project manager proposals 
+        uint tokenPriceInflationRate;
+        // The default minutes funding period for proposals
+        uint defaultMinutesFundingPeriod;
+        // True if the dao rules allow the transfer of shares
+        bool transferable;
+    } 
+    // Proposals to update the Dao rules
+    Rules[] public DaoRulesProposals;
+
+    struct upgrade {
+        // Index to identify the board meeting
+        uint boardMeetingID;  
+        // The proposed Committee Room smart contract
+        address newCommitteeRoom;
+        // Address of the proposed share manager smart contract
+        address newShareManager;
+        // Address of the proposed token manager smart contract
+        address newTokenManager;
+        // Address of the proposed project creator smart contract
+        address newProjectCreator;
+        // Address of the proposed contractor creator smart contract
+        address newContractorCreator;
+    }
+    // Proposals to upgrade the Dao
+    upgrade[] public UpgradeProposals;
+    
+    // The minimum periods in minutes 
+    uint minMinutesPeriods;
+    // The maximum period in minutes for proposals (set+debate)
+    uint maxMinutesProposalPeriod;
+    // The maximum inflation rate for share price or rewards to voters
+    uint maxInflationRate;
+    
+    /// @return the effective share manager
+    function ShareManager() constant returns (PassManager);
+
+    /// @return the effective token manager
+    function TokenManager() constant returns (PassManager);
+
+    /// @param _boardMeetingID The index of the board meeting
+    /// @param _shareHolder The shareholder (not mandatory, default : msg.sender)
+    /// @return true if the shareholder has voted at a board meeting
+    function HasVoted(
+        uint _boardMeetingID, 
+        address _shareHolder) constant external returns (bool);
+    
+    /// @return The minimum quorum for proposals to pass 
+    function minQuorum() constant returns (uint);
+
+    /// @return The number of board meetings (or proposals) 
+    function numberOfBoardMeetings() constant returns (uint);
+    
+    /// @dev The constructor function
+    /// @param _passDao Address of Pass Dao
+    /// @param _maxInflationRate The maximum inflation rate for contractor and funding proposals
+    /// @param _minMinutesPeriods The minimum periods in minutes
+    /// @param _maxMinutesProposalPeriod The maximum period in minutes for proposals (set+debate)
+    /// @param _minQuorumDivisor The initial minimum quorum divisor for the proposals
+    /// @param _minBoardMeetingFees The minimum amount (in wei) to make a proposal and ask for a board meeting
+    /// @param _maxBoardMeetingFees The maximum amount (in wei) to make a proposal and ask for a board meeting
+    /// @param _minPercentageOfLikes Minimum percentage of votes for a proposal to reward the creator
+    /// @param _minutesSetProposalPeriod The minimum period in minutes before a board meeting
+    /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
+    /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a board meeting
+    /// @param _tokenPriceInflationRate The inflation rate to calculate the token price for project manager proposals
+    /// @param _defaultMinutesFundingPeriod Period in minutes of the funding
+    /// @param _defaultMinutesDebatePeriod Period in minutes of the board meeting to vote on the proposal
+    //function PassCommitteeRoom(        
+    //    address _passDao,
+    //    uint _maxInflationRate,
+    //    uint _minMinutesPeriods,
+    //    uint _maxMinutesProposalPeriod,
+    //    uint _minQuorumDivisor,
+    //    uint _minBoardMeetingFees,
+    //    uint _maxBoardMeetingFees,
+    //    uint minPercentageOfLikes
+    //    uint _minutesSetProposalPeriod,
+    //    uint _minMinutesDebatePeriod,
+    //    uint _feesRewardInflationRate,
+    //    uint _tokenPriceInflationRate,
+    //    uint _defaultMinutesFundingPeriod);
+
+    /// @dev Internal function to make a proposal to pay a contractor or/and fund the Dao
+    /// @param _contractor The contractor smart contract
+    /// @param _contractorProposalID Index of the contractor proposal in the contractor smart contract
+    /// @param _amount Amount from the share manager balance
+    /// @param _moderator The address which sets partners and manage the funding (not mandatory)
+    /// @param _amountForShares Amount from the sale of shares
+    /// @param _initialSharePriceMultiplier The initial price multiplier of shares
+    /// @param _sharePriceInflationRate If 0, the share price doesn't change during the funding (not mandatory)
+    /// @param _amountForTokens Amount from the sale of tokens
+    /// @param _minutesFundingPeriod Period in minutes of the funding
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
+    /// @return The index of the proposal
+    function newProposal(
+        PassContractor _contractor,
+        uint _contractorProposalID,
+        uint _amount,
+        address _moderator,
+        uint _amountForShares,
+        uint _initialSharePriceMultiplier, 
+        uint _sharePriceInflationRate,
+        uint _amountForTokens,
+        uint _minutesFundingPeriod,
+        uint _minutesDebatingPeriod) internal returns (uint);
+
+    /// @dev Internal function to create a project smart contract
+    /// @param _recipient The recipient of the project manager smart contract
+    /// @param _projectName The name of the project
+    /// @param _projectDescription A description of the project (can be updated after)
+    /// @return The project manager smart contract
+    function createProject(
+        address _recipient,
+        string _projectName, 
+        string _projectDescription) internal returns (PassContractor);
+        
+    /// @notice Function to propose to be a project manager of Pass Dao
+    /// @param _projectManager The project manager smart contract (not mandatory)
+    /// @param _recipient The recipient of the project manager (if doesn't exist)
+    /// @param _projectName The project name The name of the project (if doesn't exist)
+    /// @param _contractorProposalId The index of the contractor proposal (not mandatory)
+    /// @param _proposalAmount The amount (in wei) of the proposal (if doesn't exist)
+    /// @param _proposalDescription String describing the proposal (if doesn't exist)
+    /// @param _hashOfTheProposalDocument The hash of the proposal document (if doesn't exist)
+    /// @return The index of the proposal
+    function projectManagerProposal(
+        PassContractor _projectManager,
+        address _recipient,
+        string _projectName,
+        uint _contractorProposalId,
+        uint _proposalAmount,
+        string _proposalDescription, 
+        bytes32 _hashOfTheProposalDocument) payable returns (uint);
+        
+    /// @notice Function to propose to be a contractor of Pass Dao
+    /// @param _contractor The address of the contractor smart contract if exists (not mandatory)
+    /// @param _passProject The project smart contract (if not contractor smart contract)
+    /// @param _recipient The address of the recipient of the contractor (if not existing contractor smart contract)
+    /// @param _contractorProposalId The index of the contractor proposal (not mandatory)
+    /// @param _proposalAmount The amount (in wei) of the proposal (if not existing proposal)
+    /// @param _proposalDescription String describing the proposal (if not existing proposal)
+    /// @param _hashOfTheProposalDocument The hash of the proposal document (if not existing proposal)
+    /// @return The index of the proposal
+    function contractorProposal(
+        PassContractor _contractor,
+        PassProject _passProject,
+        address _recipient,
+        uint _contractorProposalId,
+        uint _proposalAmount,
+        string _proposalDescription, 
+        bytes32 _hashOfTheProposalDocument
+        ) payable returns (uint);
+
+    /// @notice Function to propose to fund Pass Dao
+    /// @param _proposalAmount The amount (in wei) of the proposal
+    /// @param _moderator The address which sets partners and manage the funding (not mandatory)
+    /// @param _initialSharePriceMultiplier The initial price multiplier of shares (not mandatory)
+    /// @param _shareInflationRate If 0, the share price doesn't change during the funding (not mandatory)
+    /// @param _minutesFundingPeriod Period in minutes of the funding (not mandatory)
+    /// @return The index of the proposal
+    function fundingProposal(
+        uint _proposalAmount,
+        address _moderator,
+        uint _initialSharePriceMultiplier,
+        uint _shareInflationRate,
+        uint _minutesFundingPeriod) payable returns (uint);
+
+    /// @notice Function to submit a question
+    /// @param _project The project smart contract
+    /// @param _name Name of the question for display purpose
+    /// @param _description A description of the question
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
+    /// @return The index of the proposal (not mandatory)
+    function resolutionProposal(
+        PassProject _project,
+        string _name,
+        string _description,
+        uint _minutesDebatingPeriod) payable returns (uint);
+        
+    /// @notice Function to make a proposal to change the Dao rules 
+    /// @param _minQuorumDivisor If 5, the minimum quorum is 20%
+    /// @param _minBoardMeetingFees The minimum amount (in wei) to make a proposal and ask for a board meeting
+    /// @param _maxBoardMeetingFees The maximum amount (in wei) to make a proposal and ask for a board meeting
+    /// @param _minPercentageOfLikes Minimum percentage of votes for a proposal to reward the creator
+    /// @param _minutesSetProposalPeriod Minimum period in minutes before a board meeting
+    /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
+    /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a board meeting
+    /// @param _tokenPriceInflationRate The inflation rate to calculate the token price for project manager proposals
+    /// @param _defaultMinutesFundingPeriod Period in minutes of the funding
+    /// @param _transferable True if the proposal foresees to allow the transfer of Dao shares
+    /// @return The index of the proposal
+    function daoRulesProposal(
+        uint _minQuorumDivisor, 
+        uint _minBoardMeetingFees,
+        uint _maxBoardMeetingFees,
+        uint _minPercentageOfLikes,
+        uint _minutesSetProposalPeriod,
+        uint _minMinutesDebatePeriod,
+        uint _feesRewardInflationRate,
+        uint _defaultMinutesFundingPeriod,
+        uint _tokenPriceInflationRate,
+        bool _transferable) payable returns (uint);
+    
+    /// @notice Function to make a proposal to upgrade the Dao
+    /// @param _newCommitteeRoom Address of a new Committee Room smart contract (not mandatory)   
+    /// @param _newShareManager Address of a new share manager smart contract (not mandatory)
+    /// @param _newTokenManager Address of a new token manager smart contract (not mandatory)
+    /// @param _newProjectCreator Address of a new project creator smart contract (not mandatory)
+    /// @param _newContractorCreator Address of a new contractor creator smart contract (not mandatory)
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal (not mandatory)
+    /// @return The index of the proposal
+    function upgradeProposal(
+        address _newCommitteeRoom,
+        address _newShareManager,
+        address _newTokenManager,
+        address _newProjectCreator,
+        address _newContractorCreator,
+        uint _minutesDebatingPeriod) payable returns (uint);
+        
+    /// @dev Internal function to create a board meeting
+    /// @param _proposalType The type of the proposal
+    /// @param _proposalID The index of the proposal if for a contractor or for a funding
+    /// @param _minutesDebatingPeriod The duration in minutes of the meeting
+    /// @return the index of the board meeting
+    function newBoardMeeting(
+        ProposalTypes _proposalType,
+        uint _proposalID, 
+        uint _minutesDebatingPeriod) internal returns (uint);
+        
+    /// @notice Function to vote for or against a proposal
+    /// @param _boardMeetingID The index of the board meeting
+    /// @param _supportsProposal True if the proposal is supported
+    function vote(
+        uint _boardMeetingID, 
+        bool _supportsProposal);
+    
+    /// @notice Function to execute a board meeting decision and close the board meeting
+    /// @param _boardMeetingID The index of the board meeting
+    /// @return Whether the proposal was executed or not
+    function executeDecision(uint _boardMeetingID) returns (bool);
+    
+    /// @notice Function to order to a contractor and close a contractor proposal
+    /// @param _proposalID The index of the proposal
+    /// @return Whether the proposal was ordered and the proposal amount sent or not
+    function orderToContractor(uint _proposalID) returns (bool);   
+
+    /// @notice Function to buy shares and or/and promote a contractor proposal 
+    /// @param _proposalID The index of the proposal
+    /// @return Whether the function was successful or not
+    function buySharesForProposal(uint _proposalID) payable returns (bool);
+    
+    /// @notice Function to send tokens or refund after the closing time of the funding proposals
+    /// @param _from The first proposal. 0 if not linked to a proposal
+    /// @param _to The last proposal
+    /// @param _buyer The address of the buyer
+    /// @return Whether the function was successful or not 
+    function sendPendingAmounts(        
+        uint _from,
+        uint _to,
+        address _buyer) returns (bool);
+        
+    /// @notice Function to send tokens or refund after the closing time of the funding proposals
+    /// @return Whether the function was successful or not
+    function withdrawPendingAmounts() returns (bool);
+
+    event DaoLimits(uint maxInflationRate, uint minMinutesPeriods, uint maxMinutesProposalPeriod);
+
+    event ProjectManagerCreated(address indexed Creator, string ProjectName, string ProjectDescription, PassProject indexed Project, 
+        PassContractor ProjectManager, address Recipient);
+    event ContractorCreated(address indexed Creator, address indexed Recipient, PassProject indexed Project, PassContractor Contractor);
+
+    event ProposalSubmitted(uint indexed ProposalID, uint BoardMeetingID, PassContractor indexed Contractor, 
+        uint indexed ContractorProposalID, uint Amount, address Moderator, uint AmountForShares, uint InitialSharePriceMultiplier, 
+        uint ShareInflationRate,uint AmountForTokens, uint MinutesFundingPeriod);
+    event ResolutionProposalSubmitted(uint indexed QuestionID, uint indexed BoardMeetingID, PassProject indexed Project, string Name, string Description);
+    event DaoRulesProposalSubmitted(uint indexed DaoRulesProposalID, uint boardMeetingID, uint MinQuorumDivisor, uint MinBoardMeetingFees, 
+        uint MaxBoardMeetingFees, uint MinPercentageOfLikes, uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, 
+        uint FeesRewardInflationRate, uint TokenPriceInflationRate, uint DefaultMinutesFundingPeriod, bool Transferable);
+    event UpgradeProposalSubmitted(uint indexed UpgradeProposalID, uint indexed BoardMeetingID, 
+        address NewCommitteeRoom, address NewShareManager, address NewTokenManager, address NewProjectCreator, address NewContractorCreator);
+
+    event Voted(uint indexed BoardMeetingID, bool Position, address indexed Voter, uint Rewardedamount);
+
+    event ProposalClosed(uint indexed ProposalID, ProposalTypes indexed ProposalType, uint BoardMeetingID, 
+        uint TotalRewardedAmount, bool ProposalExecuted, uint RewardedSharesAmount, uint SentToDaoManager);
+    event ContractorProposalClosed(uint indexed ProposalID, uint indexed ContractorProposalID, PassContractor indexed Contractor, uint AmountSent);
+    event DaoUpgraded(address NewCommitteeRoom, address NewShareManager, address NewTokenManager, address NewProjectCreator, address NewContractorCreator);
+
+}
+
+contract PassCommitteeRoom is PassCommitteeRoomInterface {
+
+// Constant functions
+
+    function ShareManager() constant returns (PassManager) {
+        return PassManager(passDao.ActualShareManager());
+    }
+    
+    function TokenManager() constant returns (PassManager) {
+        return PassManager(passDao.ActualTokenManager());
+    }
+
+    function HasVoted(uint _boardMeetingID, address _shareHolder) constant external returns (bool) {
+        if (_shareHolder == 0) return hasVoted[_boardMeetingID][msg.sender];
+        else return hasVoted[_boardMeetingID][_shareHolder];
+    }
+    
+    function minQuorum() constant returns (uint) {
+        return (uint(PassManager(ShareManager()).totalSupply()) / DaoRulesProposals[0].minQuorumDivisor);
+    }
+
+    function numberOfBoardMeetings() constant returns (uint) {
+        return BoardMeetings.length - 1;
+    }
+    
+// Constructor function
+
+    function PassCommitteeRoom(
+        address _passDao,
+        uint _maxInflationRate,
+        uint _minMinutesPeriods,
+        uint _maxMinutesProposalPeriod,
+        uint _minQuorumDivisor,
+        uint _minBoardMeetingFees,
+        uint _maxBoardMeetingFees,
+        uint _minPercentageOfLikes,
+        uint _minutesSetProposalPeriod,
+        uint _minMinutesDebatePeriod,
+        uint _feesRewardInflationRate,
+        uint _tokenPriceInflationRate,
+        uint _defaultMinutesFundingPeriod) {
+
+        passDao = PassDao(_passDao);
+
+        maxInflationRate = _maxInflationRate;
+        minMinutesPeriods = _minMinutesPeriods;
+        maxMinutesProposalPeriod = _maxMinutesProposalPeriod;
+        DaoLimits(maxInflationRate, minMinutesPeriods, maxMinutesProposalPeriod);
+        
+        DaoRulesProposals.length = 1; 
+        DaoRulesProposals[0].minQuorumDivisor = _minQuorumDivisor;
+        DaoRulesProposals[0].minBoardMeetingFees = _minBoardMeetingFees;
+        DaoRulesProposals[0].maxBoardMeetingFees = _maxBoardMeetingFees;
+        DaoRulesProposals[0].minPercentageOfLikes = _minPercentageOfLikes;
+        DaoRulesProposals[0].minutesSetProposalPeriod = _minutesSetProposalPeriod;
+        DaoRulesProposals[0].minMinutesDebatePeriod = _minMinutesDebatePeriod;
+        DaoRulesProposals[0].feesRewardInflationRate = _feesRewardInflationRate;
+        DaoRulesProposals[0].tokenPriceInflationRate = _tokenPriceInflationRate;
+        DaoRulesProposals[0].defaultMinutesFundingPeriod = _defaultMinutesFundingPeriod;
+
+        BoardMeetings.length = 1;
+        Proposals.length = 1;
+        ResolutionProposals.length = 1;
+        UpgradeProposals.length = 1;
+
+    }
+
+// Proposals Management
+
+    function newProposal(
+        PassContractor _contractor,
+        uint _contractorProposalID,
+        uint _amount,
+        address _moderator,
+        uint _amountForShares,
+        uint _initialSharePriceMultiplier, 
+        uint _sharePriceInflationRate,
+        uint _amountForTokens,
+        uint _minutesFundingPeriod,
+        uint _minutesDebatingPeriod
+    ) internal returns (uint) {
+
+        if (_minutesFundingPeriod == 0) _minutesFundingPeriod = DaoRulesProposals[0].defaultMinutesFundingPeriod;
+
+        if ((address(_contractor) == 0 && _contractorProposalID != 0)
+            || _amount + _amountForShares + _amountForTokens == 0
+            || _minutesFundingPeriod < minMinutesPeriods
+            || _sharePriceInflationRate > maxInflationRate) throw;
+
+        uint _proposalID = Proposals.length++;
+        Proposal p = Proposals[_proposalID];
+
+        p.contractor = _contractor;
+        p.contractorProposalID = _contractorProposalID;
+        
+        p.amount = _amount;
+        p.amountForShares = _amountForShares;
+        p.amountForTokens = _amountForTokens;
+
+        p.moderator = _moderator;
+
+        p.initialSharePriceMultiplier = _initialSharePriceMultiplier;
+        p.sharePriceInflationRate = _sharePriceInflationRate;
+
+        p.minutesFundingPeriod = _minutesFundingPeriod;
+
+        p.boardMeetingID = newBoardMeeting(ProposalTypes.contractor, _proposalID, _minutesDebatingPeriod);   
+
+        p.open = true;
+        
+        ProposalSubmitted(_proposalID, p.boardMeetingID, p.contractor, p.contractorProposalID, p.amount, p.moderator, 
+            p.amountForShares, p.initialSharePriceMultiplier, p.sharePriceInflationRate, p.amountForTokens, p.minutesFundingPeriod);
+
+        return _proposalID;
+        
+    }
+    
+    function createProject(
+        address _recipient,
+        string _projectName, 
+        string _projectDescription) internal returns (PassContractor) {
+
+        PassProject _passProject = PassProjectCreator(passDao.ActualProjectCreator()).createProject(passDao, _projectName, _projectDescription, 0);
+
+        PassContractor _projectManager = PassContractorCreator(passDao.ActualContractorCreator()).createContractor(msg.sender, _recipient, _passProject, false);
+         _projectManager.closeSetup;
+        _passProject.setProjectManager(address(_projectManager));
+
+        ProjectManagerCreated(msg.sender, _projectName, _projectDescription, _passProject, _projectManager, _recipient);
+
+        return _projectManager;
+    }        
+
+    function projectManagerProposal(
+        PassContractor _projectManager,
+        address _recipient,
+        string _projectName,
+        uint _contractorProposalId,
+        uint _proposalAmount,
+        string _proposalDescription, 
+        bytes32 _hashOfTheProposalDocument) payable returns (uint) {
+
+        if (address(_projectManager) == 0) _projectManager = createProject(_recipient, _projectName, "To be updated");
+        
+        if (_contractorProposalId == 0) {
+            _contractorProposalId = _projectManager.newProposal(msg.sender, _proposalAmount, _proposalDescription, _hashOfTheProposalDocument);
+        }
+        else if (!_projectManager.proposalChecked(msg.sender, _contractorProposalId, _proposalAmount)) throw;
+        
+        return newProposal(_projectManager, _contractorProposalId, 0, 0, 0, 0, 0, _proposalAmount, 0, 0);
+    }
+
+    function contractorProposal(
+        PassContractor _contractor,
+        PassProject _passProject,
+        address _recipient,
+        uint _contractorProposalId,
+        uint _proposalAmount,
+        string _proposalDescription, 
+        bytes32 _hashOfTheProposalDocument) payable returns (uint) {
+
+        if (address(_contractor) != 0 && address(_passProject) != 0) throw;
+        if (_contractorProposalId != 0 && _hashOfTheProposalDocument != 0) throw;
+
+        if (address(_contractor) == 0) {
+            _contractor = PassContractorCreator(passDao.ActualContractorCreator()).createContractor(msg.sender,_recipient, _passProject, false);
+            _contractor.closeSetup;
+            ContractorCreated(msg.sender, _recipient, _passProject, _contractor);
+        }
+        
+        if (_contractorProposalId == 0) {
+            _contractorProposalId = _contractor.newProposal(msg.sender,_proposalAmount, _proposalDescription, _hashOfTheProposalDocument);
+        }
+        else if (!_contractor.proposalChecked(msg.sender, _contractorProposalId, _proposalAmount)) throw;
+        
+        uint _amount = uint(passDao.ActualShareManager().balance);
+        uint _amountForShares;
+        if (_amount > _proposalAmount) _amount = _proposalAmount;
+        _amountForShares = _proposalAmount - _amount;
+
+        return newProposal(_contractor, _contractorProposalId, _amount, 0, _amountForShares, 0, 0, 0, 0, 0);
+    }
+
+    function fundingProposal(
+        uint _proposalAmount,
+        address _moderator,
+        uint _initialSharePriceMultiplier,
+        uint _shareInflationRate,
+        uint _minutesFundingPeriod) payable returns (uint) {
+            
+        return newProposal(PassContractor(0), 0, 0, _moderator, _proposalAmount, _initialSharePriceMultiplier, _shareInflationRate, 0, _minutesFundingPeriod, 0);
+    }            
+            
+    function resolutionProposal(
+        PassProject _project,
+        string _name,
+        string _description,
+        uint _minutesDebatingPeriod
+    ) payable returns (uint) {
+        
+        if (address(_project) == 0) throw;
+        
+        uint _questionID = ResolutionProposals.length++;
+        Question q = ResolutionProposals[_questionID];
+        
+        q.project = _project;
+        q.name = _name;
+        q.description = _description;
+        
+        q.boardMeetingID = newBoardMeeting(ProposalTypes.question, _questionID, _minutesDebatingPeriod);
+        
+        ResolutionProposalSubmitted(_questionID, q.boardMeetingID, q.project, q.name, q.description);
+        
+        return _questionID;
+        
+    }
+
+    function daoRulesProposal(
+        uint _minQuorumDivisor, 
+        uint _minBoardMeetingFees,
+        uint _maxBoardMeetingFees,
+        uint _minPercentageOfLikes,
+        uint _minutesSetProposalPeriod,
+        uint _minMinutesDebatePeriod,
+        uint _feesRewardInflationRate,
+        uint _tokenPriceInflationRate,
+        uint _defaultMinutesFundingPeriod,
+        bool _transferable) payable returns (uint) {
+    
+        if (_minQuorumDivisor <= 1
+            || _minQuorumDivisor > 10
+            || _minutesSetProposalPeriod < minMinutesPeriods
+            || _minMinutesDebatePeriod < minMinutesPeriods
+            || _minutesSetProposalPeriod + _minMinutesDebatePeriod > maxMinutesProposalPeriod
+            || _feesRewardInflationRate > maxInflationRate
+            || _tokenPriceInflationRate > maxInflationRate
+            || _defaultMinutesFundingPeriod < minMinutesPeriods) throw; 
+        
+        uint _DaoRulesProposalID = DaoRulesProposals.length++;
+        Rules r = DaoRulesProposals[_DaoRulesProposalID];
+
+        r.minQuorumDivisor = _minQuorumDivisor;
+        r.minBoardMeetingFees = _minBoardMeetingFees;
+        r.maxBoardMeetingFees = _maxBoardMeetingFees;
+        r.minPercentageOfLikes = _minPercentageOfLikes;
+        r.minutesSetProposalPeriod = _minutesSetProposalPeriod;
+        r.minMinutesDebatePeriod = _minMinutesDebatePeriod;
+        r.feesRewardInflationRate = _feesRewardInflationRate;
+        r.tokenPriceInflationRate = _tokenPriceInflationRate;
+        r.defaultMinutesFundingPeriod = _defaultMinutesFundingPeriod;
+        r.transferable = _transferable;
+
+        r.boardMeetingID = newBoardMeeting(ProposalTypes.daoRules, _DaoRulesProposalID, 0);
+
+        DaoRulesProposalSubmitted(_DaoRulesProposalID, r.boardMeetingID, _minQuorumDivisor, _minBoardMeetingFees, 
+            _maxBoardMeetingFees, _minPercentageOfLikes, _minutesSetProposalPeriod, _minMinutesDebatePeriod, 
+            _feesRewardInflationRate, _tokenPriceInflationRate, _defaultMinutesFundingPeriod, _transferable);
+
+        return _DaoRulesProposalID;
+        
+    }
+    
+    function upgradeProposal(
+        address _newCommitteeRoom,
+        address _newShareManager,
+        address _newTokenManager,
+        address _newProjectCreator,
+        address _newContractorCreator,
+        uint _minutesDebatingPeriod
+    ) payable returns (uint) {
+        
+        uint _upgradeProposalID = UpgradeProposals.length++;
+        upgrade u = UpgradeProposals[_upgradeProposalID];
+        
+        u.newCommitteeRoom = _newCommitteeRoom;
+        u.newShareManager = _newShareManager;
+        u.newTokenManager = _newTokenManager;
+        u.newProjectCreator = _newProjectCreator;
+        u.newContractorCreator = _newContractorCreator;
+
+        u.boardMeetingID = newBoardMeeting(ProposalTypes.upgrade, _upgradeProposalID, _minutesDebatingPeriod);
+        
+        UpgradeProposalSubmitted(_upgradeProposalID, u.boardMeetingID, 
+            u.newCommitteeRoom, u.newShareManager, u.newTokenManager, u.newProjectCreator, u.newContractorCreator);
+        
+        return _upgradeProposalID;
+        
+    }
+    
+// Board Meetings management
+
+    function newBoardMeeting(
+        ProposalTypes _proposalType,
+        uint _proposalID, 
+        uint _minutesDebatingPeriod
+    ) internal returns (uint) {
+
+        if (_minutesDebatingPeriod == 0) _minutesDebatingPeriod = DaoRulesProposals[0].minMinutesDebatePeriod;
+        
+        if (passDao.ActualCommitteeRoom() != address(this)
+            || msg.value < DaoRulesProposals[0].minBoardMeetingFees
+            || msg.value > DaoRulesProposals[0].maxBoardMeetingFees
+            || DaoRulesProposals[0].minutesSetProposalPeriod + _minutesDebatingPeriod > maxMinutesProposalPeriod
+            || now + ((DaoRulesProposals[0].minutesSetProposalPeriod + _minutesDebatingPeriod) * 1 minutes) < now
+            || _minutesDebatingPeriod < DaoRulesProposals[0].minMinutesDebatePeriod
+            || msg.sender == address(this)) throw;
+
+        uint _boardMeetingID = BoardMeetings.length++;
+        BoardMeeting b = BoardMeetings[_boardMeetingID];
+
+        b.creator = msg.sender;
+
+        b.proposalType = _proposalType;
+        b.proposalID = _proposalID;
+
+        b.fees = msg.value;
+        
+        b.setDeadline = now + (DaoRulesProposals[0].minutesSetProposalPeriod * 1 minutes);        
+        b.votingDeadline = b.setDeadline + (_minutesDebatingPeriod * 1 minutes); 
+
+        b.open = true; 
+
+        return _boardMeetingID;
+
+    }
+    
+    function vote(
+        uint _boardMeetingID, 
+        bool _supportsProposal) {
+        
+        BoardMeeting b = BoardMeetings[_boardMeetingID];
+
+        if (hasVoted[_boardMeetingID][msg.sender] 
+            || now < b.setDeadline
+            || now > b.votingDeadline) throw;
+            
+        PassManager _shareManager = ShareManager();
+
+        uint _balance = uint(_shareManager.balanceOf(msg.sender));
+        if (_balance == 0) throw;
+        
+        hasVoted[_boardMeetingID][msg.sender] = true;
+
+        _shareManager.blockTransfer(msg.sender, b.votingDeadline);
+
+        if (_supportsProposal) b.yea += _balance;
+        else b.nay += _balance; 
+
+        uint _a = 100*b.fees;
+        if ((_a/100 != b.fees) || ((_a*_balance)/_a != _balance)) throw;
+        uint _multiplier = (_a*_balance)/uint(_shareManager.totalSupply());
+        uint _divisor = 100 + 100*DaoRulesProposals[0].feesRewardInflationRate*(now - b.setDeadline)/(100*365 days);
+        uint _rewardedamount = _multiplier/_divisor;
+        if (b.totalRewardedAmount + _rewardedamount > b.fees) _rewardedamount = b.fees - b.totalRewardedAmount;
+        b.totalRewardedAmount += _rewardedamount;
+        if (!msg.sender.send(_rewardedamount)) throw;
+
+        Voted(_boardMeetingID, _supportsProposal, msg.sender, _rewardedamount);    
+}
+
+// Decisions management
+
+    function executeDecision(uint _boardMeetingID) returns (bool) {
+
+        BoardMeeting b = BoardMeetings[_boardMeetingID];
+        
+        if (now < b.votingDeadline || !b.open) return;
+        
+        b.open = false;
+
+        PassManager _shareManager = ShareManager();
+        uint _quantityOfShares;
+        PassManager _tokenManager = TokenManager();
+
+        if (100*b.yea > DaoRulesProposals[0].minPercentageOfLikes * _shareManager.totalSupply()) {       
+            _quantityOfShares = _shareManager.rewardTokensForClient(b.creator, b.fees);
+        }        
+
+        uint _sentToDaoManager = b.fees - b.totalRewardedAmount;
+        if (_sentToDaoManager > 0) {
+            if (!address(_shareManager).send(_sentToDaoManager)) throw;
+        }
+        
+        if (b.yea + b.nay < minQuorum() || b.yea <= b.nay) {
+            if (b.proposalType == ProposalTypes.contractor) Proposals[b.proposalID].open = false;
+            ProposalClosed(b.proposalID, b.proposalType, _boardMeetingID, b.totalRewardedAmount, false, _quantityOfShares, _sentToDaoManager);
+            return;
+        }
+
+        b.dateOfExecution = now;
+
+        if (b.proposalType == ProposalTypes.contractor) {
+
+            Proposal p = Proposals[b.proposalID];
+    
+            if (p.contractorProposalID == 0) p.open = false;
+            
+            if (p.amountForShares == 0 && p.amountForTokens == 0) orderToContractor(b.proposalID);
+            else {
+                if (p.amountForShares != 0) {
+                    _shareManager.setFundingRules(p.moderator, p.initialSharePriceMultiplier, 
+                        p.amountForShares, p.minutesFundingPeriod, p.sharePriceInflationRate, b.proposalID);
+                }
+
+                if (p.amountForTokens != 0) {
+                    _tokenManager.setFundingRules(p.moderator, 0, p.amountForTokens, p.minutesFundingPeriod, 
+                        DaoRulesProposals[0].tokenPriceInflationRate, b.proposalID);
+                }
+            }
+
+        } else if (b.proposalType == ProposalTypes.question) {
+            
+            Question q = ResolutionProposals[b.proposalID];
+            
+            q.project.newResolution(q.name, q.description);
+            
+        } else if (b.proposalType == ProposalTypes.daoRules) {
+
+            Rules r = DaoRulesProposals[b.proposalID];
+            
+            DaoRulesProposals[0].boardMeetingID = r.boardMeetingID;
+            DaoRulesProposals[0].minQuorumDivisor = r.minQuorumDivisor;
+            DaoRulesProposals[0].minMinutesDebatePeriod = r.minMinutesDebatePeriod; 
+            DaoRulesProposals[0].minBoardMeetingFees = r.minBoardMeetingFees;
+            DaoRulesProposals[0].maxBoardMeetingFees = r.maxBoardMeetingFees;
+            DaoRulesProposals[0].minPercentageOfLikes = r.minPercentageOfLikes;
+            DaoRulesProposals[0].minutesSetProposalPeriod = r.minutesSetProposalPeriod;
+            DaoRulesProposals[0].feesRewardInflationRate = r.feesRewardInflationRate;
+            DaoRulesProposals[0].tokenPriceInflationRate = r.tokenPriceInflationRate;
+            DaoRulesProposals[0].defaultMinutesFundingPeriod = r.defaultMinutesFundingPeriod;
+
+            DaoRulesProposals[0].transferable = r.transferable;
+            if (r.transferable) _shareManager.ableTransfer();
+            else _shareManager.disableTransfer();
+
+        } else {
+
+            upgrade u = UpgradeProposals[b.proposalID];
+
+            if ((u.newShareManager != 0) && (u.newShareManager != address(_shareManager))) {
+                _shareManager.disableTransfer();
+                if (_shareManager.balance > 0) {
+                    if (!_shareManager.sendTo(u.newShareManager, _shareManager.balance)) throw;
+                }
+            }
+
+            if ((u.newTokenManager != 0) && (u.newTokenManager != address(_tokenManager))) {
+                _tokenManager.disableTransfer();
+                if (_tokenManager.balance > 0) {
+                    if (!_tokenManager.sendTo(u.newTokenManager, _tokenManager.balance)) throw;
+                }
+            }
+
+            passDao.upgrade(u.newCommitteeRoom, u.newShareManager, u.newTokenManager, u.newProjectCreator, u.newContractorCreator);
+                
+            DaoUpgraded(u.newCommitteeRoom, u.newShareManager, u.newTokenManager, u.newProjectCreator, u.newContractorCreator);
+            
+        }
+
+        ProposalClosed(b.proposalID, b.proposalType, _boardMeetingID , b.totalRewardedAmount, true, _quantityOfShares, _sentToDaoManager);
+            
+        return true;
+    }
+    
+    function orderToContractor(uint _proposalID) returns (bool) {
+        
+        Proposal p = Proposals[_proposalID];
+        BoardMeeting b = BoardMeetings[p.boardMeetingID];
+
+        if (b.open || !p.open) return;
+        
+        uint _amountForShares;
+        uint _amountForTokens;
+
+        if (p.amountForShares != 0) {
+            _amountForShares = ShareManager().FundedAmount(_proposalID);
+            if (_amountForShares == 0 && now < b.dateOfExecution + (p.minutesFundingPeriod * 1 minutes)) return;
+        }
+
+        if (p.amountForTokens != 0) {
+            _amountForTokens = TokenManager().FundedAmount(_proposalID);
+            if (_amountForTokens == 0 && now < b.dateOfExecution + (p.minutesFundingPeriod * 1 minutes)) return;
+        }
+        
+        p.open = false;   
+
+        uint _amount = p.amount + _amountForShares + _amountForTokens;
+
+        PassProject _project = PassProject(p.contractor.Project());
+
+        if (_amount == 0 || !p.contractor.order(p.contractorProposalID, _amount)) {
+            ContractorProposalClosed(_proposalID, p.contractorProposalID, p.contractor, 0);
+            return;
+        }
+        
+        if (p.amount + _amountForShares > 0) {
+            if (!ShareManager().sendTo(p.contractor, p.amount + _amountForShares)) throw;
+        }
+        if (_amountForTokens > 0) {
+            if (!TokenManager().sendTo(p.contractor, _amountForTokens)) throw;
+        }
+
+        ContractorProposalClosed(_proposalID, p.contractorProposalID, p.contractor, _amount);
+        
+        passDao.addProject(_project);
+        _project.newOrder(p.contractor, p.contractorProposalID, _amount);
+        
+        return true;
+    }
+
+// Holder Account management
+
+    function buySharesForProposal(uint _proposalID) payable returns (bool) {
+        
+        return ShareManager().buyTokensForProposal.value(msg.value)(_proposalID, msg.sender);
+    }   
+
+    function sendPendingAmounts(
+        uint _from,
+        uint _to,
+        address _buyer) returns (bool) {
+        
+        return ShareManager().sendPendingAmounts(_from, _to, _buyer);
+    }        
+    
+    function withdrawPendingAmounts() returns (bool) {
+        
+        if (!ShareManager().sendPendingAmounts(0, 0, msg.sender)) throw;
+    }        
+            
+}
+        
+        
