@@ -13,7 +13,7 @@ Open source Decentralized Application used to put together a transparent organiz
 
 ## PASS DAO and PASS DAO Project Smart Contracts
 
-Smart contracts used for the management of the upgrades and projects from the beginning of the application.
+Smart contracts used for the management of the upgrades and projects from the beginning of the application. No public function.
 
 =
 
