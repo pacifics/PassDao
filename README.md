@@ -51,7 +51,7 @@ Smart contract used to submit proposals, to vote and to execute the decisions of
 
 Public functions are :
 
-- Propose to create a new project
+- Propose to create a new project and to work as project manager
 
 - Propose to be a contractor
 
