@@ -23,7 +23,7 @@ Smart contract used by the project managers and contractors of the application.
 
 Public functions are : 
 
-- Update Project Decsription (for the project manager).
+- Update Project Description (for the project manager).
 
 - Update recipient and withdraw: allows the contractors using their manager as an account with deposits and withdrawals.
 
