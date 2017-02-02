@@ -65,9 +65,11 @@ Public functions are :
 
 - Vote (for shareholders)
 
-- Execute decision and order for a contractor (according to the votes)
+- Execute decision and order a work from a contractor (after and according to the votes of a board meeting)
 
-- Buy shares and promote proposals:  allows to buy shares in order to pay a contractor according to an approved proposal.
+- Buy shares to fund the DAO
+
+- Buy shares and promote a proposal:  allows to buy shares in order to pay a contractor according to an approved proposal.
 
 =
 
