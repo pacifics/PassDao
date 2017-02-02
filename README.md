@@ -1,4 +1,4 @@
-# Pass Decentralized Autonomous Organization
+# PASS Decentralized Autonomous Organization
 
 =
 
@@ -7,17 +7,17 @@ Website : http://forum.passdao.org/
 =
 
 ## Overview
-Pass DAO is an open source Decentralized Application used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. The source includes six separated smart contracts.
+PASS DAO is an open source Decentralized Application used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. The source includes six separated smart contracts.
 
 =
 
-## Pass DAO and Pass DAO Project Smart Contracts
+## PASS DAO and PASS DAO Project Smart Contracts
 
 Smart contracts used for the display and management of the upgrades and projects of Pass DAO from the beginning of the application.
 
 =
 
-## Pass DAO Contractor Smart Contract
+## PASS DAO Contractor Smart Contract
 
 Smart contract used by the project managers and contractors of the application.
 
@@ -31,7 +31,7 @@ Public functions are :
 
 =
 
-## Pass DAO Manager and Pass DAO Token Manager Smart Contract
+## PASS DAO Manager and Pass DAO Token Manager Smart Contract
 
 Smart contract used for the management of tokens. The smart contract derives to the Token Manager smart contract used for the management of tokens. The smart contract is conform to ERC20.
 
@@ -83,6 +83,6 @@ Public functions are :
 
 # About Security
 
-- By allowing fundings (public or private) for each step of the project and by limiting the presale and funding amounts, we limit the amount of money "at risk" and avoid useless blocked ethers in the Dao.
+- By allowing fundings (public or private) for each step of the project and by limiting the funding amounts, we limit the amount of money "at risk" and avoid useless blocked ethers in the Dao.
 
 - Only the Dao shareholders can decide by vote to allow the transfer of shares.
