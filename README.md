@@ -61,7 +61,7 @@ Public functions are :
 
 - Propose to change the Dao rules
 
-- Propose to upgrade one or all the smart contracts (except Pass DAO who can't be updated)
+- Propose to upgrade one or all the smart contracts (except Pass DAO which can't be updated)
 
 - Vote (for shareholders)
 
