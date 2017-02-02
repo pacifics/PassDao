@@ -65,7 +65,7 @@ Public functions are :
 
 - Vote (for shareholders)
 
-- Execute decision and order for a contractor
+- Execute decision and order for a contractor (according to the votes)
 
 - Buy shares and promote proposals:  allows to buy shares in order to pay a contractor according to an approved proposal.
 
