@@ -1,4 +1,4 @@
-# PASS Decentralized Autonomous Organization
+# The DAPP of PASS DAO
 
 =
 
@@ -7,7 +7,7 @@ Website : http://forum.passdao.org/
 =
 
 ## Overview
-PASS DAO is an open source Decentralized Application used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. The source includes six separated smart contracts.
+Open source Decentralized Application used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. The source includes six separated smart contracts.
 
 =
 
