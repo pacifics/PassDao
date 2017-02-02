@@ -73,7 +73,7 @@ Public functions are :
 
 # Notes
 
-- This Dao is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
+- This Dapp is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
 
 - If the work of a contractor allows the development of the projects, it should increase the value of shares and Pass reputation tokens which belongs to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
 
