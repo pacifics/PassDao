@@ -13,13 +13,13 @@ Open source Decentralized Application used to put together a transparent organiz
 
 ## PASS DAO and PASS DAO Project Smart Contracts
 
-Smart contracts used for the management of the upgrades and projects from the beginning of the application. No public function.
+Used for the management of the upgrades and projects from the beginning of the application. One DAO smart contract and a project smart contract for each project. No public function.
 
 =
 
 ## PASS DAO Contractor Smart Contract
 
-Smart contract used by the project managers and contractors of the application.
+Used by the project managers and contractors of the application. On smart contract for each project manager or contractor.
 
 Public functions are : 
 
@@ -33,7 +33,7 @@ Public functions are :
 
 ## PASS DAO Manager and Pass DAO Token Manager Smart Contract
 
-Smart contract used for the management of tokens. The smart contract derives to the Token Manager smart contract used for the management of tokens. The smart contract is conform to ERC20.
+Used for the management of tokens. The manager smart contract derives to the Token Manager smart contract used for the management of tokens. The smart contract is conform to ERC20.
 
 Public functions are : 
 
