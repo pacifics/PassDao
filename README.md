@@ -25,7 +25,7 @@ Public functions are :
 
 - Update Project Description (for the project manager).
 
-- Update recipient and withdraw: allows the contractors using the smart contract as an account manager with deposits and withdrawals.
+- Update recipient and withdraw: allows the contractors using their smart contract as an account manager with deposits and withdrawals.
 
 - Set a new proposal: every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. 
 
