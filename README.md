@@ -1,4 +1,4 @@
-# The DAPP of PASS DAO
+# The DAPP (Decentralized Application) of PASS DAO (Distributed Autonomous Organization)
 
 =
 
@@ -13,13 +13,19 @@ Open source Decentralized Application used to put together a transparent organiz
 
 ## PASS DAO and PASS DAO Project Smart Contracts
 
-Used for the management of the upgrades and projects from the beginning of the application. One DAO smart contract and a project smart contract for each project. No public function.
+Used for the management and display of the upgrades of the DAPP from the beginning of the application. No public function.
+
+=
+
+## PASS DAO Project Smart Contracts
+
+Used for the management and display of the PASS DAO projects. One project smart contract for each project. No public function.
 
 =
 
 ## PASS DAO Contractor Smart Contract
 
-Used by the project managers and contractors of the application. On smart contract for each project manager or contractor.
+Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
 
 Public functions are : 
 
@@ -31,7 +37,7 @@ Public functions are :
 
 =
 
-## PASS DAO Manager and Pass DAO Token Manager Smart Contract
+## PASS DAO Manager Smart Contract
 
 Used for the management of tokens. The manager smart contract derives to the Token Manager smart contract used for the management of tokens. The smart contract is conform to ERC20.
 
