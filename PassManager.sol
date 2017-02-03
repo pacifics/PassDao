@@ -22,6 +22,9 @@ contract PassManager is PassTokenManager {
     order[] public orders;
     // Number or orders to buy tokens
     uint numberOfOrders;
+
+    // Map to know if an order was cloned from the precedent manager after an upgrade
+    mapping (uint => bool) orderCloned;
     
     function PassManager(
         PassDao _passDao,
@@ -35,7 +38,7 @@ contract PassManager is PassTokenManager {
         PassTokenManager( _passDao, _clonedFrom, _tokenName, _tokenSymbol, _tokenDecimals, 
             _transferableToken, _initialPriceMultiplier, _inflationRate) { }
     
-    /// @notice Function to receive payments
+        /// @notice Function to receive payments
     function () payable onlyShareManager { }
     
     /// @notice Function used by the client to send ethers from the Dao manager
@@ -105,111 +108,123 @@ contract PassManager is PassTokenManager {
         return buyTokensFor(_proposalID, _buyer, _date, _presale);
     }
 
-    /// @notice Function to create orders to buy tokens
-    /// @return Whether the function was successful or not
-    function buyTokens() payable returns (bool) {
+    /// @dev Internal function to create a buy order
+    function addOrder(address _buyer, uint _weiGiven) internal {
 
-        if (!transferable || msg.value < 100 finney) throw;
-        
         uint i;
         numberOfOrders += 1;
 
         if (numberOfOrders > orders.length) i = orders.length++;
         else i = numberOfOrders - 1;
         
-        orders[i].buyer = msg.sender;
-        orders[i].weiGiven = msg.value;
-        
-        return true;
+        orders[i].buyer = _buyer;
+        orders[i].weiGiven = _weiGiven;
     }
-    
-    /// @dev Internal function to remove the first order
-    function removeOrder() internal {
+
+    /// @dev Internal function to remove a buy order
+    /// @param _order The index of the order to remove
+    function removeOrder(uint _order) internal {
         
-        uint o;
-        
+        if (numberOfOrders - 1 < _order) return;
+
         numberOfOrders -= 1;
-        if (numberOfOrders > 0) {
-            for (o = 0; o <= numberOfOrders - 1; o++) {
-                orders[o].buyer = orders[o+1].buyer;
-                orders[o].weiGiven = orders[o+1].weiGiven;
+        if (_order > 0) {
+            for (uint i = _order; i <= numberOfOrders - 1; i++) {
+                orders[i].buyer = orders[i+1].buyer;
+                orders[i].weiGiven = orders[i+1].weiGiven;
             }
         }
         orders[numberOfOrders].buyer = 0;
         orders[numberOfOrders].weiGiven = 0;
     }
     
+    /// @notice Function to create orders to buy tokens
+    /// @return Whether the function was successful or not
+    function buyTokens() payable returns (bool) {
+
+        if (!transferable || msg.value < 100 finney) throw;
+        
+        addOrder(msg.sender, msg.value);
+        
+        return true;
+    }
+    
     /// @notice Function to sell tokens
     /// @param _tokenAmount in tokens to sell
+    /// @param _from Index of the first order
+    /// @param _to Index of the last order
     /// @return the revenue in wei
-    function sellTokens(uint _tokenAmount) returns (uint) {
+    function sellTokens(
+        uint _tokenAmount,
+        uint _from,
+        uint _to) returns (uint) {
 
         if (!transferable 
             || uint(balances[msg.sender]) < _amount 
             || numberOfOrders == 0) throw;
         
-        uint _tokenAmount0;
+        if (_to == 0 || _to > numberOfOrders - 1) _to = numberOfOrders - 1;
+        
+        
+        uint _tokenAmounti;
         uint _amount;
         uint _totalAmount;
-        int i = 0;
-        uint o;
-        
-        
-        while (i++ < 10) {
-            
-            if (numberOfOrders > 0 && _tokenAmount > 0) {
+        uint o = _from;
 
-                _tokenAmount0 = TokenAmount(orders[0].weiGiven, priceMultiplier(0), actualPriceDivisor(0));
+        for (uint i = _from; i <= _to; i++) {
 
-                if (_tokenAmount >= _tokenAmount0 && orders[0].buyer != msg.sender) {
+            if (_tokenAmount > 0 && orders[o].buyer != msg.sender) {
 
-                    _tokenAmount -= _tokenAmount0;
-                    
-                    transfer(orders[0].buyer, _tokenAmount0); 
-                    _totalAmount += orders[0].weiGiven;
+                _tokenAmounti = TokenAmount(orders[o].weiGiven, priceMultiplier(0), actualPriceDivisor(0));
 
-                    removeOrder();
+                if (_tokenAmount >= _tokenAmounti) {
+
+                    _tokenAmount -= _tokenAmounti;
+                    transfer(orders[o].buyer, _tokenAmounti); 
+                    _totalAmount += orders[o].weiGiven;
+                    removeOrder(o);
                 }
-            }
+                else {
+                    _amount = weiAmount(_tokenAmount, priceMultiplier(0), actualPriceDivisor(0));
+
+                    orders[o].weiGiven -= _amount;
+                    transfer(orders[o].buyer, _tokenAmount); 
+                    _totalAmount += _amount;
+                    i = _to + 1;
+                }
+            } else o += 1;
         }
         
-        if (numberOfOrders > 0 && _tokenAmount > 0) {
-
-            _tokenAmount0 = TokenAmount(orders[0].weiGiven, priceMultiplier(0), actualPriceDivisor(0));
-
-            if (_tokenAmount0 > _tokenAmount && orders[0].buyer != msg.sender) {
-                _amount = weiAmount(_tokenAmount, priceMultiplier(0), actualPriceDivisor(0));
-
-                orders[0].weiGiven -= _amount;
-                
-                transfer(orders[0].buyer, _tokenAmount); 
-                _totalAmount += _amount;
-            }
-        }
-
         if (!msg.sender.send(_totalAmount)) throw;
         else return _totalAmount;
     }    
 
     /// @notice Function to remove your orders and refund
+    /// @param _from Index of the first order
+    /// @param _to Index of the last order
     /// @return Whether the function was successful or not
-    function removeOrders() returns (bool) {
+    function removeOrders(
+        uint _from,
+        uint _to) returns (bool) {
 
+        if (_from == 0) _from = 1;
+        if (_to == 0 || _to > numberOfOrders) _to = numberOfOrders -1;
+        
         uint _totalAmount;
-        int i = 0;
-        uint o;
+        uint o = _from;
 
-        while (i++ < 10) {
+        for (uint i = _from; i <= _to; i++) {
 
-            if (numberOfOrders > 0 && orders[0].buyer == msg.sender) {
+            if (orders[o].buyer == msg.sender) {
                 
-                _totalAmount += orders[0].weiGiven;
-                removeOrder();
-            }
+                _totalAmount += orders[i].weiGiven;
+                removeOrder(o);
+
+            } else o += 1;
         }
 
         if (!msg.sender.send(_totalAmount)) throw;
         else return true;
     }
-
+    
 }    
