@@ -16,19 +16,13 @@ The source includes the next smart contracts.
 
 
 
-#### PASS DAO Smart Contract
-
-Used for the management and display of the upgrades of the DAPP from the beginning of the application. No public function.
+#### PASS DAO Smart Contract. Used for the management and display of the upgrades of the DAPP from the beginning of the application. No public function.
 
 
-#### PASS DAO Project Smart Contracts
-
-Used for the management and display of the PASS DAO projects. One project smart contract for each project. No public function.
+#### PASS DAO Project Smart Contracts. Used for the management and display of the PASS DAO projects. One project smart contract for each project. No public function.
 
 
-#### PASS DAO Contractor Smart Contracts
-
-Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
+#### PASS DAO Contractor Smart Contracts. Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
 
 Public functions are : 
 
@@ -39,10 +33,7 @@ Public functions are :
 - Set a new proposal: every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. For each step, the PASS DAO shareholders decide to continue or to stop ordering work from the contractor.  
 
 
-
-#### PASS DAO Manager Smart Contract
-
-Used for the management of tokens. The manager smart contract derives to the Token Manager smart contract used for the management of tokens. The smart contract is conform to ERC20.
+#### PASS DAO Manager Smart Contract. Used for the management of tokens. The manager smart contract derives to the Token Manager smart contract used for the management of tokens. The smart contract is conform to ERC20.
 
 Public functions are : 
 
@@ -54,9 +45,7 @@ Public functions are :
 
 
 
-#### The Committee Room Smart Contract
-
-Smart contract used to submit proposals, to vote and to execute the decisions of the shareholders.
+#### The Committee Room Smart Contract. Smart contract used to submit proposals, to vote and to execute the decisions of the shareholders.
 
 Public functions are :
 
