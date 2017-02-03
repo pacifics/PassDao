@@ -16,7 +16,7 @@ The source includes the next smart contracts.
 
 
 
-#### PASS DAO Smart Contract. Used for the management and display of the upgrades of the DAPP from the beginning of the application. No public function.
+#### PASS DAO Smart Contract. Used for the management and display of the upgrades from the beginning of the application. No public function.
 
 
 #### PASS DAO Project Smart Contracts. Used for the management and display of the PASS DAO projects. One project smart contract for each project. No public function.
