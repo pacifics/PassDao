@@ -223,10 +223,22 @@ contract PassCommitteeRoomInterface {
         string _projectName, 
         string _projectDescription) internal returns (PassContractor);
         
-    /// @notice Function to propose to be a project manager of Pass Dao
-    /// @param _projectManager The project manager smart contract (not mandatory)
-    /// @param _recipient The recipient of the project manager (if doesn't exist)
-    /// @param _projectName The project name The name of the project (if doesn't exist)
+    /// @notice Function to propose to create a new project
+    /// @param _recipient The recipient of the project manager
+    /// @param _projectName The project name The name of the project
+    /// @param _proposalAmount The amount (in wei) of the proposal
+    /// @param _proposalDescription String describing the proposal
+    /// @param _hashOfTheProposalDocument The hash of the proposal document
+    /// @return The index of the proposal
+    function newProjectProposal(
+        address _recipient,
+        string _projectName,
+        uint _proposalAmount,
+        string _proposalDescription, 
+        bytes32 _hashOfTheProposalDocument) payable returns (uint);
+        
+    /// @notice Function to propose to work as a project manager of Pass Dao
+    /// @param _projectManager The project manager smart contract
     /// @param _contractorProposalId The index of the contractor proposal (not mandatory)
     /// @param _proposalAmount The amount (in wei) of the proposal (if doesn't exist)
     /// @param _proposalDescription String describing the proposal (if doesn't exist)
@@ -234,16 +246,14 @@ contract PassCommitteeRoomInterface {
     /// @return The index of the proposal
     function projectManagerProposal(
         PassContractor _projectManager,
-        address _recipient,
-        string _projectName,
         uint _contractorProposalId,
         uint _proposalAmount,
         string _proposalDescription, 
         bytes32 _hashOfTheProposalDocument) payable returns (uint);
         
-    /// @notice Function to propose to be a contractor of Pass Dao
+    /// @notice Function to propose to work as a contractor of a Pass Dao project
     /// @param _contractor The address of the contractor smart contract if exists (not mandatory)
-    /// @param _passProject The project smart contract (if not contractor smart contract)
+    /// @param _passProject The project smart contract (not mandatory)
     /// @param _recipient The address of the recipient of the contractor (if not existing contractor smart contract)
     /// @param _contractorProposalId The index of the contractor proposal (not mandatory)
     /// @param _proposalAmount The amount (in wei) of the proposal (if not existing proposal)
@@ -260,30 +270,34 @@ contract PassCommitteeRoomInterface {
         bytes32 _hashOfTheProposalDocument
         ) payable returns (uint);
 
-    /// @notice Function to propose to fund Pass Dao
+    /// @notice Function to propose to fund Pass Dao with new funding rules
     /// @param _proposalAmount The amount (in wei) of the proposal
     /// @param _moderator The address which sets partners and manage the funding (not mandatory)
     /// @param _initialSharePriceMultiplier The initial price multiplier of shares (not mandatory)
     /// @param _shareInflationRate If 0, the share price doesn't change during the funding (not mandatory)
     /// @param _minutesFundingPeriod Period in minutes of the funding (not mandatory)
     /// @return The index of the proposal
-    function fundingProposal(
+    function newFundingProposal(
         uint _proposalAmount,
         address _moderator,
         uint _initialSharePriceMultiplier,
         uint _shareInflationRate,
         uint _minutesFundingPeriod) payable returns (uint);
 
+    /// @notice Function to propose to fund Pass Dao with the actual funding rules
+    /// @param _proposalAmount The amount (in wei) of the proposal
+    function fundingProposal(uint _proposalAmount) payable returns (uint);
+    
     /// @notice Function to submit a question
-    /// @param _project The project smart contract
     /// @param _name Name of the question for display purpose
     /// @param _description A description of the question
+    /// @param _project The project smart contract
     /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
     /// @return The index of the proposal (not mandatory)
     function resolutionProposal(
-        PassProject _project,
         string _name,
         string _description,
+        PassProject _project,
         uint _minutesDebatingPeriod) payable returns (uint);
         
     /// @notice Function to make a proposal to change the Dao rules 
@@ -532,17 +546,25 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         return _projectManager;
     }        
 
-    function projectManagerProposal(
-        PassContractor _projectManager,
+    function newProjectProposal(
         address _recipient,
         string _projectName,
+        uint _proposalAmount,
+        string _proposalDescription, 
+        bytes32 _hashOfTheProposalDocument) payable returns (uint) {
+            
+        PassContractor _projectManager = createProject(_recipient, _projectName, "To be updated");
+        uint _contractorProposalId = _projectManager.newProposal(msg.sender, _proposalAmount, _proposalDescription, _hashOfTheProposalDocument);
+        return newProposal(_projectManager, _contractorProposalId, 0, 0, 0, 0, 0, _proposalAmount, 0, 0);
+    }
+            
+    function projectManagerProposal(
+        PassContractor _projectManager,
         uint _contractorProposalId,
         uint _proposalAmount,
         string _proposalDescription, 
         bytes32 _hashOfTheProposalDocument) payable returns (uint) {
 
-        if (address(_projectManager) == 0) _projectManager = createProject(_recipient, _projectName, "To be updated");
-        
         if (_contractorProposalId == 0) {
             _contractorProposalId = _projectManager.newProposal(msg.sender, _proposalAmount, _proposalDescription, _hashOfTheProposalDocument);
         }
@@ -562,8 +584,9 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
         if (address(_contractor) != 0 && address(_passProject) != 0) throw;
         if (_contractorProposalId != 0 && _hashOfTheProposalDocument != 0) throw;
-
+        
         if (address(_contractor) == 0) {
+            if (address(_passProject) == 0) _passProject = PassProject(passDao.MetaProject());
             _contractor = PassContractorCreator(passDao.ActualContractorCreator()).createContractor(msg.sender,_recipient, _passProject, false);
             _contractor.closeSetup;
             ContractorCreated(msg.sender, _recipient, _passProject, _contractor);
@@ -582,7 +605,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         return newProposal(_contractor, _contractorProposalId, _amount, 0, _amountForShares, 0, 0, 0, 0, 0);
     }
 
-    function fundingProposal(
+    function newFundingProposal(
         uint _proposalAmount,
         address _moderator,
         uint _initialSharePriceMultiplier,
@@ -592,14 +615,18 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         return newProposal(PassContractor(0), 0, 0, _moderator, _proposalAmount, _initialSharePriceMultiplier, _shareInflationRate, 0, _minutesFundingPeriod, 0);
     }            
             
+    function fundingProposal(uint _proposalAmount) payable returns (uint) {
+            
+        return newProposal(PassContractor(0), 0, 0, 0, _proposalAmount, 0, 0, 0, 0, 0);
+    }            
+        
     function resolutionProposal(
-        PassProject _project,
         string _name,
         string _description,
-        uint _minutesDebatingPeriod
-    ) payable returns (uint) {
+        uint _minutesDebatingPeriod,
+        PassProject _project) payable returns (uint) {
         
-        if (address(_project) == 0) throw;
+        if (address(_project) == 0) _project = PassProject(passDao.MetaProject());
         
         uint _questionID = ResolutionProposals.length++;
         Question q = ResolutionProposals[_questionID];
