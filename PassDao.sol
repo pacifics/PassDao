@@ -102,10 +102,10 @@ contract PassDao {
 
     /// @dev Function to allow the actual Cimmittee Room upgrading the Dao
     /// @param _newCommitteeRoom The address of the new committee room
-    /// @param _newShareManager ..
-    /// @param _newTokenManager ..
-    /// @param _newProjectCreator ..
-    /// @param _newContractorCreator ..
+    /// @param _newShareManager The address of the new share manager
+    /// @param _newTokenManager The address of the new token manager
+    /// @param _newProjectCreator The address of the new project creator smart contract
+    /// @param _newContractorCreator The address of the new contractor creator smart contract
     /// @return The index of the revision
     function upgrade(
         address _newCommitteeRoom, 
