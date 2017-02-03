@@ -67,7 +67,7 @@ Public functions are :
 
 - Buy shares to fund the DAO
 
-- Buy shares and promote a proposal:  allows to buy shares in order to pay a contractor according to an approved proposal.
+- Buy shares and promote a proposal:  allows buying shares in order to pay a contractor according to an approved proposal.
 
 
 =
