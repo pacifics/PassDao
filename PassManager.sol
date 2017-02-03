@@ -109,7 +109,11 @@ contract PassManager is PassTokenManager {
     }
 
     /// @dev Internal function to create a buy order
-    function addOrder(address _buyer, uint _weiGiven) internal {
+    /// @param _buyer The address of the buyer
+    /// @param _weiGiven The amount in wei given by the buyer
+    function addOrder(
+        address _buyer, 
+        uint _weiGiven) internal {
 
         uint i;
         numberOfOrders += 1;
