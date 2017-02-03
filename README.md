@@ -49,9 +49,9 @@ Public functions are :
 
 Public functions are :
 
-- Propose to create a new project and to work as project manager for PASS DAO
+- Propose to create a new project and to work as a project manager of PASS DAO
 
-- Propose to be a contractor
+- Propose to be a contractor of PASS DAO
 
 - Submit a Funding proposal
 
