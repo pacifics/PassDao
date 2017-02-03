@@ -11,7 +11,7 @@ The source includes the next smart contracts :
 #### PASS DAO Smart Contract. Used for the management and display of the upgrades from the beginning of the application. No public function.
 
 
-#### PASS Project Smart Contracts. Used for the management and display of the PASS DAO projects. One project smart contract for each project. No public function.
+#### PASS Project Smart Contracts. Used for the management and display of the PASS projects. One project smart contract for each project. No public function.
 
 
 #### PASS Contractor Smart Contracts. Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
