@@ -45,7 +45,7 @@ Public functions are :
 
 
 
-#### The Committee Room Smart Contract. Smart contract used to submit proposals, to vote and to execute the decisions of the shareholders.
+#### The Committee Room Smart Contract. Used to submit proposals, to vote and to execute the decisions of the shareholders.
 
 Public functions are :
 
