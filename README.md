@@ -7,11 +7,13 @@ Website : http://forum.passdao.org/
 =
 
 ## Overview
-Open source Decentralized Application used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. The source includes six separated smart contracts.
+Open source Decentralized Application used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. 
+
+The source includes the next smart contracts.
 
 =
 
-## PASS DAO and PASS DAO Project Smart Contracts
+## PASS DAO Smart Contract
 
 Used for the management and display of the upgrades of the DAPP from the beginning of the application. No public function.
 
@@ -23,7 +25,7 @@ Used for the management and display of the PASS DAO projects. One project smart 
 
 =
 
-## PASS DAO Contractor Smart Contract
+## PASS DAO Contractor Smart Contracts
 
 Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
 
