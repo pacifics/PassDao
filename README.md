@@ -1,16 +1,9 @@
-# The DAPP (Decentralized Application) of PASS DAO (Distributed Autonomous Organization)
+# The PASS DAPP (Decentralized Application) of PASS DAO (Distributed Autonomous Organization)
 
 
 Website : http://forum.passdao.org/
 
 =
-
-## Overview
-Open source Decentralized Application used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. 
-
-=
-
-## The source
 
 The source includes the next smart contracts.
 
