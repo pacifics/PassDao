@@ -50,8 +50,13 @@ contract PassDao {
     }
     // The projects of the Dao
     project[] public projects;
+
     // Map with the indexes of the projects
     mapping (address => uint) projectID;
+    
+    // The address of the meta project
+    address metaProject;
+
     
 // Events
 
@@ -64,6 +69,11 @@ contract PassDao {
     /// @return The effective committee room
     function ActualCommitteeRoom() constant returns (address) {
         return revisions[0].committeeRoom;
+    }
+    
+    /// @return The meta project
+    function MetaProject() constant returns (address) {
+        return metaProject;
     }
 
     /// @return The effective share manager
@@ -130,6 +140,13 @@ contract PassDao {
         Upgrade(_revisionID, _newCommitteeRoom, _newShareManager, _newTokenManager, _newProjectCreator, _newContractorCreator);
             
         return _revisionID;
+    }
+
+    /// @dev Function to set the meta project
+    /// @param _projectAddress The address of the project
+    function addMetaProject(address _projectAddress) onlyPassCommitteeRoom {
+
+        metaProject == _projectAddress;
     }
     
     /// @dev Function to allow the committee room to add a project when ordering
