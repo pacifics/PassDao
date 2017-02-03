@@ -6,26 +6,26 @@ Website : http://forum.passdao.org/
 
 =
 
-## Overview
+### Overview
 Open source Decentralized Application used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. 
 
 The source includes the next smart contracts.
 
 =
 
-## PASS DAO Smart Contract
+### PASS DAO Smart Contract
 
 Used for the management and display of the upgrades of the DAPP from the beginning of the application. No public function.
 
 =
 
-## PASS DAO Project Smart Contracts
+### PASS DAO Project Smart Contracts
 
 Used for the management and display of the PASS DAO projects. One project smart contract for each project. No public function.
 
 =
 
-## PASS DAO Contractor Smart Contracts
+### PASS DAO Contractor Smart Contracts
 
 Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
 
@@ -39,7 +39,7 @@ Public functions are :
 
 =
 
-## PASS DAO Manager Smart Contract
+### PASS DAO Manager Smart Contract
 
 Used for the management of tokens. The manager smart contract derives to the Token Manager smart contract used for the management of tokens. The smart contract is conform to ERC20.
 
@@ -53,7 +53,7 @@ Public functions are :
 
 =
 
-## The Committee Room Smart Contract
+### The Committee Room Smart Contract
 
 Smart contract used to submit proposals, to vote and to execute the decisions of the shareholders.
 
@@ -81,7 +81,7 @@ Public functions are :
 
 =
 
-# Notes
+## Notes
 
 - This Dapp is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
 
@@ -93,7 +93,7 @@ Public functions are :
 
 =
 
-# About Security
+## About Security
 
 - By allowing fundings (public or private) for each step of the project and by limiting the funding amounts, we limit the amount of money "at risk" and avoid useless blocked ethers in the Dao.
 
