@@ -35,7 +35,7 @@ Public functions are :
 
 - Buy Tokens, Sell Tokens and Remove buy orders: allows to buy and sell transferable tokens using the application.
 
-- Buy tokens and promote proposals: allows to buy tokens in order to pay a project manager according to an approved proposal.
+- Buy tokens for a proposal: allows to buy tokens in order to pay a project manager according to an approved proposal.
 
 - Transfer tokens and Approve tokens allowance: ERC20 functions.
 
@@ -62,7 +62,7 @@ Public functions are :
 
 - Execute decision and order a work from a contractor (after and according to the votes of a board meeting)
 
-- Buy shares for proposal: allows funding the DAO according to an approved funding proposal or allows buying shares in order to pay a contractor according to an approved contractor proposal.
+- Buy shares for a proposal: allows funding the DAO according to an approved funding proposal or allows buying shares in order to pay a contractor according to an approved contractor proposal.
 
 
 =
