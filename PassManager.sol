@@ -170,7 +170,7 @@ contract PassManager is PassTokenManager {
         if (_to == 0 || _to > numberOfOrders - 1) _to = numberOfOrders - 1;
         
         
-        uint _tokenAmounti;
+        uint _tokenAmounto;
         uint _amount;
         uint _totalAmount;
         uint o = _from;
@@ -179,24 +179,25 @@ contract PassManager is PassTokenManager {
 
             if (_tokenAmount > 0 && orders[o].buyer != msg.sender) {
 
-                _tokenAmounti = TokenAmount(orders[o].weiGiven, priceMultiplier(0), actualPriceDivisor(0));
+                _tokenAmounto = TokenAmount(orders[o].weiGiven, priceMultiplier(0), actualPriceDivisor(0));
 
-                if (_tokenAmount >= _tokenAmounti) {
-
-                    _tokenAmount -= _tokenAmounti;
-                    transfer(orders[o].buyer, _tokenAmounti); 
+                if (_tokenAmount >= _tokenAmounto 
+                    && transferFromTo(msg.sender, orders[o].buyer, _tokenAmounto)) {
+                            
+                    _tokenAmount -= _tokenAmounto;
                     _totalAmount += orders[o].weiGiven;
                     removeOrder(o);
                 }
-                else {
+                else if (_tokenAmount < _tokenAmounto
+                    && transferFromTo(msg.sender, orders[o].buyer, _tokenAmount)) {
+                        
                     _amount = weiAmount(_tokenAmount, priceMultiplier(0), actualPriceDivisor(0));
-
                     orders[o].weiGiven -= _amount;
-                    transfer(orders[o].buyer, _tokenAmount); 
                     _totalAmount += _amount;
                     i = _to + 1;
                 }
-            } else o += 1;
+                else o += 1;
+            }
         }
         
         if (!msg.sender.send(_totalAmount)) throw;
