@@ -73,7 +73,7 @@ Public functions are :
 
 - This Dapp is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
 
-- The creators of proposals have to pay board meeting fees. If the proposal is estimated (and not necessarily approved), the creator receive shares with an amount equal to the fees.
+- The creators of proposals have to pay board meeting fees. If the proposal is estimated (and not necessarily approved), the creator of the proposal receives shares with an amount equal to the fees.
 
 - The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees. 
 
