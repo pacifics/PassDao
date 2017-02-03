@@ -6,8 +6,11 @@ Website : http://forum.passdao.org/
 
 =
 
-### Overview
+## Overview
 Open source Decentralized Application used to put together a transparent organization where governance and decision making system are immutably programmed in the Blockchain. 
+
+
+## The source
 
 The source includes the next smart contracts.
 
