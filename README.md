@@ -46,17 +46,17 @@ Used to submit proposals, to vote and to execute the decisions of the shareholde
 
 Public functions are :
 
-- Propose to create a new project and to work as a project manager of PASS DAO
+- Proposal to create a new project and to work as a project manager of PASS DAO
 
-- Propose to be a contractor of PASS DAO
+- Proposal to be a contractor of PASS DAO
 
 - Submit a Funding proposal
 
 - Submit a question to a vote by the Community of shareholders
 
-- Propose to change the Dao rules
+- Proposal to change the Dao rules
 
-- Propose to upgrade one or all the smart contracts (except Pass DAO which can't be updated)
+- Proposal to upgrade one or all the smart contracts (except Pass DAO which can't be updated)
 
 - Vote (for shareholders)
 
