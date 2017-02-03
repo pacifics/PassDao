@@ -17,19 +17,19 @@ The source includes the next smart contracts.
 
 =
 
-### PASS DAO Smart Contract
+#### PASS DAO Smart Contract
 
 Used for the management and display of the upgrades of the DAPP from the beginning of the application. No public function.
 
 =
 
-### PASS DAO Project Smart Contracts
+#### PASS DAO Project Smart Contracts
 
 Used for the management and display of the PASS DAO projects. One project smart contract for each project. No public function.
 
 =
 
-### PASS DAO Contractor Smart Contracts
+#### PASS DAO Contractor Smart Contracts
 
 Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
 
@@ -43,7 +43,7 @@ Public functions are :
 
 =
 
-### PASS DAO Manager Smart Contract
+#### PASS DAO Manager Smart Contract
 
 Used for the management of tokens. The manager smart contract derives to the Token Manager smart contract used for the management of tokens. The smart contract is conform to ERC20.
 
@@ -57,7 +57,7 @@ Public functions are :
 
 =
 
-### The Committee Room Smart Contract
+#### The Committee Room Smart Contract
 
 Smart contract used to submit proposals, to vote and to execute the decisions of the shareholders.
 
