@@ -5,8 +5,7 @@ Website : http://forum.passdao.org/
 
 =
 
-The source includes the next smart contracts.
-
+The source includes the next smart contracts :
 
 
 #### PASS DAO Smart Contract. Used for the management and display of the upgrades from the beginning of the application. No public function.
