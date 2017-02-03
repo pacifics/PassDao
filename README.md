@@ -75,9 +75,9 @@ Public functions are :
 
 - If the work of a contractor allows the development of the projects, it should increase the value of shares and Pass reputation tokens which belongs to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
 
-- The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees. 
+- The creators of proposals have to pay board meeting fees. If the proposal is estimated (and not necessarily approved), the creator receive shares with an amount equal to the fees.
 
-- In case of funding or Dao rules proposals, the creator of the proposal will receive shares if the proposal is estimated (but not necessarily approved).
+- The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees. 
 
 - By allowing fundings (public or private) for each step of the project and by limiting the funding amounts, we limit the amount of money "at risk" and avoid useless blocked ethers in the Dao.
 
