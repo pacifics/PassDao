@@ -82,10 +82,6 @@ Public functions are :
 
 - In case of funding or Dao rules proposals, the creator of the proposal will receive shares if the proposal is estimated (but not necessarily approved).
 
-=
-
-## About Security
-
 - By allowing fundings (public or private) for each step of the project and by limiting the funding amounts, we limit the amount of money "at risk" and avoid useless blocked ethers in the Dao.
 
 - The creation of new shares is decided by the shareholders and can be limited using a moderator smart contract (to ensure decentralization). Only the Dao shareholders can decide by vote to allow the transfer of shares.
