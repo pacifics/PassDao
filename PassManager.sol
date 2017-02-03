@@ -197,7 +197,8 @@ contract PassManager is PassTokenManager {
                     i = _to + 1;
                 }
                 else o += 1;
-            }
+            } 
+            else o += 1;
         }
         
         if (!msg.sender.send(_totalAmount)) throw;
