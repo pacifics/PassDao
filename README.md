@@ -73,8 +73,6 @@ Public functions are :
 
 - This Dapp is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
 
-- If the work of a contractor allows the development of the projects, it should increase the value of shares and Pass reputation tokens which belongs to the Community. In this case, there is no need for shareholders to report any revenue from the contractor. 
-
 - The creators of proposals have to pay board meeting fees. If the proposal is estimated (and not necessarily approved), the creator receive shares with an amount equal to the fees.
 
 - The shareholders should vote on contractor proposals as it's the only way to receive board meeting fees. 
