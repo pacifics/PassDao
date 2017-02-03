@@ -1,6 +1,5 @@
 # The DAPP (Decentralized Application) of PASS DAO (Distributed Autonomous Organization)
 
-=
 
 Website : http://forum.passdao.org/
 
@@ -82,6 +81,7 @@ Public functions are :
 - Buy shares and promote a proposal:  allows to buy shares in order to pay a contractor according to an approved proposal.
 
 
+=
 
 ## Notes
 
