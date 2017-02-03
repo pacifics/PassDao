@@ -136,9 +136,7 @@ contract PassCommitteeRoomInterface {
     
     // The minimum periods in minutes 
     uint minMinutesPeriods;
-    // The maximum period in minutes for proposals (set+debate)
-    uint maxMinutesProposalPeriod;
-    // The maximum inflation rate for share price or rewards to voters
+    // The maximum inflation rate for token price or rewards to voters
     uint maxInflationRate;
     
     /// @return the effective share manager
@@ -167,7 +165,6 @@ contract PassCommitteeRoomInterface {
     /// @param _passDao Address of Pass Dao
     /// @param _maxInflationRate The maximum inflation rate for contractor and funding proposals
     /// @param _minMinutesPeriods The minimum periods in minutes
-    /// @param _maxMinutesProposalPeriod The maximum period in minutes for proposals (set+debate)
     /// @param _minQuorumDivisor The initial minimum quorum divisor for the proposals
     /// @param _minBoardMeetingFees The minimum amount (in wei) to make a proposal and ask for a board meeting
     /// @param _maxBoardMeetingFees The maximum amount (in wei) to make a proposal and ask for a board meeting
@@ -182,7 +179,6 @@ contract PassCommitteeRoomInterface {
     //    address _passDao,
     //    uint _maxInflationRate,
     //    uint _minMinutesPeriods,
-    //    uint _maxMinutesProposalPeriod,
     //    uint _minQuorumDivisor,
     //    uint _minBoardMeetingFees,
     //    uint _maxBoardMeetingFees,
@@ -376,7 +372,7 @@ contract PassCommitteeRoomInterface {
     /// @return Whether the function was successful or not
     function withdrawPendingAmounts() returns (bool);
 
-    event DaoLimits(uint maxInflationRate, uint minMinutesPeriods, uint maxMinutesProposalPeriod);
+    event DaoLimits(uint maxInflationRate, uint minMinutesPeriods);
 
     event ProjectManagerCreated(address indexed Creator, string ProjectName, string ProjectDescription, PassProject indexed Project, 
         PassContractor ProjectManager, address Recipient);
@@ -423,7 +419,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
     }
     
     function minQuorum() constant returns (uint) {
-        return (uint(PassManager(ShareManager()).totalSupply()) / DaoRulesProposals[0].minQuorumDivisor);
+        return (uint(ShareManager().totalSupply()) / DaoRulesProposals[0].minQuorumDivisor);
     }
 
     function numberOfBoardMeetings() constant returns (uint) {
@@ -436,7 +432,6 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         address _passDao,
         uint _maxInflationRate,
         uint _minMinutesPeriods,
-        uint _maxMinutesProposalPeriod,
         uint _minQuorumDivisor,
         uint _minBoardMeetingFees,
         uint _maxBoardMeetingFees,
@@ -451,8 +446,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
         maxInflationRate = _maxInflationRate;
         minMinutesPeriods = _minMinutesPeriods;
-        maxMinutesProposalPeriod = _maxMinutesProposalPeriod;
-        DaoLimits(maxInflationRate, minMinutesPeriods, maxMinutesProposalPeriod);
+        DaoLimits(maxInflationRate, minMinutesPeriods);
         
         DaoRulesProposals.length = 1; 
         DaoRulesProposals[0].minQuorumDivisor = _minQuorumDivisor;
@@ -638,7 +632,6 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
             || _minQuorumDivisor > 10
             || _minutesSetProposalPeriod < minMinutesPeriods
             || _minMinutesDebatePeriod < minMinutesPeriods
-            || _minutesSetProposalPeriod + _minMinutesDebatePeriod > maxMinutesProposalPeriod
             || _feesRewardInflationRate > maxInflationRate
             || _tokenPriceInflationRate > maxInflationRate
             || _defaultMinutesFundingPeriod < minMinutesPeriods) throw; 
@@ -707,7 +700,6 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         if (passDao.ActualCommitteeRoom() != address(this)
             || msg.value < DaoRulesProposals[0].minBoardMeetingFees
             || msg.value > DaoRulesProposals[0].maxBoardMeetingFees
-            || DaoRulesProposals[0].minutesSetProposalPeriod + _minutesDebatingPeriod > maxMinutesProposalPeriod
             || now + ((DaoRulesProposals[0].minutesSetProposalPeriod + _minutesDebatingPeriod) * 1 minutes) < now
             || _minutesDebatingPeriod < DaoRulesProposals[0].minMinutesDebatePeriod
             || msg.sender == address(this)) throw;
