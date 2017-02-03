@@ -15,19 +15,17 @@ Open source Decentralized Application used to put together a transparent organiz
 
 The source includes the next smart contracts.
 
-=
+
 
 #### PASS DAO Smart Contract
 
 Used for the management and display of the upgrades of the DAPP from the beginning of the application. No public function.
 
-=
 
 #### PASS DAO Project Smart Contracts
 
 Used for the management and display of the PASS DAO projects. One project smart contract for each project. No public function.
 
-=
 
 #### PASS DAO Contractor Smart Contracts
 
@@ -41,7 +39,7 @@ Public functions are :
 
 - Set a new proposal: every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. For each step, the PASS DAO shareholders decide to continue or to stop ordering work from the contractor.  
 
-=
+
 
 #### PASS DAO Manager Smart Contract
 
@@ -55,7 +53,7 @@ Public functions are :
 
 - Transfer tokens and Approve tokens allowance: ERC20 functions.
 
-=
+
 
 #### The Committee Room Smart Contract
 
@@ -83,7 +81,7 @@ Public functions are :
 
 - Buy shares and promote a proposal:  allows to buy shares in order to pay a contractor according to an approved proposal.
 
-=
+
 
 ## Notes
 
