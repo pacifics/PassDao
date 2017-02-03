@@ -1,4 +1,4 @@
-# The PASS DAPP (Decentralized Application) of PASS DAO (Distributed Autonomous Organization)
+# The PASS DAPP (Decentralized Application)
 
 
 Website : http://forum.passdao.org/
