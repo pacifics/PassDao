@@ -28,8 +28,8 @@ Public functions are :
 - Set a new proposal: every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. For each step, the PASS DAO shareholders decide to continue or to stop ordering work from the contractor.  
 
 
-#### PASS Manager Smart Contract
-Used for the management of tokens. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contract is conform to ERC20.
+#### PASS Manager Smart Contracts
+Used for the management of tokens. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20.
 
 Public functions are : 
 
