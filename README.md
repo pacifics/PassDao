@@ -35,7 +35,7 @@ Public functions are :
 
 - Buy Tokens, Sell Tokens and Remove buy orders: allows to buy and sell transferable tokens using the application.
 
-- Buy tokens for a proposal: allows to buy tokens in order to pay a project manager according to an approved proposal.
+- Buy tokens for a proposal: allows to buy tokens in order to pay a project manager (or contractor if shares) according to an approved proposal.
 
 - Transfer tokens and Approve tokens allowance: ERC20 functions.
 
