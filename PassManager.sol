@@ -1,7 +1,7 @@
 import "PassDao.sol";
 import "PassTokenManager.sol";
 
-pragma solidity ^0.4.6;
+pragma solidity ^0.4.8;
 
 /*
  *
@@ -132,7 +132,7 @@ contract PassManager is PassTokenManager {
         if (numberOfOrders - 1 < _order) return;
 
         numberOfOrders -= 1;
-        if (_order > 0) {
+        if (numberOfOrders > 0) {
             for (uint i = _order; i <= numberOfOrders - 1; i++) {
                 orders[i].buyer = orders[i+1].buyer;
                 orders[i].weiGiven = orders[i+1].weiGiven;
@@ -213,7 +213,6 @@ contract PassManager is PassTokenManager {
         uint _from,
         uint _to) returns (bool) {
 
-        if (_from == 0) _from = 1;
         if (_to == 0 || _to > numberOfOrders) _to = numberOfOrders -1;
         
         uint _totalAmount;
@@ -223,7 +222,7 @@ contract PassManager is PassTokenManager {
 
             if (orders[o].buyer == msg.sender) {
                 
-                _totalAmount += orders[i].weiGiven;
+                _totalAmount += orders[o].weiGiven;
                 removeOrder(o);
 
             } else o += 1;
