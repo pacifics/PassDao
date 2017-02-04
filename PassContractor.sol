@@ -250,28 +250,53 @@ contract PassContractor {
 
 contract PassContractorCreator {
     
-    event NewPassContractor(address indexed Creator, address Recipient, PassProject indexed Project, PassContractor Contractor);
+    // Address of the pass Dao smart contract
+    PassDao public passDao;
+    // Address of the Pass Project creator
+    PassProjectCreator public projectCreator;
+    
+    event NewPassContractor(address indexed Creator, address indexed Recipient, PassProject indexed Project, string _projectName, PassContractor Contractor);
+
+    function PassContractorCreator(PassDao _passDao, PassProjectCreator _projectCreator) {
+        passDao = _passDao;
+        projectCreator = _projectCreator;
+    }
 
     /// @notice Function to create a contractor smart contract
     /// @param _creator The address of the creator of this smart contract
     /// @param _recipient The address of the recipient for withdrawals
     /// @param _passProject The address of the existing project smart contract
+    /// @param _projectName The name of the project (if the project smart contract doesn't exist)
+    /// @param _projectDescription A description of the project (can be updated after)
     /// @param _restore True if orders or proposals are to be cloned from other contracts
     /// @return The address of the created contractor smart contract
     function createContractor(
         address _creator,
         address _recipient, 
         PassProject _passProject,
+        string _projectName, 
+        string _projectDescription,
         bool _restore) returns (PassContractor) {
  
+        PassProject _project;
+        PassContractor _projectManager;
+
         if (_creator == 0) _creator = msg.sender;
         
-        PassContractor _contractor = new PassContractor(_creator, _passProject, _recipient);
+        if (address(_passProject) == 0) _project = projectCreator.createProject(passDao, _projectName, _projectDescription, 0);
+        else _project = _passProject;
+
+        PassContractor _contractor = new PassContractor(_creator, _project, _recipient);
         
-        if (!_restore) _contractor.closeSetup();
+        if (address(_passProject) == 0) {
+            _projectManager = _contractor;
+            _project.setProjectManager(address(_contractor));
+        }
+        else if (!_restore) _contractor.closeSetup();
         
-        NewPassContractor(_creator, _recipient, _passProject, _contractor);
+        NewPassContractor(_creator, _recipient, _passProject, _projectName, _contractor);
  
         return _contractor;
     }
+    
 }
