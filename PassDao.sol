@@ -1,4 +1,4 @@
-pragma solidity ^0.4.6;
+pragma solidity ^0.4.8;
 
 /*
 This file is part of Pass DAO.
@@ -143,10 +143,10 @@ contract PassDao {
     }
 
     /// @dev Function to set the meta project
-    /// @param _projectAddress The address of the project
+    /// @param _projectAddress The address of the meta project
     function addMetaProject(address _projectAddress) onlyPassCommitteeRoom {
 
-        metaProject == _projectAddress;
+        metaProject = _projectAddress;
     }
     
     /// @dev Function to allow the committee room to add a project when ordering
