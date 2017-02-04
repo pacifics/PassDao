@@ -60,7 +60,7 @@ Public functions are :
 
 - Vote (for shareholders)
 
-- Execute decision and order a work from a contractor (after and according to the votes of a board meeting)
+- Execute decision and order a work from a contractor (after and according to the votes of a committee)
 
 =
 
