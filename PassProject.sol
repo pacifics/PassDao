@@ -1,6 +1,6 @@
 import "PassDao.sol";
 
-pragma solidity ^0.4.6;
+pragma solidity ^0.4.8;
 
 /*
  *
@@ -206,12 +206,12 @@ contract PassProject {
 
 contract PassProjectCreator {
     
-    event NewPassProject(PassDao indexed _passDao, PassProject indexed Project, string Name, string Description, bytes32 HashOfTheDocument);
+    event NewPassProject(PassDao indexed Dao, PassProject indexed Project, string Name, string Description, bytes32 HashOfTheDocument);
 
     /// @notice Function to create a new Pass project
     /// @param _passDao The Pass Dao smart contract
     /// @param _name The project name
-    /// @param _description The project description
+    /// @param _description The project description (not mandatory, can be updated after by the creator)
     /// @param _hashOfTheDocument The Hash Of the project Document (not mandatory, can be updated after by the creator)
     function createProject(
         PassDao _passDao,
