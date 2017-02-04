@@ -22,7 +22,7 @@ contract PassCommitteeRoomInterface {
     // Address of the Pass Contractor creator
     PassContractorCreator contractorCreator; 
 
-    enum ProposalTypes { contractor, question, daoRules, upgrade }
+    enum ProposalTypes { contractor, resolution, daoRules, upgrade }
 
     struct Committee {        
         // Address of the creator of the committee
@@ -472,7 +472,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         q.name = _name;
         q.description = _description;
         
-        q.committeeID = newCommittee(ProposalTypes.question, _questionID, _minutesDebatingPeriod);
+        q.committeeID = newCommittee(ProposalTypes.resolution, _questionID, _minutesDebatingPeriod);
         
         ResolutionProposalSubmitted(_questionID, q.committeeID, q.project, q.name, q.description);
         
@@ -659,7 +659,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
                 }
             }
 
-        } else if (b.proposalType == ProposalTypes.question) {
+        } else if (b.proposalType == ProposalTypes.resolution) {
             
             Question q = ResolutionProposals[b.proposalID];
             
