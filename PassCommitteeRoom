@@ -199,22 +199,22 @@ contract PassCommitteeRoomInterface {
         string _projectDescription) returns (PassContractor);
         
     /// @dev Internal function to make a proposal to pay a contractor or/and fund the Dao
+    /// @param _amount Amount from the share manager balance
     /// @param _contractor The contractor smart contract
     /// @param _contractorProposalID Index of the contractor proposal in the contractor smart contract
     /// @param _proposalDescription String describing the proposal (if not existing proposal)
     /// @param _hashOfTheProposalDocument The hash of the proposal document (if not existing proposal)
-    /// @param _amount Amount from the share manager balance
     /// @param _moderator The address which sets partners and manage the funding (not mandatory)
     /// @param _initialSharePriceMultiplier The initial price multiplier of shares
     /// @param _minutesFundingPeriod Period in minutes of the funding
     /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
     /// @return The index of the proposal
     function contractorProposal(
+        uint _amount,
         PassContractor _contractor,
         uint _contractorProposalID,
         string _proposalDescription, 
         bytes32 _hashOfTheProposalDocument,
-        uint _amount,
         address _moderator,
         uint _initialSharePriceMultiplier, 
         uint _minutesFundingPeriod,
@@ -407,11 +407,11 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
     }   
     
     function contractorProposal(
+        uint _amount,
         PassContractor _contractor,
         uint _contractorProposalID,
         string _proposalDescription, 
         bytes32 _hashOfTheProposalDocument,        
-        uint _amount,
         address _moderator,
         uint _initialSharePriceMultiplier, 
         uint _minutesFundingPeriod,
