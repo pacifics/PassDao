@@ -22,13 +22,13 @@ contract PassCommitteeRoomInterface {
     enum ProposalTypes { contractor, question, daoRules, upgrade }
 
     struct Committee {        
-        // Address of the creator of the board meeting for a proposal
+        // Address of the creator of the committee
         address creator;  
         // The type of the proposal
         ProposalTypes proposalType;
         // Index to identify the proposal
         uint proposalID;
-        // unix timestamp, denoting the end of the set period of a proposal before the board meeting 
+        // unix timestamp, denoting the end of the set period of a proposal before the committee 
         uint setDeadline;
         // Fees (in wei) paid by the creator of the board meeting
         uint fees;
