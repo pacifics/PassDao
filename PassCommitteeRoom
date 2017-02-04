@@ -438,7 +438,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         else {
             p.amount = Balance();
             if (_amount > p.amount) p.amountForShares = _amount - p.amount;
-            else p.amount - _amount;
+            else p.amount = _amount;
         }
         
         p.moderator = _moderator;
