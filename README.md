@@ -46,9 +46,7 @@ Used to submit proposals, to vote and to execute the decisions of the shareholde
 
 Public functions are :
 
-- Proposal to create a new project and to work as a project manager of PASS DAO
-
-- Proposal to be a contractor of PASS DAO
+- Proposal to be a project manager or a contractor of PASS DAO
 
 - Submit a Funding proposal
 
