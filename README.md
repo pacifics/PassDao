@@ -62,9 +62,6 @@ Public functions are :
 
 - Execute decision and order a work from a contractor (after and according to the votes of a board meeting)
 
-- Buy shares for a proposal: allows funding the DAO according to an approved funding proposal or allows buying shares in order to pay a contractor according to an approved contractor proposal.
-
-
 =
 
 ## Notes
