@@ -209,7 +209,7 @@ contract PassCommitteeRoomInterface {
     /// @param _minutesFundingPeriod Period in minutes of the funding
     /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
     /// @return The index of the proposal
-    function newProposal(
+    function contractorProposal(
         PassContractor _contractor,
         uint _contractorProposalID,
         string _proposalDescription, 
@@ -406,7 +406,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         return _contractor;
     }   
     
-    function newProposal(
+    function contractorProposal(
         PassContractor _contractor,
         uint _contractorProposalID,
         string _proposalDescription, 
