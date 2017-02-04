@@ -29,7 +29,7 @@ Public functions are :
 
 
 #### PASS Manager Smart Contracts
-Used for the management of tokens. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20.
+Used for the management of tokens. Includes the PASS token Manager smart contract. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20.
 
 Public functions are : 
 
