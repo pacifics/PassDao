@@ -56,7 +56,7 @@ Public functions are :
 
 - Proposal to change the Dao rules
 
-- Proposal to upgrade one or all the smart contracts (except PASS DAO smart contract which can't be updated)
+- Proposal to upgrade the Committee Room or the manager smart contracts
 
 - Vote (for shareholders)
 
