@@ -1,6 +1,6 @@
 import "PassProject.sol";
 
-pragma solidity ^0.4.6;
+pragma solidity ^0.4.8;
 
 /*
  *
@@ -22,7 +22,7 @@ contract PassContractor {
     address public recipient;
 
     // End date of the setup procedure
-    uint smartContractStartDate;
+    uint public smartContractStartDate;
 
     struct proposal {
         // Amount (in wei) of the proposal
