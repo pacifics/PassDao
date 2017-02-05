@@ -19,10 +19,8 @@ contract PassCommitteeRoomInterface {
 
     // The Pass Dao smart contract
     PassDao public passDao;
-    // Address of the Pass Contractor creator
-    PassContractorCreator contractorCreator; 
 
-    enum ProposalTypes { contractor, resolution, daoRules, upgrade }
+    enum ProposalTypes { contractor, resolution, rules, upgrade }
 
     struct Committee {        
         // Address of the creator of the committee
@@ -110,13 +108,13 @@ contract PassCommitteeRoomInterface {
         uint tokenPriceInflationRate;
         // The default minutes funding period for proposals
         uint defaultMinutesFundingPeriod;
-        // True if the dao rules allow the transfer of shares
-        bool transferable;
+        // The Pass Contractor creator
+        PassContractorCreator contractorCreator;    
     } 
-    // Proposals to update the Dao rules
-    Rules[] public DaoRulesProposals;
+    // Proposals to update the committee rules
+    Rules[] public rulesProposals;
 
-    struct upgrade {
+    struct Upgrade {
         // Index to identify the committee
         uint committeeID; 
         // The proposed Committee Room smart contract
@@ -126,8 +124,8 @@ contract PassCommitteeRoomInterface {
         // Address of the proposed token manager smart contract
         address newTokenManager;
     }
-    // Proposals to upgrade the Dao
-    upgrade[] public UpgradeProposals;
+    // Proposals to upgrade the Dapp
+    Upgrade[] public UpgradeProposals;
     
     // The minimum periods in minutes 
     uint minMinutesPeriods;
@@ -157,14 +155,13 @@ contract PassCommitteeRoomInterface {
     function numberOfCommittees() constant returns (uint);
     
     /// @dev The constructor function
+    /// @param _passDao Address of Pass Dao
+    //function PassCommitteeRoom(  
+    //    address _passDao);
+
+    /// @notice Function to init an set the committee rules
     /// @param _maxInflationRate The maximum inflation rate for contractor and funding proposals
     /// @param _minMinutesPeriods The minimum periods in minutes
-    //function PassCommitteeRoom(        
-    //    uint _maxInflationRate,
-    //    uint _minMinutesPeriods);
-
-    /// @notice Function to init an set the Dao rules
-    /// @param _passDao Address of Pass Dao
     /// @param _contractorCreator Address of Pass Contractor creator
     /// @param _minQuorumDivisor The initial minimum quorum divisor for the proposals
     /// @param _minCommitteeFees The minimum amount (in wei) to make a proposal
@@ -175,7 +172,8 @@ contract PassCommitteeRoomInterface {
     /// @param _tokenPriceInflationRate The inflation rate to calculate the token price for project manager proposals
     /// @param _defaultMinutesFundingPeriod Period in minutes of the funding
     function init(
-        address _passDao,
+        uint _maxInflationRate,
+        uint _minMinutesPeriods,
         PassContractorCreator _contractorCreator,
         uint _minQuorumDivisor,
         uint _minCommitteeFees,
@@ -188,22 +186,24 @@ contract PassCommitteeRoomInterface {
 
     /// @dev Internal function to create a contractor smart contract
     /// @param _recipient The recipient of the contractor smart contract
+    /// @param _metaProject True if no project
     /// @param _passProject The project smart contract (not mandatory)
     /// @param _projectName The name of the project (if the project smart contract doesn't exist)
     /// @param _projectDescription A description of the project (can be updated after)
-    /// @return The project manager smart contract
+    /// @return The contractor smart contract
     function createContractor(
         address _recipient,
+        bool _metaProject,
         PassProject _passProject,
         string _projectName, 
         string _projectDescription) returns (PassContractor);
         
     /// @dev Internal function to make a proposal to pay a contractor or/and fund the Dao
-    /// @param _amount Amount from the share manager balance
+    /// @param _amount Amount of the proposal
     /// @param _contractor The contractor smart contract
-    /// @param _contractorProposalID Index of the contractor proposal in the contractor smart contract
+    /// @param _contractorProposalID Index of the contractor proposal in the contractor smart contract (not mandatory)
     /// @param _proposalDescription String describing the proposal (if not existing proposal)
-    /// @param _hashOfTheProposalDocument The hash of the proposal document (if not existing proposal)
+    /// @param _hashOfTheContractorProposalDocument The hash of the Contractor proposal document (if not existing proposal)
     /// @param _moderator The address which sets partners and manage the funding (not mandatory)
     /// @param _initialSharePriceMultiplier The initial price multiplier of shares
     /// @param _minutesFundingPeriod Period in minutes of the funding
@@ -214,7 +214,7 @@ contract PassCommitteeRoomInterface {
         PassContractor _contractor,
         uint _contractorProposalID,
         string _proposalDescription, 
-        bytes32 _hashOfTheProposalDocument,
+        bytes32 _hashOfTheContractorProposalDocument,
         address _moderator,
         uint _initialSharePriceMultiplier, 
         uint _minutesFundingPeriod,
@@ -232,7 +232,7 @@ contract PassCommitteeRoomInterface {
         PassProject _project,
         uint _minutesDebatingPeriod) payable returns (uint);
         
-    /// @notice Function to make a proposal to change the Dao rules 
+    /// @notice Function to make a proposal to change the rules of the committee room 
     /// @param _minQuorumDivisor If 5, the minimum quorum is 20%
     /// @param _minCommitteeFees The minimum amount (in wei) to make a proposal
     /// @param _minPercentageOfLikes Minimum percentage of votes for a proposal to reward the creator
@@ -241,9 +241,9 @@ contract PassCommitteeRoomInterface {
     /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a committee
     /// @param _defaultMinutesFundingPeriod Period in minutes of the funding
     /// @param _tokenPriceInflationRate The inflation rate to calculate the token price for project manager proposals
-    /// @param _transferable True if the proposal foresees to allow the transfer of Dao shares
+    /// @param _contractorCreator The contractor creator smart contract
     /// @return The index of the proposal
-    function daoRulesProposal(
+    function rulesProposal(
         uint _minQuorumDivisor, 
         uint _minCommitteeFees,
         uint _minPercentageOfLikes,
@@ -252,9 +252,9 @@ contract PassCommitteeRoomInterface {
         uint _feesRewardInflationRate,
         uint _defaultMinutesFundingPeriod,
         uint _tokenPriceInflationRate,
-        bool _transferable) payable returns (uint);
+        PassContractorCreator _contractorCreator) payable returns (uint);
     
-    /// @notice Function to make a proposal to upgrade the Dao
+    /// @notice Function to make a proposal to upgrade the Dapp
     /// @param _newCommitteeRoom Address of a new Committee Room smart contract (not mandatory)   
     /// @param _newShareManager Address of a new share manager smart contract (not mandatory)
     /// @param _newTokenManager Address of a new token manager smart contract (not mandatory)
@@ -276,7 +276,7 @@ contract PassCommitteeRoomInterface {
         uint _proposalID, 
         uint _minutesDebatingPeriod) internal returns (uint);
         
-    /// @notice Function to vote for or against a proposal
+    /// @notice Function to vote for or against a proposal during a committee
     /// @param _committeeID The index of the committee
     /// @param _supportsProposal True if the proposal is supported
     function vote(
@@ -293,18 +293,16 @@ contract PassCommitteeRoomInterface {
     /// @return Whether the proposal was ordered and the proposal amount sent or not
     function orderToContractor(uint _proposalID) returns (bool);   
 
-    event DaoLimits(uint maxInflationRate, uint minMinutesPeriods);
+    event committeeLimits(uint maxInflationRate, uint minMinutesPeriods);
 
-    event ContractorCreated(address indexed Creator, string ProjectName, string ProjectDescription, PassProject indexed Project, 
-        PassContractor Contractor, address Recipient);
+    event ContractorCreated(address indexed Creator, PassContractor Contractor, address Recipient);
 
-    event ProposalSubmitted(uint indexed ProposalID, uint CommitteeID, PassContractor indexed Contractor, 
-        uint indexed ContractorProposalID, uint Amount, address Moderator, uint AmountForShares, 
-        uint ShareInflationRate,uint AmountForTokens, uint MinutesFundingPeriod);
+    event ProposalSubmitted(uint indexed ProposalID, uint CommitteeID, PassContractor indexed Contractor, uint indexed ContractorProposalID, 
+        uint Amount, string Description, address Moderator, uint SharePriceMultiplier, uint MinutesFundingPeriod);
     event ResolutionProposalSubmitted(uint indexed QuestionID, uint indexed CommitteeID, PassProject indexed Project, string Name, string Description);
-    event DaoRulesProposalSubmitted(uint indexed DaoRulesProposalID, uint CommitteeID, uint MinQuorumDivisor, uint MinCommitteeFees, 
+    event rulesProposalSubmitted(uint indexed rulesProposalID, uint CommitteeID, uint MinQuorumDivisor, uint MinCommitteeFees, 
         uint MinPercentageOfLikes, uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, 
-        uint DefaultMinutesFundingPeriod, uint TokenPriceInflationRate, bool Transferable);
+        uint DefaultMinutesFundingPeriod, uint TokenPriceInflationRate, PassContractorCreator contractorCreator);
     event UpgradeProposalSubmitted(uint indexed UpgradeProposalID, uint indexed CommitteeID, address NewCommitteeRoom, 
         address NewShareManager, address NewTokenManager);
 
@@ -313,7 +311,7 @@ contract PassCommitteeRoomInterface {
     event ProposalClosed(uint indexed ProposalID, ProposalTypes indexed ProposalType, uint CommitteeID, 
         uint TotalRewardedAmount, bool ProposalExecuted, uint RewardedSharesAmount, uint SentToDaoManager);
     event ContractorProposalClosed(uint indexed ProposalID, uint indexed ContractorProposalID, PassContractor indexed Contractor, uint AmountSent);
-    event DaoUpgraded(address NewCommitteeRoom, address NewShareManager, address NewTokenManager);
+    event DappUpgraded(address NewCommitteeRoom, address NewShareManager, address NewTokenManager);
 
 }
 
@@ -342,7 +340,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
     }
     
     function minQuorum() constant returns (uint) {
-        return (uint(ShareManager().totalSupply()) / DaoRulesProposals[0].minQuorumDivisor);
+        return (uint(ShareManager().totalSupply()) / rulesProposals[0].minQuorumDivisor);
     }
 
     function numberOfCommittees() constant returns (uint) {
@@ -351,17 +349,19 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
     
 // Constructor function
 
-    function PassCommitteeRoom(
-        uint _maxInflationRate,
-        uint _minMinutesPeriods) {
+    function PassCommitteeRoom(address _passDao) {
 
-        maxInflationRate = _maxInflationRate;
-        minMinutesPeriods = _minMinutesPeriods;
-        DaoLimits(maxInflationRate, minMinutesPeriods);
+        passDao = PassDao(_passDao);
+        rulesProposals.length = 1; 
+        Committees.length = 1;
+        Proposals.length = 1;
+        ResolutionProposals.length = 1;
+        UpgradeProposals.length = 1;
     }
     
     function init(
-        address _passDao,
+        uint _maxInflationRate,
+        uint _minMinutesPeriods,
         PassContractorCreator _contractorCreator,
         uint _minQuorumDivisor,
         uint _minCommitteeFees,
@@ -372,37 +372,35 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         uint _tokenPriceInflationRate,
         uint _defaultMinutesFundingPeriod) {
 
-        if (address(passDao) != 0) throw;
-        passDao = PassDao(_passDao);
+        maxInflationRate = _maxInflationRate;
+        minMinutesPeriods = _minMinutesPeriods;
+        committeeLimits(maxInflationRate, minMinutesPeriods);
         
-        contractorCreator = _contractorCreator;
-        
-        DaoRulesProposals.length = 1; 
-        DaoRulesProposals[0].minQuorumDivisor = _minQuorumDivisor;
-        DaoRulesProposals[0].minCommitteeFees = _minCommitteeFees;
-        DaoRulesProposals[0].minPercentageOfLikes = _minPercentageOfLikes;
-        DaoRulesProposals[0].minutesSetProposalPeriod = _minutesSetProposalPeriod;
-        DaoRulesProposals[0].minMinutesDebatePeriod = _minMinutesDebatePeriod;
-        DaoRulesProposals[0].feesRewardInflationRate = _feesRewardInflationRate;
-        DaoRulesProposals[0].tokenPriceInflationRate = _tokenPriceInflationRate;
-        DaoRulesProposals[0].defaultMinutesFundingPeriod = _defaultMinutesFundingPeriod;
+        if (rulesProposals[0].minQuorumDivisor != 0) throw;
+        rulesProposals[0].contractorCreator = _contractorCreator;
+        rulesProposals[0].minQuorumDivisor = _minQuorumDivisor;
+        rulesProposals[0].minCommitteeFees = _minCommitteeFees;
+        rulesProposals[0].minPercentageOfLikes = _minPercentageOfLikes;
+        rulesProposals[0].minutesSetProposalPeriod = _minutesSetProposalPeriod;
+        rulesProposals[0].minMinutesDebatePeriod = _minMinutesDebatePeriod;
+        rulesProposals[0].feesRewardInflationRate = _feesRewardInflationRate;
+        rulesProposals[0].tokenPriceInflationRate = _tokenPriceInflationRate;
+        rulesProposals[0].defaultMinutesFundingPeriod = _defaultMinutesFundingPeriod;
 
-        Committees.length = 1;
-        Proposals.length = 1;
-        ResolutionProposals.length = 1;
-        UpgradeProposals.length = 1;
     }
 
 // Proposals Management
 
     function createContractor(
         address _recipient,
+        bool _metaProject,
         PassProject _passProject,
         string _projectName, 
         string _projectDescription) returns (PassContractor) {
 
-        PassContractor _contractor = contractorCreator.createContractor(msg.sender, _recipient, _passProject, _projectName, _projectDescription, false);
-        ContractorCreated(msg.sender, _projectName, _projectDescription, _passProject, _contractor, _recipient);
+        PassContractor _contractor = rulesProposals[0].contractorCreator.createContractor(msg.sender, _recipient, 
+            _metaProject, _passProject, _projectName, _projectDescription, false);
+        ContractorCreated(msg.sender, _contractor, _recipient);
         return _contractor;
     }   
     
@@ -411,17 +409,22 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         PassContractor _contractor,
         uint _contractorProposalID,
         string _proposalDescription, 
-        bytes32 _hashOfTheProposalDocument,        
+        bytes32 _hashOfTheContractorProposalDocument,        
         address _moderator,
         uint _initialSharePriceMultiplier, 
         uint _minutesFundingPeriod,
         uint _minutesDebatingPeriod
     ) payable returns (uint) {
 
-        if (_minutesFundingPeriod == 0) _minutesFundingPeriod = DaoRulesProposals[0].defaultMinutesFundingPeriod;
+        if (_minutesFundingPeriod == 0) _minutesFundingPeriod = rulesProposals[0].defaultMinutesFundingPeriod;
 
-        if ((_contractorProposalID != 0 && !_contractor.proposalChecked(msg.sender, _contractorProposalID, _amount))
-            || (_contractorProposalID == 0 && _hashOfTheProposalDocument == 0)
+        if (address(_contractor) != 0 && _contractorProposalID != 0) {
+            if (_hashOfTheContractorProposalDocument != 0 
+                ||!_contractor.proposalChecked(msg.sender, _contractorProposalID, _amount)) throw;
+            else _proposalDescription = "Proposal checked";
+        }
+
+        if ((address(_contractor) != 0 && _contractorProposalID == 0 && _hashOfTheContractorProposalDocument == 0)
             || _amount == 0
             || _minutesFundingPeriod < minMinutesPeriods) throw;
 
@@ -430,7 +433,9 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
         p.contractor = _contractor;
         
-        if (_contractorProposalID == 0) _contractorProposalID = _contractor.newProposal(msg.sender,_amount, _proposalDescription, _hashOfTheProposalDocument);
+        if (_contractorProposalID == 0 && _hashOfTheContractorProposalDocument != 0) {
+            _contractorProposalID = _contractor.newProposal(msg.sender, _amount, _proposalDescription, _hashOfTheContractorProposalDocument);
+        }
         p.contractorProposalID = _contractorProposalID;
 
         if (address(_contractor) == 0) p.amountForShares = _amount;
@@ -451,8 +456,8 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
         p.open = true;
         
-        ProposalSubmitted(_proposalID, p.committeeID, p.contractor, p.contractorProposalID, p.amount, p.moderator, 
-            p.amountForShares, p.initialSharePriceMultiplier, p.amountForTokens, p.minutesFundingPeriod);
+        ProposalSubmitted(_proposalID, p.committeeID, p.contractor, p.contractorProposalID, p.amount+p.amountForShares+p.amountForTokens, 
+            _proposalDescription, p.moderator, p.initialSharePriceMultiplier, p.minutesFundingPeriod);
 
         return _proposalID;
     }
@@ -479,7 +484,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         return _questionID;
     }
 
-    function daoRulesProposal(
+    function rulesProposal(
         uint _minQuorumDivisor, 
         uint _minCommitteeFees,
         uint _minPercentageOfLikes,
@@ -488,7 +493,8 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         uint _feesRewardInflationRate,
         uint _defaultMinutesFundingPeriod,
         uint _tokenPriceInflationRate,
-        bool _transferable) payable returns (uint) {
+        PassContractorCreator _contractorCreator) payable returns (uint) {
+
     
         if (_minQuorumDivisor <= 1
             || _minQuorumDivisor > 10
@@ -498,8 +504,8 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
             || _tokenPriceInflationRate > maxInflationRate
             || _defaultMinutesFundingPeriod < minMinutesPeriods) throw; 
         
-        uint _DaoRulesProposalID = DaoRulesProposals.length++;
-        Rules r = DaoRulesProposals[_DaoRulesProposalID];
+        uint _rulesProposalID = rulesProposals.length++;
+        Rules r = rulesProposals[_rulesProposalID];
 
         r.minQuorumDivisor = _minQuorumDivisor;
         r.minCommitteeFees = _minCommitteeFees;
@@ -509,15 +515,15 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         r.feesRewardInflationRate = _feesRewardInflationRate;
         r.defaultMinutesFundingPeriod = _defaultMinutesFundingPeriod;
         r.tokenPriceInflationRate = _tokenPriceInflationRate;
-        r.transferable = _transferable;
+        r.contractorCreator = _contractorCreator;
 
-        r.committeeID = newCommittee(ProposalTypes.daoRules, _DaoRulesProposalID, 0);
+        r.committeeID = newCommittee(ProposalTypes.rules, _rulesProposalID, 0);
 
-        DaoRulesProposalSubmitted(_DaoRulesProposalID, r.committeeID, _minQuorumDivisor, _minCommitteeFees, 
+        rulesProposalSubmitted(_rulesProposalID, r.committeeID, _minQuorumDivisor, _minCommitteeFees, 
             _minPercentageOfLikes, _minutesSetProposalPeriod, _minMinutesDebatePeriod, 
-            _feesRewardInflationRate, _defaultMinutesFundingPeriod, _tokenPriceInflationRate, _transferable);
+            _feesRewardInflationRate, _defaultMinutesFundingPeriod, _tokenPriceInflationRate, _contractorCreator);
 
-        return _DaoRulesProposalID;
+        return _rulesProposalID;
     }
     
     function upgradeProposal(
@@ -528,7 +534,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
     ) payable returns (uint) {
         
         uint _upgradeProposalID = UpgradeProposals.length++;
-        upgrade u = UpgradeProposals[_upgradeProposalID];
+        Upgrade u = UpgradeProposals[_upgradeProposalID];
         
         u.newCommitteeRoom = _newCommitteeRoom;
         u.newShareManager = _newShareManager;
@@ -549,12 +555,12 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         uint _minutesDebatingPeriod
     ) internal returns (uint) {
 
-        if (_minutesDebatingPeriod == 0) _minutesDebatingPeriod = DaoRulesProposals[0].minMinutesDebatePeriod;
+        if (_minutesDebatingPeriod == 0) _minutesDebatingPeriod = rulesProposals[0].minMinutesDebatePeriod;
         
         if (passDao.ActualCommitteeRoom() != address(this)
-            || msg.value < DaoRulesProposals[0].minCommitteeFees
-            || now + ((DaoRulesProposals[0].minutesSetProposalPeriod + _minutesDebatingPeriod) * 1 minutes) < now
-            || _minutesDebatingPeriod < DaoRulesProposals[0].minMinutesDebatePeriod
+            || msg.value < rulesProposals[0].minCommitteeFees
+            || now + ((rulesProposals[0].minutesSetProposalPeriod + _minutesDebatingPeriod) * 1 minutes) < now
+            || _minutesDebatingPeriod < rulesProposals[0].minMinutesDebatePeriod
             || msg.sender == address(this)) throw;
 
         uint _committeeID = Committees.length++;
@@ -567,7 +573,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
         b.fees = msg.value;
         
-        b.setDeadline = now + (DaoRulesProposals[0].minutesSetProposalPeriod * 1 minutes);        
+        b.setDeadline = now + (rulesProposals[0].minutesSetProposalPeriod * 1 minutes);        
         b.votingDeadline = b.setDeadline + (_minutesDebatingPeriod * 1 minutes); 
 
         b.open = true; 
@@ -600,7 +606,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         uint _a = 100*b.fees;
         if ((_a/100 != b.fees) || ((_a*_balance)/_a != _balance)) throw;
         uint _multiplier = (_a*_balance)/uint(_shareManager.totalSupply());
-        uint _divisor = 100 + 100*DaoRulesProposals[0].feesRewardInflationRate*(now - b.setDeadline)/(100*365 days);
+        uint _divisor = 100 + 100*rulesProposals[0].feesRewardInflationRate*(now - b.setDeadline)/(100*365 days);
         uint _rewardedamount = _multiplier/_divisor;
         if (b.totalRewardedAmount + _rewardedamount > b.fees) _rewardedamount = b.fees - b.totalRewardedAmount;
         b.totalRewardedAmount += _rewardedamount;
@@ -623,8 +629,8 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         uint _quantityOfShares;
         PassManager _tokenManager = TokenManager();
 
-        if (100*b.yea > DaoRulesProposals[0].minPercentageOfLikes * _shareManager.totalSupply()) {       
-            _quantityOfShares = _shareManager.rewardTokensForClient(b.creator, DaoRulesProposals[0].minCommitteeFees);
+        if (100*b.yea > rulesProposals[0].minPercentageOfLikes * _shareManager.totalSupply()) {       
+            _quantityOfShares = _shareManager.rewardTokensForClient(b.creator, rulesProposals[0].minCommitteeFees);
         }        
 
         uint _sentToDaoManager = b.fees - b.totalRewardedAmount;
@@ -655,7 +661,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
                 if (p.amountForTokens != 0) {
                     _tokenManager.setFundingRules(p.moderator, 0, p.amountForTokens, p.minutesFundingPeriod, 
-                        DaoRulesProposals[0].tokenPriceInflationRate, b.proposalID);
+                        rulesProposals[0].tokenPriceInflationRate, b.proposalID);
                 }
             }
 
@@ -665,27 +671,24 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
             
             q.project.newResolution(q.name, q.description);
             
-        } else if (b.proposalType == ProposalTypes.daoRules) {
+        } else if (b.proposalType == ProposalTypes.rules) {
 
-            Rules r = DaoRulesProposals[b.proposalID];
+            Rules r = rulesProposals[b.proposalID];
             
-            DaoRulesProposals[0].committeeID = r.committeeID;
-            DaoRulesProposals[0].minQuorumDivisor = r.minQuorumDivisor;
-            DaoRulesProposals[0].minMinutesDebatePeriod = r.minMinutesDebatePeriod; 
-            DaoRulesProposals[0].minCommitteeFees = r.minCommitteeFees;
-            DaoRulesProposals[0].minPercentageOfLikes = r.minPercentageOfLikes;
-            DaoRulesProposals[0].minutesSetProposalPeriod = r.minutesSetProposalPeriod;
-            DaoRulesProposals[0].feesRewardInflationRate = r.feesRewardInflationRate;
-            DaoRulesProposals[0].tokenPriceInflationRate = r.tokenPriceInflationRate;
-            DaoRulesProposals[0].defaultMinutesFundingPeriod = r.defaultMinutesFundingPeriod;
-
-            DaoRulesProposals[0].transferable = r.transferable;
-            if (r.transferable) _shareManager.ableTransfer();
-            else _shareManager.disableTransfer();
+            rulesProposals[0].committeeID = r.committeeID;
+            rulesProposals[0].minQuorumDivisor = r.minQuorumDivisor;
+            rulesProposals[0].minMinutesDebatePeriod = r.minMinutesDebatePeriod; 
+            rulesProposals[0].minCommitteeFees = r.minCommitteeFees;
+            rulesProposals[0].minPercentageOfLikes = r.minPercentageOfLikes;
+            rulesProposals[0].minutesSetProposalPeriod = r.minutesSetProposalPeriod;
+            rulesProposals[0].feesRewardInflationRate = r.feesRewardInflationRate;
+            rulesProposals[0].tokenPriceInflationRate = r.tokenPriceInflationRate;
+            rulesProposals[0].defaultMinutesFundingPeriod = r.defaultMinutesFundingPeriod;
+            rulesProposals[0].contractorCreator = r.contractorCreator;
 
         } else {
 
-            upgrade u = UpgradeProposals[b.proposalID];
+            Upgrade u = UpgradeProposals[b.proposalID];
 
             if ((u.newShareManager != 0) && (u.newShareManager != address(_shareManager))) {
                 _shareManager.disableTransfer();
@@ -696,14 +699,11 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
             if ((u.newTokenManager != 0) && (u.newTokenManager != address(_tokenManager))) {
                 _tokenManager.disableTransfer();
-                if (_tokenManager.balance > 0) {
-                    if (!_tokenManager.sendTo(u.newTokenManager, _tokenManager.balance)) throw;
-                }
             }
 
             passDao.upgrade(u.newCommitteeRoom, u.newShareManager, u.newTokenManager);
                 
-            DaoUpgraded(u.newCommitteeRoom, u.newShareManager, u.newTokenManager);
+            DappUpgraded(u.newCommitteeRoom, u.newShareManager, u.newTokenManager);
             
         }
 
@@ -759,5 +759,3 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
     }
 
 }
-        
-        
