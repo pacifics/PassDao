@@ -1,6 +1,6 @@
 import "PassDao.sol";
 
-pragma solidity ^0.4.6;
+pragma solidity ^0.4.8;
 
 /*
  *
@@ -75,8 +75,8 @@ contract PassTokenManagerInterface {
     // Map with the amounts given for each proposal 
     mapping (uint => mapping (address => amountsGiven)) public Given;
     
-    // If true, the shares or tokens can be transfered
-    bool public transferable;
+    // If true, the shares or tokens can be transferred
+    bool transferable;
     // Map of blocked Dao share accounts. Points to the date when the share holder can transfer shares
     mapping (address => uint) public blockedDeadLine; 
 
@@ -90,6 +90,9 @@ contract PassTokenManagerInterface {
     /// @return The balance
      function balanceOf(address _owner) constant external returns (uint256 balance);
 
+    /// @return True if tokens can be transferred
+    function Transferable() constant external returns (bool);
+    
     /// @param _owner The address of the account owning tokens
     /// @param _spender The address of the account able to transfer the tokens
     /// @return Quantity of remaining tokens of _owner that _spender is allowed to spend
@@ -152,21 +155,23 @@ contract PassTokenManagerInterface {
     function HolderAddress(uint _index) constant external returns (address);
    
     /// @dev The constructor function
-    /// @param _passDao ..
+    /// @param _passDao Address of the pass Dao smart contract
     /// @param _clonedFrom The address of the last Manager before cloning
     /// @param _tokenName The token name for display purpose
     /// @param _tokenSymbol The token symbol for display purpose
     /// @param _tokenDecimals The quantity of decimals for display purpose
-    /// @param  _transferableToken True if tokens, false if shares
-    /// @param _initialPriceMultiplier ..
-    /// @param _inflationRate ..
+    /// @param  _token True if tokens, false if shares
+    /// @param  _transferable True if tokens can be transferred
+    /// @param _initialPriceMultiplier Price multiplier without considering any inflation rate
+    /// @param _inflationRate If 0, the token price doesn't change during the funding
     //function PassTokenManager(
     //    address _passDao,
     //    address _clonedFrom,
     //    string _tokenName,
     //    string _tokenSymbol,
     //    uint8 _tokenDecimals,
-    //    bool _transferableToken,
+    //    bool _token,
+    //    bool _transferable,
     //    uint _initialPriceMultiplier,
     //    uint _inflationRate);
     
@@ -337,9 +342,13 @@ contract PassTokenManager is PassTokenManagerInterface {
         return totalTokenSupply;
     }
     
-     function balanceOf(address _owner) constant external returns (uint256 balance) {
+    function balanceOf(address _owner) constant external returns (uint256 balance) {
         return balances[_owner];
-     }
+    }
+     
+    function Transferable() constant external returns (bool) {
+        return transferable;
+    }
  
     function allowance(
         address _owner, 
@@ -439,7 +448,8 @@ contract PassTokenManager is PassTokenManagerInterface {
         string _tokenName,
         string _tokenSymbol,
         uint8 _tokenDecimals,
-        bool _transferableToken,
+        bool _token,
+        bool _transferable,
         uint _initialPriceMultiplier,
         uint _inflationRate) {
 
@@ -447,20 +457,14 @@ contract PassTokenManager is PassTokenManagerInterface {
         creator = msg.sender;
         
         clonedFrom = _clonedFrom;            
-        
+
         name = _tokenName;
         symbol = _tokenSymbol;
         decimals = _tokenDecimals;
 
-        token = _transferableToken;
-        if (_transferableToken) {
-            transferable = true;
-            TransferAble();
-        } else {
-            transferable = false;
-            TransferDisable();
-        }
-        
+        token = _token;
+        transferable = _transferable;
+
         fundings[0].initialPriceMultiplier = _initialPriceMultiplier;
         fundings[0].inflationRate = _inflationRate;
 
@@ -488,6 +492,7 @@ contract PassTokenManager is PassTokenManagerInterface {
         uint _from,
         uint _to) returns (bool success) {
         
+        initialTokenSupplyDone = true;
         if (_from == 0) _from = 1;
         
         PassTokenManager _clonedFrom = PassTokenManager(clonedFrom);
@@ -651,8 +656,8 @@ contract PassTokenManager is PassTokenManagerInterface {
         }
 
         if (_tokenAmount > 0) {
-            if (!createTokens(_buyer, _tokenAmount)) throw; 
-            else return true;
+            if (!createTokens(_buyer, _tokenAmount)) throw;
+            return true;
         }
         
         if (_amount > 0) {
@@ -660,12 +665,13 @@ contract PassTokenManager is PassTokenManagerInterface {
             Refund(_buyer, _amount);
         } else return true;
     }
+    
 
     function withdrawPendingAmounts() returns (bool) {
         
         return sendPendingAmounts(0, 0, msg.sender);
     }        
-    
+
 // Funding Moderator functions
 
     function setFundingStartTime(uint _proposalID, uint _startTime) external {
