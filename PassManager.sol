@@ -32,11 +32,12 @@ contract PassManager is PassTokenManager {
         string _tokenName,
         string _tokenSymbol,
         uint8 _tokenDecimals,
-        bool _transferableToken,
+        bool _token,
+        bool _transferable,
         uint _initialPriceMultiplier,
         uint _inflationRate) 
         PassTokenManager( _passDao, _clonedFrom, _tokenName, _tokenSymbol, _tokenDecimals, 
-            _transferableToken, _initialPriceMultiplier, _inflationRate) { }
+            _token, _transferable, _initialPriceMultiplier, _inflationRate) { }
     
         /// @notice Function to receive payments
     function () payable onlyShareManager { }
