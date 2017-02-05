@@ -255,7 +255,7 @@ contract PassContractorCreator {
     // Address of the Pass Project creator
     PassProjectCreator public projectCreator;
     
-    event NewPassContractor(address indexed Creator, address indexed Recipient, PassProject indexed Project, string _projectName, PassContractor Contractor);
+    event NewPassContractor(address indexed Creator, address indexed Recipient, PassProject indexed Project, PassContractor Contractor);
 
     function PassContractorCreator(PassDao _passDao, PassProjectCreator _projectCreator) {
         passDao = _passDao;
@@ -265,6 +265,7 @@ contract PassContractorCreator {
     /// @notice Function to create a contractor smart contract
     /// @param _creator The address of the creator of this smart contract
     /// @param _recipient The address of the recipient for withdrawals
+    /// @param _metaProject True if no project
     /// @param _passProject The address of the existing project smart contract
     /// @param _projectName The name of the project (if the project smart contract doesn't exist)
     /// @param _projectDescription A description of the project (can be updated after)
@@ -273,6 +274,7 @@ contract PassContractorCreator {
     function createContractor(
         address _creator,
         address _recipient, 
+        bool _metaProject,
         PassProject _passProject,
         string _projectName, 
         string _projectDescription,
@@ -283,18 +285,22 @@ contract PassContractorCreator {
 
         if (_creator == 0) _creator = msg.sender;
         
-        if (address(_passProject) == 0) _project = projectCreator.createProject(passDao, _projectName, _projectDescription, 0);
+        if (_metaProject) _project = PassProject(passDao.MetaProject());
+        else if (address(_passProject) == 0) 
+            _project = projectCreator.createProject(passDao, _projectName, _projectDescription, 0);
         else _project = _passProject;
 
         PassContractor _contractor = new PassContractor(_creator, _project, _recipient);
         
-        if (address(_passProject) == 0) {
+        if (!_metaProject && address(_passProject) == 0) {
             _projectManager = _contractor;
-            _project.setProjectManager(address(_contractor));
+            if (!_restore) {
+                _contractor.closeSetup();
+                _project.setProjectManager(address(_contractor));
+            }
         }
-        else if (!_restore) _contractor.closeSetup();
         
-        NewPassContractor(_creator, _recipient, _passProject, _projectName, _contractor);
+        NewPassContractor(_creator, _recipient, _project, _contractor);
  
         return _contractor;
     }
