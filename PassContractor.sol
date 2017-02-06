@@ -33,6 +33,8 @@ contract PassContractor {
         bytes32 hashOfTheDocument;
         // A unix timestamp, denoting the date when the proposal was created
         uint dateOfProposal;
+        // The amount submitted to a vote
+        uint submittedAmount;
         // The sum amount (in wei) ordered for this proposal 
         uint orderAmount;
         // A unix timestamp, denoting the date of the last order for the approved proposal
@@ -46,7 +48,8 @@ contract PassContractor {
     event RecipientUpdated(address indexed By, address LastRecipient, address NewRecipient);
     event Withdrawal(address indexed By, address indexed Recipient, uint Amount);
     event ProposalAdded(address Creator, uint indexed ProposalID, uint Amount, string Description, bytes32 HashOfTheDocument);
-    event Order(address Client, uint indexed ProposalID, uint Amount);
+    event ProposalSubmitted(address indexed Client, uint Amount);
+    event Order(address indexed Client, uint indexed ProposalID, uint Amount);
 
 // Constant functions
 
@@ -70,7 +73,7 @@ contract PassContractor {
         uint _proposalID, 
         uint _amount) constant external onlyClient returns (bool) {
         if (_sender != recipient && _sender != creator) return;
-        if (_amount <= proposals[_proposalID].amount - proposals[_proposalID].orderAmount) return true;
+        if (_amount <= proposals[_proposalID].amount - proposals[_proposalID].submittedAmount) return true;
     }
 
     /// @return The number of proposals     
@@ -92,7 +95,8 @@ contract PassContractor {
     function PassContractor(
         address _creator, 
         PassProject _passProject, 
-        address _recipient) { 
+        address _recipient,
+        bool _restore) { 
 
         if (address(_passProject) == 0) throw;
         
@@ -101,6 +105,8 @@ contract PassContractor {
         recipient = _recipient;
         
         passProject = _passProject;
+        
+        if (!_restore) smartContractStartDate = now;
 
         proposals.length = 1;
     }
@@ -222,6 +228,14 @@ contract PassContractor {
         return _proposalID;
     }
     
+    /// @notice Function used by the client to infor about the submitted amount
+    /// @param _proposalID The index of the contractor proposal
+    /// @param _amount The amount (in wei) submitted
+    function submitProposal(uint _proposalID, uint _amount) onlyClient {
+        proposals[_proposalID].submittedAmount += _amount;
+        ProposalSubmitted(msg.sender, _amount);
+    }
+
     /// @notice Function used by the client to order according to the contractor proposal
     /// @param _proposalID The index of the contractor proposal
     /// @param _orderAmount The amount (in wei) of the order
@@ -255,17 +269,44 @@ contract PassContractorCreator {
     // Address of the Pass Project creator
     PassProjectCreator public projectCreator;
     
+    struct contractor {
+        // The address of the creator of the contractor
+        address creator;
+        // The contractor smart contract
+        PassContractor contractor;
+        // The address of the recipient for withdrawals
+        address recipient;
+        // True if meta project
+        bool metaProject;
+        // The address of the existing project smart contract
+        PassProject passProject;
+        // The name of the project (if the project smart contract doesn't exist)
+        string projectName;
+        // A description of the project (can be updated after)
+        string projectDescription;
+        // The unix creation date of the contractor
+        uint creationDate;
+    }
+    // contractors created to work for Pass Dao
+    contractor[] public contractors;
+    
     event NewPassContractor(address indexed Creator, address indexed Recipient, PassProject indexed Project, PassContractor Contractor);
 
     function PassContractorCreator(PassDao _passDao, PassProjectCreator _projectCreator) {
         passDao = _passDao;
         projectCreator = _projectCreator;
+        contractors.length = 0;
     }
 
+    /// @return The number of created contractors 
+    function numberOfContractors() constant returns (uint) {
+        return contractors.length;
+    }
+    
     /// @notice Function to create a contractor smart contract
-    /// @param _creator The address of the creator of this smart contract
+    /// @param _creator The address of the creator of the contractor
     /// @param _recipient The address of the recipient for withdrawals
-    /// @param _metaProject True if no project
+    /// @param _metaProject True if meta project
     /// @param _passProject The address of the existing project smart contract
     /// @param _projectName The name of the project (if the project smart contract doesn't exist)
     /// @param _projectDescription A description of the project (can be updated after)
@@ -290,16 +331,20 @@ contract PassContractorCreator {
             _project = projectCreator.createProject(passDao, _projectName, _projectDescription, 0);
         else _project = _passProject;
 
-        PassContractor _contractor = new PassContractor(_creator, _project, _recipient);
+        PassContractor _contractor = new PassContractor(_creator, _project, _recipient, _restore);
+        if (!_metaProject && address(_project) == 0 && !_restore) _passProject.setProjectManager(address(_contractor));
         
-        if (!_metaProject && address(_passProject) == 0) {
-            _projectManager = _contractor;
-            if (!_restore) {
-                _contractor.closeSetup();
-                _project.setProjectManager(address(_contractor));
-            }
-        }
-        
+        uint _contractorID = contractors.length++;
+        contractor c = contractors[_contractorID];
+        c.creator = _creator;
+        c.contractor = _contractor;
+        c.recipient = _recipient;
+        c.metaProject = _metaProject;
+        c.passProject = _passProject;
+        c.projectName = _projectName;
+        c.projectDescription = _projectDescription;
+        c.creationDate = now;
+
         NewPassContractor(_creator, _recipient, _project, _contractor);
  
         return _contractor;
