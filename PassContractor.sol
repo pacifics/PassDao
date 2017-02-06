@@ -331,7 +331,7 @@ contract PassContractorCreator {
         else _project = _passProject;
 
         PassContractor _contractor = new PassContractor(_creator, _project, _recipient, _restore);
-        if (!_metaProject && address(_project) == 0 && !_restore) _passProject.setProjectManager(address(_contractor));
+        if (!_metaProject && address(_passProject) == 0 && !_restore) _passProject.setProjectManager(address(_contractor));
         
         uint _contractorID = contractors.length++;
         contractor c = contractors[_contractorID];
