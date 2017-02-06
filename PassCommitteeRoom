@@ -300,16 +300,16 @@ contract PassCommitteeRoomInterface {
     event ProposalSubmitted(uint indexed ProposalID, uint CommitteeID, PassContractor indexed Contractor, uint indexed ContractorProposalID, 
         uint Amount, string Description, address Moderator, uint SharePriceMultiplier, uint MinutesFundingPeriod);
     event ResolutionProposalSubmitted(uint indexed QuestionID, uint indexed CommitteeID, PassProject indexed Project, string Name, string Description);
-    event rulesProposalSubmitted(uint indexed rulesProposalID, uint CommitteeID, uint MinQuorumDivisor, uint MinCommitteeFees, 
+    event RulesProposalSubmitted(uint indexed rulesProposalID, uint CommitteeID, uint MinQuorumDivisor, uint MinCommitteeFees, 
         uint MinPercentageOfLikes, uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, 
         uint DefaultMinutesFundingPeriod, uint TokenPriceInflationRate, PassContractorCreator contractorCreator);
     event UpgradeProposalSubmitted(uint indexed UpgradeProposalID, uint indexed CommitteeID, address NewCommitteeRoom, 
         address NewShareManager, address NewTokenManager);
 
-    event Voted(uint indexed CommitteeID, bool Position, address indexed Voter, uint Rewardedamount);
+    event Voted(uint indexed CommitteeID, bool Position, address indexed Voter, uint RewardedAmount);
 
     event ProposalClosed(uint indexed ProposalID, ProposalTypes indexed ProposalType, uint CommitteeID, 
-        uint TotalRewardedAmount, bool ProposalExecuted, uint RewardedSharesAmount, uint SentToDaoManager);
+        uint TotalRewardedAmount, bool ProposalExecuted, uint RewardedSharesAmount, uint SentToManager);
     event ContractorProposalClosed(uint indexed ProposalID, uint indexed ContractorProposalID, PassContractor indexed Contractor, uint AmountSent);
     event DappUpgraded(address NewCommitteeRoom, address NewShareManager, address NewTokenManager);
 
@@ -439,11 +439,14 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         p.contractorProposalID = _contractorProposalID;
 
         if (address(_contractor) == 0) p.amountForShares = _amount;
-        else if (_contractor.Project().ProjectManager() == address(_contractor)) p.amountForTokens = _amount;
         else {
-            p.amount = Balance();
-            if (_amount > p.amount) p.amountForShares = _amount - p.amount;
-            else p.amount = _amount;
+            _contractor.submitProposal(_contractorProposalID, _amount);
+            if (_contractor.Project().ProjectManager() == address(_contractor)) p.amountForTokens = _amount;
+            else {
+                p.amount = Balance();
+                if (_amount > p.amount) p.amountForShares = _amount - p.amount;
+                else p.amount = _amount;
+            }
         }
         
         p.moderator = _moderator;
@@ -519,7 +522,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
         r.committeeID = newCommittee(ProposalTypes.rules, _rulesProposalID, 0);
 
-        rulesProposalSubmitted(_rulesProposalID, r.committeeID, _minQuorumDivisor, _minCommitteeFees, 
+        RulesProposalSubmitted(_rulesProposalID, r.committeeID, _minQuorumDivisor, _minCommitteeFees, 
             _minPercentageOfLikes, _minutesSetProposalPeriod, _minMinutesDebatePeriod, 
             _feesRewardInflationRate, _defaultMinutesFundingPeriod, _tokenPriceInflationRate, _contractorCreator);
 
@@ -724,12 +727,12 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
         if (p.amountForShares != 0) {
             _amountForShares = ShareManager().FundedAmount(_proposalID);
-            if (_amountForShares == 0 && now < b.dateOfExecution + (p.minutesFundingPeriod * 1 minutes)) return;
+            if (_amountForShares == 0 && now <= b.dateOfExecution + (p.minutesFundingPeriod * 1 minutes)) return;
         }
 
         if (p.amountForTokens != 0) {
             _amountForTokens = TokenManager().FundedAmount(_proposalID);
-            if (_amountForTokens == 0 && now < b.dateOfExecution + (p.minutesFundingPeriod * 1 minutes)) return;
+            if (_amountForTokens == 0 && now <= b.dateOfExecution + (p.minutesFundingPeriod * 1 minutes)) return;
         }
         
         p.open = false;   
@@ -738,10 +741,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
         PassProject _project = PassProject(p.contractor.Project());
 
-        if (_amount == 0 || !p.contractor.order(p.contractorProposalID, _amount)) {
-            ContractorProposalClosed(_proposalID, p.contractorProposalID, p.contractor, 0);
-            return;
-        }
+        if (_amount == 0 || !p.contractor.order(p.contractorProposalID, _amount)) throw;
         
         if (p.amount + _amountForShares > 0) {
             if (!ShareManager().sendTo(p.contractor, p.amount + _amountForShares)) throw;
