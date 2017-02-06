@@ -1,4 +1,4 @@
-# The PASS Decentralized Application
+# The PASS Distributed Application
 
 
 Website : http://forum.passdao.org/
