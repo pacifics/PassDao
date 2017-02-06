@@ -741,7 +741,12 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
         PassProject _project = PassProject(p.contractor.Project());
 
-        if (_amount == 0 || !p.contractor.order(p.contractorProposalID, _amount)) throw;
+        if (_amount == 0) {
+            ContractorProposalClosed(_proposalID, p.contractorProposalID, p.contractor, 0);
+            return;
+        }    
+
+        if (!p.contractor.order(p.contractorProposalID, _amount)) throw;
         
         if (p.amount + _amountForShares > 0) {
             if (!ShareManager().sendTo(p.contractor, p.amount + _amountForShares)) throw;
