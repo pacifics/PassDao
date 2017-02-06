@@ -322,7 +322,6 @@ contract PassContractorCreator {
         bool _restore) returns (PassContractor) {
  
         PassProject _project;
-        PassContractor _projectManager;
 
         if (_creator == 0) _creator = msg.sender;
         
