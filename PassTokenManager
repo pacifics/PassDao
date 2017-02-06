@@ -65,9 +65,11 @@ contract PassTokenManagerInterface {
     // Map with the fundings rules for each Dao proposal
     mapping (uint => funding) public fundings;
 
-    // The index of the last funding and client's proposal
+    // The index of the last funding and proposal
     uint lastProposalID;
-
+    // The index of the last fueled funding
+    uint public lastFueledFundingID;
+    
     struct amountsGiven {
         uint weiAmount;
         uint tokenAmount;
@@ -200,10 +202,9 @@ contract PassTokenManagerInterface {
     /// @dev Internal function to create initial tokens    
     /// @param _holder The beneficiary of the created tokens
     /// @param _tokenAmount The amount in tokens to create
-    /// @return Whether the function was successful or not 
     function createTokens(
         address _holder, 
-        uint _tokenAmount) internal returns (bool success) ;
+        uint _tokenAmount) internal;
         
     /// @notice Function used by the client to pay with shares or tokens
     /// @param _recipient The address of the recipient of shares or tokens
@@ -526,12 +527,11 @@ contract PassTokenManager is PassTokenManagerInterface {
 
     function createTokens(
         address _holder, 
-        uint _tokenAmount) internal returns (bool success) {
+        uint _tokenAmount) internal {
 
         balances[_holder] += _tokenAmount; 
         totalTokenSupply += _tokenAmount;
         TokensCreated(msg.sender, _holder, _tokenAmount);
-        return true;
     }
     
     function rewardTokensForClient(
@@ -543,7 +543,7 @@ contract PassTokenManager is PassTokenManagerInterface {
         if (_tokenAmount == 0) throw;
 
         addHolder(_recipient);
-        if (!createTokens(_recipient, _tokenAmount)) throw;
+        createTokens(_recipient, _tokenAmount);
 
         return _tokenAmount;
     }
@@ -570,7 +570,11 @@ contract PassTokenManager is PassTokenManagerInterface {
         fundings[_proposalID].fundedAmount = 0;
 
         if (_initialPriceMultiplier == 0) {
-            fundings[_proposalID].initialPriceMultiplier = 100*priceMultiplier(0)/actualPriceDivisor(0);
+            if (now < fundings[0].closingTime) {
+                fundings[_proposalID].initialPriceMultiplier = 100*priceMultiplier(lastProposalID)/actualPriceDivisor(lastProposalID);
+            } else {
+                fundings[_proposalID].initialPriceMultiplier = 100*priceMultiplier(lastFueledFundingID)/actualPriceDivisor(lastFueledFundingID);
+            }
             fundings[0].initialPriceMultiplier = fundings[_proposalID].initialPriceMultiplier;
         }
         else {
@@ -606,9 +610,7 @@ contract PassTokenManager is PassTokenManagerInterface {
 
         if (_saleDate == 0) _saleDate = now;
 
-        if (now > fundings[_proposalID].closingTime
-            || now < fundings[_proposalID].startTime
-            ||_saleDate > fundings[_proposalID].closingTime
+        if (_saleDate > fundings[_proposalID].closingTime
             || _saleDate < fundings[_proposalID].startTime
             || fundings[_proposalID].totalWeiGiven + _amount > fundings[_proposalID].amountToFund) return;
 
@@ -619,13 +621,14 @@ contract PassTokenManager is PassTokenManagerInterface {
         if (_presale) {
             Given[_proposalID][_recipient].tokenAmount += _tokenAmount;
         }
-        else if (!createTokens(_recipient, _tokenAmount)) throw;
+        else createTokens(_recipient, _tokenAmount);
 
         return true;
     }
 
     function closeFunding(uint _proposalID) internal {
         fundings[_proposalID].fundedAmount = fundings[_proposalID].totalWeiGiven;
+        lastFueledFundingID = _proposalID;
         fundings[_proposalID].closingTime = now;
         FundingFueled(_proposalID, fundings[_proposalID].fundedAmount);
     }
@@ -656,7 +659,7 @@ contract PassTokenManager is PassTokenManagerInterface {
         }
 
         if (_tokenAmount > 0) {
-            if (!createTokens(_buyer, _tokenAmount)) throw;
+            createTokens(_buyer, _tokenAmount);
             return true;
         }
         
