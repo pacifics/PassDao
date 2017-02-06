@@ -1,4 +1,4 @@
-# The PASS DAPP (Decentralized Application)
+# The PASS Decentralized Application
 
 
 Website : http://forum.passdao.org/
