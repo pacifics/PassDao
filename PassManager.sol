@@ -67,7 +67,7 @@ contract PassManager is PassTokenManager {
         uint _date,
         bool _presale) internal returns (bool) {
 
-        if (!sale(_proposalID, _buyer, msg.value, _date, _presale)) throw;
+        if (_proposalID == 0 || !sale(_proposalID, _buyer, msg.value, _date, _presale)) throw;
 
         fundings[_proposalID].totalWeiGiven += msg.value;        
         if (fundings[_proposalID].totalWeiGiven == fundings[_proposalID].amountToFund) closeFunding(_proposalID);
