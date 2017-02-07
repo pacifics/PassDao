@@ -35,7 +35,7 @@ contract PassDao {
         // Address of the project creator smart contract
         uint startDate;
     }
-    // The revisions of the Dao until today
+    // The revisions of the application until today
     revision[] public revisions;
 
     struct project {
@@ -95,7 +95,7 @@ contract PassDao {
     
 // Register functions
 
-    /// @dev Function to allow the actual Cimmittee Room upgrading the Dao
+    /// @dev Function to allow the actual Committee Room upgrading the application
     /// @param _newCommitteeRoom The address of the new committee room
     /// @param _newShareManager The address of the new share manager
     /// @param _newTokenManager The address of the new token manager
