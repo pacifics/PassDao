@@ -229,9 +229,15 @@ contract PassContractor {
     }
     
     /// @notice Function used by the client to infor about the submitted amount
+    /// @param _sender The address of the sender who submits the proposal
     /// @param _proposalID The index of the contractor proposal
     /// @param _amount The amount (in wei) submitted
-    function submitProposal(uint _proposalID, uint _amount) onlyClient {
+    function submitProposal(
+        address _sender, 
+        uint _proposalID, 
+        uint _amount) onlyClient {
+
+        if (_sender != recipient) throw;    
         proposals[_proposalID].submittedAmount += _amount;
         ProposalSubmitted(msg.sender, _amount);
     }
