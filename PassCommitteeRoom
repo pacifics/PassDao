@@ -31,9 +31,9 @@ contract PassCommitteeRoomInterface {
         uint proposalID;
         // unix timestamp, denoting the end of the set period of a proposal before the committee 
         uint setDeadline;
-        // Fees (in wei) paid by the creator of the board meeting
+        // Fees (in wei) paid by the creator of the proposal
         uint fees;
-        // Total of fees (in wei) rewarded to the voters or to the Dao account manager for the balance
+        // Total of fees (in wei) rewarded to the voters
         uint totalRewardedAmount;
         // A unix timestamp, denoting the end of the voting period
         uint votingDeadline;
@@ -54,30 +54,30 @@ contract PassCommitteeRoomInterface {
     struct Proposal {
         // Index to identify the committee
         uint committeeID;
-        // The contractor smart contract
+        // The contractor smart contract (not mandatory if funding)
         PassContractor contractor;
-        // The index of the contractor proposal in the contractor contract
+        // The index of the contractor proposal in the contractor contract (not mandatory if funding)
         uint contractorProposalID;
-        // The amount of the proposal from the share manager balance
+        // The amount of the proposal from the share manager balance (for funding or contractor proposals)
         uint amount;
         // The address which sets partners and manages the funding (not mandatory)
         address moderator;
-        // Amount from the sale of shares
+        // Amount from the sale of shares (for funding or contractor proposals)
         uint amountForShares;
-        // The initial price multiplier of Dao shares at the beginning of the funding
+        // The initial price multiplier of Dao shares at the beginning of the funding (not mandatory)
         uint initialSharePriceMultiplier; 
-        // Amount from the sale of tokens
+        // Amount from the sale of tokens (for project manager proposals)
         uint amountForTokens;
         // A unix timestamp, denoting the start time of the funding
         uint minutesFundingPeriod;
         // True if the proposal is closed
         bool open; 
     }
-    // Proposals to pay a contractor with or without a funding
+    // Proposals to pay a contractor or/and fund the Dao
     Proposal[] public Proposals;
 
     struct Question {
-        // Index to identify the committee
+        // Index to identify a committee
         uint committeeID; 
         // The project smart contract
         PassProject project;
@@ -90,39 +90,39 @@ contract PassCommitteeRoomInterface {
     Question[] public ResolutionProposals;
     
     struct Rules {
-        // Index to identify the committee
+        // Index to identify a committee
         uint committeeID; 
         // The quorum needed for each proposal is calculated by totalSupply / minQuorumDivisor
         uint minQuorumDivisor;  
         // Minimum fees (in wei) to create a proposal
         uint minCommitteeFees; 
-        // Maximum fees (in wei) to create a proposal
+        // Minimum percentage of votes for a proposal to reward the creator
         uint minPercentageOfLikes;
         // Period in minutes to consider or set a proposal before the voting procedure
         uint minutesSetProposalPeriod; 
         // The minimum debate period in minutes that a generic proposal can have
         uint minMinutesDebatePeriod;
-        // The inflation rate to calculate the reward of fees to voters during a board meeting 
+        // The inflation rate to calculate the reward of fees to voters
         uint feesRewardInflationRate;
-        // The inflation rate to calculate the token price for project manager proposals 
+        // The inflation rate to calculate the token price (for project manager proposals) 
         uint tokenPriceInflationRate;
-        // The default minutes funding period for proposals
+        // The default minutes funding period
         uint defaultMinutesFundingPeriod;
     } 
     // Proposals to update the committee rules
     Rules[] public rulesProposals;
 
     struct Upgrade {
-        // Index to identify the committee
+        // Index to identify a committee
         uint committeeID; 
-        // The proposed Committee Room smart contract
+        // Address of the proposed Committee Room smart contract
         address newCommitteeRoom;
         // Address of the proposed share manager smart contract
         address newShareManager;
         // Address of the proposed token manager smart contract
         address newTokenManager;
     }
-    // Proposals to upgrade the Dapp
+    // Proposals to upgrade
     Upgrade[] public UpgradeProposals;
     
     // The minimum periods in minutes 
@@ -141,7 +141,7 @@ contract PassCommitteeRoomInterface {
     
     /// @param _committeeID The index of the committee
     /// @param _shareHolder The shareholder (not mandatory, default : msg.sender)
-    /// @return true if the shareholder has voted at a committee
+    /// @return true if the shareholder has voted at the committee
     function HasVoted(
         uint _committeeID, 
         address _shareHolder) constant external returns (bool);
@@ -149,13 +149,12 @@ contract PassCommitteeRoomInterface {
     /// @return The minimum quorum for proposals to pass 
     function minQuorum() constant returns (uint);
 
-    /// @return The number of committees (or proposals) 
+    /// @return The number of committees 
     function numberOfCommittees() constant returns (uint);
     
     /// @dev The constructor function
     /// @param _passDao Address of Pass Dao
-    //function PassCommitteeRoom(  
-    //    address _passDao);
+    //function PassCommitteeRoom(address _passDao);
 
     /// @notice Function to init an set the committee rules
     /// @param _maxInflationRate The maximum inflation rate for contractor and funding proposals
@@ -167,7 +166,7 @@ contract PassCommitteeRoomInterface {
     /// @param _minMinutesDebatePeriod The minimum period in minutes of the board meetings
     /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a committee
     /// @param _tokenPriceInflationRate The inflation rate to calculate the token price for project manager proposals
-    /// @param _defaultMinutesFundingPeriod Period in minutes of the funding
+    /// @param _defaultMinutesFundingPeriod Default period in minutes of the funding
     function init(
         uint _maxInflationRate,
         uint _minMinutesPeriods,
@@ -183,10 +182,10 @@ contract PassCommitteeRoomInterface {
     /// @notice Function to create a contractor smart contract
     /// @param _contractorCreator The contractor creator smart contract
     /// @param _recipient The recipient of the contractor smart contract
-    /// @param _metaProject True if no project
+    /// @param _metaProject True if meta project
     /// @param _passProject The project smart contract (not mandatory)
     /// @param _projectName The name of the project (if the project smart contract doesn't exist)
-    /// @param _projectDescription A description of the project (can be updated after)
+    /// @param _projectDescription A description of the project (not mandatory, can be updated after)
     /// @return The contractor smart contract
     function createContractor(
         PassContractorCreator _contractorCreator,
@@ -203,9 +202,9 @@ contract PassCommitteeRoomInterface {
     /// @param _proposalDescription String describing the proposal (if not existing proposal)
     /// @param _hashOfTheContractorProposalDocument The hash of the Contractor proposal document (if not existing proposal)
     /// @param _moderator The address which sets partners and manage the funding (not mandatory)
-    /// @param _initialSharePriceMultiplier The initial price multiplier of shares
-    /// @param _minutesFundingPeriod Period in minutes of the funding
-    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
+    /// @param _initialSharePriceMultiplier The initial price multiplier of shares (for funding or contractor proposals)
+    /// @param _minutesFundingPeriod Period in minutes of the funding (not mandatory)
+    /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal (not mandatory)
     /// @return The index of the proposal
     function contractorProposal(
         uint _amount,
@@ -223,7 +222,7 @@ contract PassCommitteeRoomInterface {
     /// @param _description A description of the question
     /// @param _project The project smart contract
     /// @param _minutesDebatingPeriod Period in minutes of the board meeting to vote on the proposal
-    /// @return The index of the proposal (not mandatory)
+    /// @return The index of the proposal
     function resolutionProposal(
         string _name,
         string _description,
@@ -250,7 +249,7 @@ contract PassCommitteeRoomInterface {
         uint _defaultMinutesFundingPeriod,
         uint _tokenPriceInflationRate) payable returns (uint);
     
-    /// @notice Function to make a proposal to upgrade the Dapp
+    /// @notice Function to make a proposal to upgrade the application
     /// @param _newCommitteeRoom Address of a new Committee Room smart contract (not mandatory)   
     /// @param _newShareManager Address of a new share manager smart contract (not mandatory)
     /// @param _newTokenManager Address of a new token manager smart contract (not mandatory)
@@ -264,7 +263,7 @@ contract PassCommitteeRoomInterface {
 
     /// @dev Internal function to create a committee
     /// @param _proposalType The type of the proposal
-    /// @param _proposalID The index of the proposal if for a contractor or for a funding
+    /// @param _proposalID The index of the proposal
     /// @param _minutesDebatingPeriod The duration in minutes of the committee
     /// @return the index of the board meeting
     function newCommittee(
@@ -304,7 +303,7 @@ contract PassCommitteeRoomInterface {
         uint _to,
         address _buyer) returns (bool);
         
-    /// @notice Function to send tokens or refund after the closing time of the funding proposals
+    /// @notice Function to receive tokens or refund after the closing time of the funding proposals
     /// @return Whether the function was successful or not
     function withdrawPendingAmounts() returns (bool);
 
@@ -315,9 +314,8 @@ contract PassCommitteeRoomInterface {
     event ProposalSubmitted(uint indexed ProposalID, uint CommitteeID, PassContractor indexed Contractor, uint indexed ContractorProposalID, 
         uint Amount, string Description, address Moderator, uint SharePriceMultiplier, uint MinutesFundingPeriod);
     event ResolutionProposalSubmitted(uint indexed QuestionID, uint indexed CommitteeID, PassProject indexed Project, string Name, string Description);
-    event RulesProposalSubmitted(uint indexed rulesProposalID, uint CommitteeID, uint MinQuorumDivisor, uint MinCommitteeFees, 
-        uint MinPercentageOfLikes, uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, 
-        uint DefaultMinutesFundingPeriod, uint TokenPriceInflationRate);
+    event RulesProposalSubmitted(uint indexed rulesProposalID, uint CommitteeID, uint MinQuorumDivisor, uint MinCommitteeFees, uint MinPercentageOfLikes, 
+        uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, uint DefaultMinutesFundingPeriod, uint TokenPriceInflationRate);
     event UpgradeProposalSubmitted(uint indexed UpgradeProposalID, uint indexed CommitteeID, address NewCommitteeRoom, 
         address NewShareManager, address NewTokenManager);
 
