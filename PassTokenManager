@@ -6,7 +6,7 @@ pragma solidity ^0.4.8;
  *
  * This file is part of Pass DAO.
  *
- * The Manager smart contract is used for the management of the Dao account, shares and tokens.
+ * The Manager smart contract is used for the management of shares and tokens.
  *
 */
 
@@ -18,8 +18,6 @@ contract PassTokenManagerInterface {
     // The adress of the creator of this smart contract
     address creator;
     
-    // True if tokens, false if Dao shares
-    bool token;
     // The token name for display purpose
     string public name;
     // The token symbol for display purpose
@@ -29,14 +27,19 @@ contract PassTokenManagerInterface {
     // Total amount of tokens
     uint256 totalTokenSupply;
 
+    // True if tokens, false if Dao shares
+    bool token;
+    // If true, the shares or tokens can be transferred
+    bool transferable;
+
     // The address of the last Manager before cloning
     address public clonedFrom;
     // True if the initial token supply is over
     bool initialTokenSupplyDone;
 
-    // Array of token or share holders
+    // Array of token or share holders (used for cloning)
     address[] holders;
-    // Map with the indexes of the holders
+    // Map with the indexes of the holders (used for cloning)
     mapping (address => uint) holderID;
     
     // Array with all balances
@@ -45,11 +48,11 @@ contract PassTokenManagerInterface {
     mapping (address => mapping (address => uint256)) allowed;
 
     struct funding {
-        // The address which sets partners and manages the funding in case of private funding
+        // The address which sets partners and manages the funding (not mandatory)
         address moderator;
         // The amount (in wei) of the funding
         uint amountToFund;
-        // The actual funded amount (in wei)
+        // The funded amount (in wei)
         uint fundedAmount;
         // A unix timestamp, denoting the start time of the funding
         uint startTime; 
@@ -67,7 +70,7 @@ contract PassTokenManagerInterface {
 
     // The index of the last funding and proposal
     uint lastProposalID;
-    // The index of the last fueled funding
+    // The index of the last fueled funding and proposal
     uint public lastFueledFundingID;
     
     struct amountsGiven {
@@ -77,8 +80,6 @@ contract PassTokenManagerInterface {
     // Map with the amounts given for each proposal 
     mapping (uint => mapping (address => amountsGiven)) public Given;
     
-    // If true, the shares or tokens can be transferred
-    bool transferable;
     // Map of blocked Dao share accounts. Points to the date when the share holder can transfer shares
     mapping (address => uint) public blockedDeadLine; 
 
@@ -100,24 +101,26 @@ contract PassTokenManagerInterface {
     /// @return Quantity of remaining tokens of _owner that _spender is allowed to spend
     function allowance(address _owner, address _spender) constant external returns (uint256 remaining);
     
-    /// @param _proposalID Index of the client proposal
+    /// @param _proposalID Index of the funding or proposal
     /// @return The result (in wei) of the funding
     function FundedAmount(uint _proposalID) constant external returns (uint);
 
-    /// @param _proposalID Index of the client proposal
+    /// @param _proposalID Index of the funding or proposal
     /// @return The amount to fund
     function AmountToFund(uint _proposalID) constant external returns (uint);
     
-    /// @param _proposalID Index of the client proposal
+    /// @param _proposalID Index of the funding or proposal
     /// @return the token price multiplier
     function priceMultiplier(uint _proposalID) constant internal returns (uint);
     
-    /// @param _proposalID Index of the client proposal
+    /// @param _proposalID Index of the funding or proposal
     /// @param _saleDate in case of presale, the date of the presale
     /// @return the share or token price divisor condidering the sale date and the inflation rate
-    function priceDivisor(uint _proposalID, uint _saleDate) constant internal returns (uint);
+    function priceDivisor(
+        uint _proposalID, 
+        uint _saleDate) constant internal returns (uint);
     
-    /// @param _proposalID Index of the client proposal
+    /// @param _proposalID Index of the funding or proposal
     /// @return the actual price divisor of a share or token
     function actualPriceDivisor(uint _proposalID) constant internal returns (uint);
 
@@ -149,11 +152,11 @@ contract PassTokenManagerInterface {
     /// @return The index of the last funding and client's proposal 
     function LastProposalID() constant returns (uint);
 
-    /// @return The number of share or token holders 
+    /// @return The number of share or token holders (used for cloning)
     function numberOfHolders() constant returns (uint);
 
     /// @param _index The index of the holder
-    /// @return the address of the an holder
+    /// @return the address of the holder
     function HolderAddress(uint _index) constant external returns (address);
    
     /// @dev The constructor function
@@ -187,7 +190,7 @@ contract PassTokenManagerInterface {
         uint _quantity,
         bool _last) returns (bool success);
         
-    /// @notice Function to clone tokens from a manager
+    /// @notice Function to clone tokens before upgrading
     /// @param _from The index of the first holder
     /// @param _to The index of the last holder
     /// @return Whether the function was successful or not 
@@ -214,7 +217,7 @@ contract PassTokenManagerInterface {
         address _recipient, 
         uint _amount) external  returns (uint);
         
-    /// @notice Function to set a funding. Can be private or public
+    /// @notice Function to set a funding
     /// @param _moderator The address of the smart contract to manage a private funding
     /// @param _initialPriceMultiplier Price multiplier without considering any inflation rate
     /// @param _amountToFund The amount (in wei) of the funding
