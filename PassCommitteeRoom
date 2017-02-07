@@ -386,7 +386,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
         maxInflationRate = _maxInflationRate;
         minMinutesPeriods = _minMinutesPeriods;
-        committeeLimits(maxInflationRate, minMinutesPeriods);
+        CommitteeLimits(maxInflationRate, minMinutesPeriods);
         
         if (rulesProposals[0].minQuorumDivisor != 0) throw;
         rulesProposals[0].minQuorumDivisor = _minQuorumDivisor;
@@ -644,7 +644,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         uint _quantityOfShares;
         PassManager _tokenManager = TokenManager();
 
-        if (100*b.yea > rulesProposals[0].minPercentageOfLikes * _shareManager.totalSupply()) {       
+        if (100*b.yea > rulesProposals[0].minPercentageOfLikes * uint(_shareManager.totalSupply())) {       
             _quantityOfShares = _shareManager.rewardTokensForClient(b.creator, rulesProposals[0].minCommitteeFees);
         }        
 
@@ -670,13 +670,11 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
             if (p.amountForShares == 0 && p.amountForTokens == 0) orderToContractor(b.proposalID);
             else {
                 if (p.amountForShares != 0) {
-                    _shareManager.setFundingRules(p.moderator, p.initialSharePriceMultiplier, 
-                        p.amountForShares, p.minutesFundingPeriod, 0, b.proposalID);
+                    _shareManager.setFundingRules(p.moderator, p.initialSharePriceMultiplier, p.amountForShares, p.minutesFundingPeriod, 0, b.proposalID);
                 }
 
                 if (p.amountForTokens != 0) {
-                    _tokenManager.setFundingRules(p.moderator, 0, p.amountForTokens, p.minutesFundingPeriod, 
-                        rulesProposals[0].tokenPriceInflationRate, b.proposalID);
+                    _tokenManager.setFundingRules(p.moderator, 0, p.amountForTokens, p.minutesFundingPeriod, rulesProposals[0].tokenPriceInflationRate, b.proposalID);
                 }
             }
 
@@ -700,7 +698,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
             rulesProposals[0].tokenPriceInflationRate = r.tokenPriceInflationRate;
             rulesProposals[0].defaultMinutesFundingPeriod = r.defaultMinutesFundingPeriod;
 
-        } else {
+        } else if (b.proposalType == ProposalTypes.upgrade) {
 
             Upgrade u = UpgradeProposals[b.proposalID];
 
