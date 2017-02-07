@@ -108,8 +108,6 @@ contract PassCommitteeRoomInterface {
         uint tokenPriceInflationRate;
         // The default minutes funding period for proposals
         uint defaultMinutesFundingPeriod;
-        // The Pass Contractor creator
-        PassContractorCreator contractorCreator;    
     } 
     // Proposals to update the committee rules
     Rules[] public rulesProposals;
@@ -162,7 +160,6 @@ contract PassCommitteeRoomInterface {
     /// @notice Function to init an set the committee rules
     /// @param _maxInflationRate The maximum inflation rate for contractor and funding proposals
     /// @param _minMinutesPeriods The minimum periods in minutes
-    /// @param _contractorCreator Address of Pass Contractor creator
     /// @param _minQuorumDivisor The initial minimum quorum divisor for the proposals
     /// @param _minCommitteeFees The minimum amount (in wei) to make a proposal
     /// @param _minPercentageOfLikes Minimum percentage of votes for a proposal to reward the creator
@@ -174,7 +171,6 @@ contract PassCommitteeRoomInterface {
     function init(
         uint _maxInflationRate,
         uint _minMinutesPeriods,
-        PassContractorCreator _contractorCreator,
         uint _minQuorumDivisor,
         uint _minCommitteeFees,
         uint _minPercentageOfLikes,
@@ -184,21 +180,7 @@ contract PassCommitteeRoomInterface {
         uint _tokenPriceInflationRate,
         uint _defaultMinutesFundingPeriod);
 
-    /// @dev Internal function to create a contractor smart contract
-    /// @param _recipient The recipient of the contractor smart contract
-    /// @param _metaProject True if no project
-    /// @param _passProject The project smart contract (not mandatory)
-    /// @param _projectName The name of the project (if the project smart contract doesn't exist)
-    /// @param _projectDescription A description of the project (can be updated after)
-    /// @return The contractor smart contract
-    function createContractor(
-        address _recipient,
-        bool _metaProject,
-        PassProject _passProject,
-        string _projectName, 
-        string _projectDescription) returns (PassContractor);
-        
-    /// @dev Internal function to make a proposal to pay a contractor or/and fund the Dao
+    /// @notice Function to make a proposal to pay a contractor or/and fund the Dao
     /// @param _amount Amount of the proposal
     /// @param _contractor The contractor smart contract
     /// @param _contractorProposalID Index of the contractor proposal in the contractor smart contract (not mandatory)
@@ -241,7 +223,6 @@ contract PassCommitteeRoomInterface {
     /// @param _feesRewardInflationRate The inflation rate to calculate the reward of fees to voters during a committee
     /// @param _defaultMinutesFundingPeriod Period in minutes of the funding
     /// @param _tokenPriceInflationRate The inflation rate to calculate the token price for project manager proposals
-    /// @param _contractorCreator The contractor creator smart contract
     /// @return The index of the proposal
     function rulesProposal(
         uint _minQuorumDivisor, 
@@ -251,8 +232,7 @@ contract PassCommitteeRoomInterface {
         uint _minMinutesDebatePeriod,
         uint _feesRewardInflationRate,
         uint _defaultMinutesFundingPeriod,
-        uint _tokenPriceInflationRate,
-        PassContractorCreator _contractorCreator) payable returns (uint);
+        uint _tokenPriceInflationRate) payable returns (uint);
     
     /// @notice Function to make a proposal to upgrade the Dapp
     /// @param _newCommitteeRoom Address of a new Committee Room smart contract (not mandatory)   
@@ -293,16 +273,33 @@ contract PassCommitteeRoomInterface {
     /// @return Whether the proposal was ordered and the proposal amount sent or not
     function orderToContractor(uint _proposalID) returns (bool);   
 
-    event committeeLimits(uint maxInflationRate, uint minMinutesPeriods);
+    /// @notice Function to buy shares and or/and promote a contractor proposal 
+    /// @param _proposalID The index of the proposal
+    /// @return Whether the function was successful or not
+    function buySharesForProposal(uint _proposalID) payable returns (bool);
+    
+    /// @notice Function to send tokens or refund after the closing time of the funding proposals
+    /// @param _from The first proposal. 0 if not linked to a proposal
+    /// @param _to The last proposal
+    /// @param _buyer The address of the buyer
+    /// @return Whether the function was successful or not 
+    function sendPendingAmounts(        
+        uint _from,
+        uint _to,
+        address _buyer) returns (bool);
+        
+    /// @notice Function to send tokens or refund after the closing time of the funding proposals
+    /// @return Whether the function was successful or not
+    function withdrawPendingAmounts() returns (bool);
 
-    event ContractorCreated(address indexed Creator, PassContractor Contractor, address Recipient);
+    event committeeLimits(uint maxInflationRate, uint minMinutesPeriods);
 
     event ProposalSubmitted(uint indexed ProposalID, uint CommitteeID, PassContractor indexed Contractor, uint indexed ContractorProposalID, 
         uint Amount, string Description, address Moderator, uint SharePriceMultiplier, uint MinutesFundingPeriod);
     event ResolutionProposalSubmitted(uint indexed QuestionID, uint indexed CommitteeID, PassProject indexed Project, string Name, string Description);
     event RulesProposalSubmitted(uint indexed rulesProposalID, uint CommitteeID, uint MinQuorumDivisor, uint MinCommitteeFees, 
         uint MinPercentageOfLikes, uint MinutesSetProposalPeriod, uint MinMinutesDebatePeriod, uint FeesRewardInflationRate, 
-        uint DefaultMinutesFundingPeriod, uint TokenPriceInflationRate, PassContractorCreator contractorCreator);
+        uint DefaultMinutesFundingPeriod, uint TokenPriceInflationRate);
     event UpgradeProposalSubmitted(uint indexed UpgradeProposalID, uint indexed CommitteeID, address NewCommitteeRoom, 
         address NewShareManager, address NewTokenManager);
 
@@ -362,7 +359,6 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
     function init(
         uint _maxInflationRate,
         uint _minMinutesPeriods,
-        PassContractorCreator _contractorCreator,
         uint _minQuorumDivisor,
         uint _minCommitteeFees,
         uint _minPercentageOfLikes,
@@ -377,7 +373,6 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         committeeLimits(maxInflationRate, minMinutesPeriods);
         
         if (rulesProposals[0].minQuorumDivisor != 0) throw;
-        rulesProposals[0].contractorCreator = _contractorCreator;
         rulesProposals[0].minQuorumDivisor = _minQuorumDivisor;
         rulesProposals[0].minCommitteeFees = _minCommitteeFees;
         rulesProposals[0].minPercentageOfLikes = _minPercentageOfLikes;
@@ -391,19 +386,6 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
 // Proposals Management
 
-    function createContractor(
-        address _recipient,
-        bool _metaProject,
-        PassProject _passProject,
-        string _projectName, 
-        string _projectDescription) returns (PassContractor) {
-
-        PassContractor _contractor = rulesProposals[0].contractorCreator.createContractor(msg.sender, _recipient, 
-            _metaProject, _passProject, _projectName, _projectDescription, false);
-        ContractorCreated(msg.sender, _contractor, _recipient);
-        return _contractor;
-    }   
-    
     function contractorProposal(
         uint _amount,
         PassContractor _contractor,
@@ -440,7 +422,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
 
         if (address(_contractor) == 0) p.amountForShares = _amount;
         else {
-            _contractor.submitProposal(_contractorProposalID, _amount);
+            _contractor.submitProposal(msg.sender, _contractorProposalID, _amount);
             if (_contractor.Project().ProjectManager() == address(_contractor)) p.amountForTokens = _amount;
             else {
                 p.amount = Balance();
@@ -495,8 +477,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         uint _minMinutesDebatePeriod,
         uint _feesRewardInflationRate,
         uint _defaultMinutesFundingPeriod,
-        uint _tokenPriceInflationRate,
-        PassContractorCreator _contractorCreator) payable returns (uint) {
+        uint _tokenPriceInflationRate) payable returns (uint) {
 
     
         if (_minQuorumDivisor <= 1
@@ -518,13 +499,12 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         r.feesRewardInflationRate = _feesRewardInflationRate;
         r.defaultMinutesFundingPeriod = _defaultMinutesFundingPeriod;
         r.tokenPriceInflationRate = _tokenPriceInflationRate;
-        r.contractorCreator = _contractorCreator;
 
         r.committeeID = newCommittee(ProposalTypes.rules, _rulesProposalID, 0);
 
         RulesProposalSubmitted(_rulesProposalID, r.committeeID, _minQuorumDivisor, _minCommitteeFees, 
             _minPercentageOfLikes, _minutesSetProposalPeriod, _minMinutesDebatePeriod, 
-            _feesRewardInflationRate, _defaultMinutesFundingPeriod, _tokenPriceInflationRate, _contractorCreator);
+            _feesRewardInflationRate, _defaultMinutesFundingPeriod, _tokenPriceInflationRate);
 
         return _rulesProposalID;
     }
@@ -687,7 +667,6 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
             rulesProposals[0].feesRewardInflationRate = r.feesRewardInflationRate;
             rulesProposals[0].tokenPriceInflationRate = r.tokenPriceInflationRate;
             rulesProposals[0].defaultMinutesFundingPeriod = r.defaultMinutesFundingPeriod;
-            rulesProposals[0].contractorCreator = r.contractorCreator;
 
         } else {
 
@@ -763,4 +742,24 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         return true;
     }
 
+// Holder Account management
+
+    function buySharesForProposal(uint _proposalID) payable returns (bool) {
+        
+        return ShareManager().buyTokensForProposal.value(msg.value)(_proposalID, msg.sender);
+    }   
+
+    function sendPendingAmounts(
+        uint _from,
+        uint _to,
+        address _buyer) returns (bool) {
+        
+        return ShareManager().sendPendingAmounts(_from, _to, _buyer);
+    }        
+    
+    function withdrawPendingAmounts() returns (bool) {
+        
+        if (!ShareManager().sendPendingAmounts(0, 0, msg.sender)) throw;
+    }        
+            
 }
