@@ -308,7 +308,7 @@ contract PassCommitteeRoomInterface {
     /// @return Whether the function was successful or not
     function withdrawPendingAmounts() returns (bool);
 
-    event committeeLimits(uint maxInflationRate, uint minMinutesPeriods);
+    event CommitteeLimits(uint maxInflationRate, uint minMinutesPeriods);
     
     event ContractorCreated(PassContractorCreator Creator, address indexed Sender, PassContractor Contractor, address Recipient);
 
