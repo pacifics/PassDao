@@ -180,6 +180,22 @@ contract PassCommitteeRoomInterface {
         uint _tokenPriceInflationRate,
         uint _defaultMinutesFundingPeriod);
 
+    /// @notice Function to create a contractor smart contract
+    /// @param _contractorCreator The contractor creator smart contract
+    /// @param _recipient The recipient of the contractor smart contract
+    /// @param _metaProject True if no project
+    /// @param _passProject The project smart contract (not mandatory)
+    /// @param _projectName The name of the project (if the project smart contract doesn't exist)
+    /// @param _projectDescription A description of the project (can be updated after)
+    /// @return The contractor smart contract
+    function createContractor(
+        PassContractorCreator _contractorCreator,
+        address _recipient,
+        bool _metaProject,
+        PassProject _passProject,
+        string _projectName, 
+        string _projectDescription) returns (PassContractor);
+    
     /// @notice Function to make a proposal to pay a contractor or/and fund the Dao
     /// @param _amount Amount of the proposal
     /// @param _contractor The contractor smart contract
@@ -293,6 +309,8 @@ contract PassCommitteeRoomInterface {
     function withdrawPendingAmounts() returns (bool);
 
     event committeeLimits(uint maxInflationRate, uint minMinutesPeriods);
+    
+    event ContractorCreated(PassContractorCreator Creator, address indexed Sender, PassContractor Contractor, address Recipient);
 
     event ProposalSubmitted(uint indexed ProposalID, uint CommitteeID, PassContractor indexed Contractor, uint indexed ContractorProposalID, 
         uint Amount, string Description, address Moderator, uint SharePriceMultiplier, uint MinutesFundingPeriod);
@@ -344,7 +362,7 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         return Committees.length - 1;
     }
     
-// Constructor function
+// Constructor and init functions
 
     function PassCommitteeRoom(address _passDao) {
 
@@ -383,6 +401,22 @@ contract PassCommitteeRoom is PassCommitteeRoomInterface {
         rulesProposals[0].defaultMinutesFundingPeriod = _defaultMinutesFundingPeriod;
 
     }
+
+// Project manager and contractor management
+
+    function createContractor(
+        PassContractorCreator _contractorCreator,
+        address _recipient,
+        bool _metaProject,
+        PassProject _passProject,
+        string _projectName, 
+        string _projectDescription) returns (PassContractor) {
+
+        PassContractor _contractor = _contractorCreator.createContractor(msg.sender, _recipient, 
+            _metaProject, _passProject, _projectName, _projectDescription, false);
+        ContractorCreated(_contractorCreator, msg.sender, _contractor, _recipient);
+        return _contractor;
+    }   
 
 // Proposals Management
 
