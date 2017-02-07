@@ -39,10 +39,10 @@ contract PassManager is PassTokenManager {
         PassTokenManager( _passDao, _clonedFrom, _tokenName, _tokenSymbol, _tokenDecimals, 
             _token, _transferable, _initialPriceMultiplier, _inflationRate) { }
     
-        /// @notice Function to receive payments
+    /// @notice Function to receive payments
     function () payable onlyShareManager { }
     
-    /// @notice Function used by the client to send ethers from the Dao manager
+    /// @notice Function used by the client to send ethers
     /// @param _recipient The address to send to
     /// @param _amount The amount (in wei) to send
     /// @return Whether the transfer was successful or not
@@ -57,7 +57,7 @@ contract PassManager is PassTokenManager {
 
     /// @dev Internal function to buy tokens and promote a proposal 
     /// @param _proposalID The index of the proposal
-    /// @param _buyer The address of the buyer (not mandatory, msg.sender if 0)
+    /// @param _buyer The address of the buyer
     /// @param _date The unix date to consider for the share or token price calculation
     /// @param _presale True if presale
     /// @return Whether the function was successful or not 
