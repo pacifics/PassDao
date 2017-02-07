@@ -211,7 +211,7 @@ contract PassContractor {
     ) external returns (uint) {
         
         if (msg.sender == Client() && _creator != recipient && _creator != creator) throw;
-        if (msg.sender != Client() && msg.sender != recipient) throw;
+        if (msg.sender != Client() && msg.sender != recipient && msg.sender != creator) throw;
 
         if (_amount == 0) throw;
         
@@ -237,7 +237,7 @@ contract PassContractor {
         uint _proposalID, 
         uint _amount) onlyClient {
 
-        if (_sender != recipient) throw;    
+        if (_sender != recipient && _sender != creator) throw;    
         proposals[_proposalID].submittedAmount += _amount;
         ProposalSubmitted(msg.sender, _amount);
     }
