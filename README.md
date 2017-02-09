@@ -92,7 +92,7 @@ Payments to the contractors are done with ethers and step by step. For each step
 
 - This Dapp is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
 
-- The creators of proposals have to pay committee fees. If the proposal is estimated (and not necessarily approved), the creator of the proposal receives shares with an amount equal to the fees.
+- The creators of proposals have to pay committee fees. If the proposal is estimated (and not necessarily approved), the creator of the proposal receives shares with an amount equal to the minimum committee fees.
 
 - The shareholders should vote on contractor proposals as it's the only way to receive committee fees. 
 
