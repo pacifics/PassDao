@@ -32,11 +32,14 @@ Proposal to change the rules of the committee room. Inputs: the min quorum for p
 #### Upgrade Proposal: 
 Proposal to upgrade the Committee Room or the manager smart contracts. Inputs: the new Committee Room smart contract (not mandatory), the new share manager smart contract (not mandatory) or the new token manager smart contract (not mandatory). Note: 10 eth minimum have to be sent to make a proposal. This amount will be given back in Dao shares after the voting period if more than 10% of the Community supported the proposal.
 
-#### Vote (for shareholders): support or vote against a proposal. Inputs: the index of the committee, true if support and false against.
+#### Vote (for shareholders): 
+Support or vote against a proposal. Inputs: the index of the committee, true if support and false against.
 
-#### Execute decision: after and according to the votes of a committee. Input: the index of the committee.
+#### Execute decision: 
+After and according to the votes of a committee. Input: the index of the committee.
 
-#### Order a work from a contractor: after the closing time of the funding for the proposal. Input: the index of the proposal.
+#### Order a work from a contractor: 
+After the closing time of the funding for the proposal. Input: the index of the proposal.
 
 
 ## Manager Smart Contracts ("Tokens")
