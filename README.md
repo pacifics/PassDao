@@ -8,7 +8,7 @@ The source includes a forum website and smart contracts with ABI to read or writ
 ABI DAO: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassDao  
 ABI Projects: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassProject  
   
-Used for the management and display of the upgrades and projects from the beginning of the application. One Pass DAO smart contract, a meta project and a project smart contract for each project.
+Used for the management and display ("DappScan") of the upgrades and projects from the beginning of the application. One Pass DAO smart contract, a meta project and a project smart contract for each project.
 
 =
 
