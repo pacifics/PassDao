@@ -1,16 +1,15 @@
 # The PASS Distributed Application
 
-
 Website : http://forum.passdao.org/
-
-=
 
 The source includes the next smart contracts :
 
+=
 
 ## DAO and Project Smart Contract ("DappScan")
 Used for the management and display of the upgrades and projects from the beginning of the application. One Pass DAO smart contract, a meta project and a project smart contract for each project. Includes links to the actual Committee Room, share manager and token manager smart contracts. No public function.
 
+=
 
 ## Committee Room Smart Contract ("Committees")
 Used to submit proposals, to vote and to execute the decisions taken by the Community of shareholders.
@@ -41,6 +40,7 @@ After and according to the votes of a committee. Input: the index of the committ
 #### Order a work from a contractor: 
 After the closing time of the funding for the proposal. Input: the index of the proposal.
 
+=
 
 ## Manager Smart Contracts ("Tokens")
 Used for the management of tokens. Includes the PASS token Manager smart contract. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20.
@@ -64,6 +64,7 @@ Allows selling tokens from the buy orders. Inputs: the amount in token you want 
 
 #### Transfer tokens and Approve tokens allowance: ERC20 functions.
 
+=
 
 ## PASS Contractor Smart Contracts (ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractor)
 Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
