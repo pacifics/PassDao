@@ -8,11 +8,11 @@ Website : http://forum.passdao.org/
 The source includes the next smart contracts :
 
 
-#### PASS DAO and Project Smart Contract: <DappScan>
+#### Dao and Project Smart Contract ("DappScan")
 Used for the management and display of the upgrades and projects from the beginning of the application. One Pass DAO smart contract and a project smart contract for each project. No public function.
 
 
-#### PASS Manager Smart Contracts: <Tokens>
+#### Manager Smart Contracts ("Tokens")
 Used for the management of tokens. Includes the PASS token Manager smart contract. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20.
 
 Public functions are : 
@@ -30,7 +30,7 @@ Public functions are :
 - Transfer tokens and Approve tokens allowance: ERC20 functions.
 
 
-#### PASS Committee Room Smart Contract
+#### Committee Room Smart Contract ("Committees")
 Used to submit proposals, to vote and to execute the decisions of the shareholders.
 
 Public functions are :
