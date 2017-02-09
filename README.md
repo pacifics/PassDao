@@ -10,9 +10,7 @@ Used for the management and display of the upgrades and projects from the beginn
 =
 
 ## Committee Room Smart Contract ("Committees")
-Used to submit proposals, to vote and to execute the decisions taken by the Community of shareholders.
-
-Public functions are :
+Used to submit proposals, to vote and to execute the decisions taken by the Community of shareholders. Public functions are :
 
 #### Create Contractor: 
 Allows creating a project manager or a contractor smart contract. Inputs: the contractor creator smart contract (this is a verified: 0xf03262DCE825ACd93d0630d3e6aE495B7d907890, ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractorCreator), the recipient of the amounts sent by the Dao, the project (meta project if no secific project, the name and a description of the project if new project). Note: for new projects, the contractor will be the project manager of the created project.
@@ -41,9 +39,7 @@ After the closing time of the funding for the proposal. Input: the index of the 
 =
 
 ## Manager Smart Contracts ("Tokens")
-Used for the management of tokens. Includes the PASS token Manager smart contract. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20.
-
-Public functions are : 
+Used for the management of tokens. Includes the PASS token Manager smart contract. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20. Public functions are : 
 
 #### Buy tokens for a proposal: 
 Allows to buy tokens in order to pay a project manager (or contractor if shares) according to an approved proposal. Inputs : the index of the proposal and the address of the buyer (default: msg.sender).
@@ -67,9 +63,7 @@ Allows selling tokens from the buy orders. Inputs: the amount in token you want 
 ## PASS Contractor Smart Contracts
 (ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractor)
 
-Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
-
-Public functions are : 
+Used by the project managers and contractors of the application. One smart contract for each project manager or contractor. Public functions are : 
 
 #### Update Project Description and hash of the project document (for the project manager).
 
