@@ -17,7 +17,7 @@ Used to submit proposals, to vote and to execute the decisions taken by the Comm
 
 Public functions are :
 
-- Create Contractor: allows creating a project manager or a contractor smart contract. Inputs: the contractor creator smart contract (this is a verified: 0xf03262DCE825ACd93d0630d3e6aE495B7d907890, ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractorCreator), the recipient of the amount received by the contractor, the project (meta project if no secific project, the name and a description of the project if new project). Note: for new projects, the contractor will be the project manager of the created project.
+- Create Contractor: allows creating a project manager or a contractor smart contract. Inputs: the contractor creator smart contract (this is a verified: 0xf03262DCE825ACd93d0630d3e6aE495B7d907890, ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractorCreator), the recipient of the amounts sent by the Dao, the project (meta project if no secific project, the name and a description of the project if new project). Note: for new projects, the contractor will be the project manager of the created project.
 
 - Contractor Proposal: proposal to order a work from a project manager or a contractor or to fund the Dao. Inputs: the amount of the proposal in wei, the address of the contractor smart contract (0 if proposal to fund the DAO), the proposal (the index in the contractor smart contract or: a description and a hash of the proposal document), the funding rules (not mandatory), the debating period (not mandatory). Note: 10 eth minimum have to be sent to make a proposal. This amount will be given back in Dao shares after the voting period if more than 10% of the Community supported the proposal.
 
