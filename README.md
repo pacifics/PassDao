@@ -4,7 +4,7 @@ The source includes smart contracts with ABI to display or write into with these
 
 =
 
-### DAO and Project Smart Contracts ("DappScan")
+### DAO and Project Smart Contracts
 ABI DAO: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassDao  
 ABI Projects: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassProject  
   
@@ -12,7 +12,7 @@ Used for the management and display of the upgrades and projects from the beginn
 
 =
 
-### Committee Room Smart Contract ("Committees")
+### Committee Room Smart Contract
 ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassCommitteeRoom  
   
 Used to submit proposals, vote and execute the decisions taken by the Community of shareholders.  
@@ -45,7 +45,7 @@ After the closing time of the funding for the proposal. Input: the index of the 
 
 =
 
-### Manager Smart Contracts ("Tokens")
+### Manager Smart Contracts
 ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassManager  
   
 Used for the management of tokens. Includes the PASS token Manager smart contract. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20. Public functions are : 
