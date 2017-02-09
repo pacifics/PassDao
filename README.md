@@ -5,8 +5,8 @@ The source includes the next smart contracts :
 =
 
 ## DAO and Project Smart Contracts ("DappScan")
-ABI DAO: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassDao
-[/]ABI Projects: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassProject
+ABI DAO: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassDao  
+ABI Projects: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassProject
 Used for the management and display of the upgrades and projects from the beginning of the application. One Pass DAO smart contract, a meta project and a project smart contract for each project. Includes links to the actual Committee Room, share manager and token manager smart contracts. No public function.
 
 =
