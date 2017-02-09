@@ -33,12 +33,17 @@ Used for the management of tokens. Includes the PASS token Manager smart contrac
 
 Public functions are : 
 
-- Buy Tokens, Sell Tokens and Remove buy orders: allows to buy and sell transferable tokens using the application.
+- Buy tokens for a proposal: allows to buy tokens in order to pay a project manager (or contractor if shares) according to an approved proposal. Inputs : the index of the proposal and the address of the buyer (default: msg.sender).
 
-- Buy tokens for a proposal: allows to buy tokens in order to pay a project manager (or contractor if shares) according to an approved proposal.
+- Withdraw pending amounts: allows receiving tokens or refunding after the closing time of the fundings.
+
+- Buy Tokens: allows sending a buy order.
+
+- Remove orders: allow removing buy orders and refunding. Input: from an order to another order (default: all orders).
+
+- Sell Tokens: allows selling tokens from the buy orders. Inputs: the amount in token you want to sell, from an order to another order (default: all orders).
 
 - Transfer tokens and Approve tokens allowance: ERC20 functions.
-
 
 
 #### PASS Committee Room Smart Contract
