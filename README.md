@@ -9,7 +9,7 @@ The source includes the next smart contracts :
 
 
 #### Dao and Project Smart Contract ("DappScan")
-Used for the management and display of the upgrades and projects from the beginning of the application. One Pass DAO smart contract and a project smart contract for each project. No public function.
+Used for the management and display of the upgrades and projects from the beginning of the application. One Pass DAO smart contract, a meta project for the DAO and a project smart contract for each project. No public function.
 
 
 #### Manager Smart Contracts ("Tokens")
