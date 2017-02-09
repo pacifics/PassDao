@@ -50,7 +50,7 @@ Public functions are :
 - Transfer tokens and Approve tokens allowance: ERC20 functions.
 
 
-#### PASS Contractor Smart Contracts
+#### PASS Contractor Smart Contracts (ABI https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractor)
 Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
 
 Public functions are : 
