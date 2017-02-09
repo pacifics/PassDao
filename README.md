@@ -10,7 +10,7 @@ Used for the management and display of the upgrades and projects from the beginn
 =
 
 ## Committee Room Smart Contract ("Committees")
-Used to submit proposals, to vote and to execute the decisions taken by the Community of shareholders. Public functions are :
+Used to submit proposals, vote and execute the decisions taken by the Community of shareholders. Public functions are :
 
 #### Create Contractor: 
 Allows creating a project manager or a contractor smart contract. Inputs: the contractor creator smart contract (this is a verified: 0xf03262DCE825ACd93d0630d3e6aE495B7d907890, ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractorCreator), the recipient of the amounts sent by the Dao, the project (meta project if no secific project, the name and a description of the project if new project). Note: for new projects, the contractor will be the project manager of the created project.
