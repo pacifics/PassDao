@@ -56,8 +56,6 @@ Allow removing buy orders and refunding. Input: from an order to another order (
 #### Sell Tokens: 
 Allows selling tokens from the buy orders. Inputs: the amount in token you want to sell, from an order to another order (default: all orders).
 
-#### Transfer tokens and Approve tokens allowance: ERC20 functions.
-
 =
 
 ## PASS Contractor Smart Contracts
