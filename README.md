@@ -66,7 +66,9 @@ Allows selling tokens from the buy orders. Inputs: the amount in token you want 
 
 =
 
-## PASS Contractor Smart Contracts (ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractor)
+## PASS Contractor Smart Contracts
+(ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractor)
+
 Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
 
 Public functions are : 
