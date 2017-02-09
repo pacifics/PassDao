@@ -80,7 +80,7 @@ Allows the project manager to update the project Description and the hash of the
 #### Update recipient
 Allows the contractor to update the address of the recipient for the withdrawals from the contract.
 
-#### withdraw:
+#### Withdraw:
 Allows the contractors using their smart contract as an account manager with deposits (fallback function) and withdrawals.
 
 #### New proposal: 
