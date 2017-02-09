@@ -1,6 +1,6 @@
 # The PASS Distributed Application (http://forum.passdao.org/)
 
-The source includes the next smart contracts :
+The source includes smart contracts with ABI to display or write into with these contracts. We don't have a specific Javascript source for the application but suggest to use existing generic applications (Mist, Ethereum Wallet, Etherscan, Myetherwallet.com ...).  
 
 =
 
