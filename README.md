@@ -29,9 +29,9 @@ Public functions are :
 
 - Vote (for shareholders): support or vote against a proposal. Inputs: the index of the committee, true if support and false against.
 
-- Execute decision: after and according to the votes of a committee, input: the index of the committee.
+- Execute decision: after and according to the votes of a committee. Input: the index of the committee.
 
-- Order a work from a contractor: after the closing time of the funding for the proposal, input: the index of the proposal.
+- Order a work from a contractor: after the closing time of the funding for the proposal. Input: the index of the proposal.
 
 
 #### Manager Smart Contracts ("Tokens")
