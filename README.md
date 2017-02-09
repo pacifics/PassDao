@@ -1,4 +1,4 @@
-# The PASS Distributed Application (see http://forum.passdao.org/)
+# The PASS Distributed Application (http://forum.passdao.org/)
 
 The source includes the next smart contracts :
 
