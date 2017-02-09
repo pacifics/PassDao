@@ -16,18 +16,6 @@ Used for the management and display of the upgrades from the beginning of the ap
 Used for the management and display of the PASS projects. One project smart contract for each project. No public function.
 
 
-#### PASS Contractor Smart Contracts
-Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
-
-Public functions are : 
-
-- Update Project Description (for the project manager).
-
-- Update recipient and withdraw: allows the contractors using their smart contract as an account manager with deposits and withdrawals.
-
-- Set a new proposal: every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. For each step, the shareholders decide by voting to continue or to stop ordering work from the contractor.  
-
-
 #### PASS Manager Smart Contracts
 Used for the management of tokens. Includes the PASS token Manager smart contract. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20.
 
@@ -64,6 +52,18 @@ Public functions are :
 - Vote (for shareholders): support or vote against a proposal. Inputs: the index of the proposal, true if support and false against.
 
 - Execute decision (after and according to the votes of a committee, input: the index of the committee) and order a work from a contractor (after the closing time of the funding for the proposal, input: the index of the proposal).
+
+
+#### PASS Contractor Smart Contracts
+Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.
+
+Public functions are : 
+
+- Update Project Description (for the project manager).
+
+- Update recipient and withdraw: allows the contractors using their smart contract as an account manager with deposits and withdrawals.
+
+- Set a new proposal: every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. For each step, the shareholders decide by voting to continue or to stop ordering work from the contractor.  
 
 =
 
