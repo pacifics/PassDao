@@ -12,24 +12,6 @@ The source includes the next smart contracts :
 Used for the management and display of the upgrades and projects from the beginning of the application. One Pass DAO smart contract, a meta project for the DAO and a project smart contract for each project. No public function.
 
 
-#### Manager Smart Contracts ("Tokens")
-Used for the management of tokens. Includes the PASS token Manager smart contract. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20.
-
-Public functions are : 
-
-- Buy tokens for a proposal: allows to buy tokens in order to pay a project manager (or contractor if shares) according to an approved proposal. Inputs : the index of the proposal and the address of the buyer (default: msg.sender).
-
-- Withdraw pending amounts: allows receiving tokens or refunding after the closing time of the fundings.
-
-- Buy Tokens: allows sending a buy order.
-
-- Remove orders: allow removing buy orders and refunding. Input: from an order to another order (default: all orders).
-
-- Sell Tokens: allows selling tokens from the buy orders. Inputs: the amount in token you want to sell, from an order to another order (default: all orders).
-
-- Transfer tokens and Approve tokens allowance: ERC20 functions.
-
-
 #### Committee Room Smart Contract ("Committees")
 Used to submit proposals, to vote and to execute the decisions of the shareholders.
 
@@ -48,6 +30,24 @@ Public functions are :
 - Vote (for shareholders): support or vote against a proposal. Inputs: the index of the proposal, true if support and false against.
 
 - Execute decision (after and according to the votes of a committee, input: the index of the committee) and order a work from a contractor (after the closing time of the funding for the proposal, input: the index of the proposal).
+
+
+#### Manager Smart Contracts ("Tokens")
+Used for the management of tokens. Includes the PASS token Manager smart contract. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20.
+
+Public functions are : 
+
+- Buy tokens for a proposal: allows to buy tokens in order to pay a project manager (or contractor if shares) according to an approved proposal. Inputs : the index of the proposal and the address of the buyer (default: msg.sender).
+
+- Withdraw pending amounts: allows receiving tokens or refunding after the closing time of the fundings.
+
+- Buy Tokens: allows sending a buy order.
+
+- Remove orders: allow removing buy orders and refunding. Input: from an order to another order (default: all orders).
+
+- Sell Tokens: allows selling tokens from the buy orders. Inputs: the amount in token you want to sell, from an order to another order (default: all orders).
+
+- Transfer tokens and Approve tokens allowance: ERC20 functions.
 
 
 #### PASS Contractor Smart Contracts
