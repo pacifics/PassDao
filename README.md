@@ -1,4 +1,4 @@
-# The PASS Distributed Application (http://forum.passdao.org/)
+# The PASS Distributed Application (see http://forum.passdao.org/)
 
 The source includes the next smart contracts :
 
@@ -70,13 +70,17 @@ ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractor
   
 Used by the project managers and contractors of the application. One smart contract for each project manager or contractor. Public functions are : 
 
-#### Update Project Description and hash of the project document (for the project manager).
+#### Update Project Description
+Allows the project manager to update the project Description and the hash of the project document.
 
-#### Update recipient and withdraw: 
-Allows the contractors using their smart contract as an account manager with deposits and withdrawals.
+#### Update recipient
+Allows the contractor to update the address of the recipient for the withdrawals from the contract.
 
-#### Set a new proposal: 
-Every contractor can offer to sell products or execute services. Payments to the contractors are done with ethers and step by step. For each step, the shareholders decide by voting to continue or to stop ordering work from the contractor.  
+#### withdraw:
+Allows the contractors using their smart contract as an account manager with deposits (fallback function) and withdrawals.
+
+#### New proposal: 
+Payments to the contractors are done with ethers and step by step. For each step, the shareholders decide by voting to continue or to stop ordering the work described in the contractor proposal. Inputs: the creator of the proposal (default: msg.sender), the maximum amount in wei, a description and a hash of the proposal document.
 
 =
 
