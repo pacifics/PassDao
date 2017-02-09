@@ -1,6 +1,6 @@
 # The PASS Distributed Application (http://forum.passdao.org/)
 
-The source includes a forum website and smart contracts with ABI to read or write into the Blockchain using existing generic applications (Mist, Ethereum Wallet, Etherscan, Myetherwallet.com ...).  
+The source includes a forum website and smart contracts with ABI to read or write into the Blockchain using existing generic applications (Mist, Ethereum Wallet, Parity, Etherscan, Myetherwallet.com ...).  
 
 =
 
