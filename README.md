@@ -13,7 +13,7 @@ Used for the management and display of the upgrades and projects from the beginn
 
 
 #### Committee Room Smart Contract ("Committees")
-Used to submit proposals, to vote and to execute the decisions then by the Community of shareholders.
+Used to submit proposals, to vote and to execute the decisions taken by the Community of shareholders.
 
 Public functions are :
 
