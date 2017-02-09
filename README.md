@@ -57,7 +57,7 @@ Used by the project managers and contractors of the application. One smart contr
 
 Public functions are : 
 
-- Update Project Description (for the project manager).
+- Update Project Description and hash of the project document (for the project manager).
 
 - Update recipient and withdraw: allows the contractors using their smart contract as an account manager with deposits and withdrawals.
 
