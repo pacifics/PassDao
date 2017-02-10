@@ -41,7 +41,7 @@ Support or vote against a proposal. Inputs: the index of the committee, true if 
 After and according to the votes of a committee. Input: the index of the committee.
 
 #### Order a work from a contractor: 
-After the closing time of the funding for the proposal. Input: the index of the proposal.
+After the closing time of the funding for the proposal. Input: the index of the contractor proposal.
 
 =
 
