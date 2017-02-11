@@ -57,10 +57,10 @@ Allows to buy tokens in order to pay a project manager (or contractor if shares)
 Allows receiving tokens or refunding after the closing time of the fundings.
 
 #### Buy Tokens: 
-Allows sending a buy order.
+Allows sending a buy order to the Blockchain.
 
 #### Remove orders: 
-Allow removing buy orders and refunding. Input: from an order to another order (default: all orders).
+Allow removing buy orders from the Blockchain and refunding. Input: from an order to another order (default: all orders).
 
 #### Sell Tokens: 
 Allows selling tokens from the buy orders. Inputs: the amount in token you want to sell, from an order to another order (default: all orders).
