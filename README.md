@@ -1,6 +1,12 @@
-# The PASS Distributed Application (http://forum.passdao.org/)
+# The PASS Distributed Application
 
 The source includes a forum website and smart contracts with ABI to read or write into the Blockchain using existing generic applications (Mist, Ethereum Wallet, Parity, Etherscan, Myetherwallet.com ...).  
+
+=
+
+## The forum (http://forum.passdao.org/)
+
+Used to discuss the prospective projects and proposals before submitting to the Blockchain. Works on a Linux server with Discourse (cf http://www.discourse.org/). A user field "PublicKey" allows linking the forum users with the Ethereum adresses for instance for a giveaway program of shares to the forum users.
 
 =
 
