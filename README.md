@@ -6,7 +6,7 @@ The source includes a forum website and smart contracts with ABI to read from or
 
 ## The forum (http://forum.passdao.org/)
 
-Used to discuss the prospective projects and proposals before submitting to the Blockchain. Works on a Linux server with Discourse (cf http://www.discourse.org/). A user field "PublicKey" allows linking the forum users with the Ethereum adresses for instance for a giveaway program of shares to the forum users.
+Used to discuss the prospective projects and proposals before submitting to the Blockchain. Works on a Linux server with Discourse (cf http://www.discourse.org/). A user field "PublicKey" allows linking the forum users with one of their Ethereum adresses for instance for a giveaway program of shares depending on their activity in the forum.
 
 =
 
