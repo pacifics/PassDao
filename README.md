@@ -14,7 +14,7 @@ Used to discuss the prospective projects and proposals before submitting to the 
 ABI DAO: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassDao  
 ABI Projects: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassProject  
   
-Used for the management and display ("DappScan") of the upgrades and projects from the beginning of the application. One Pass DAO smart contract, a meta project (concerns the Pass DAO works and not a specific project) and a project smart contract for each project.
+Used for the management and display ("DappScan") of the upgrades and projects from the beginning of the application. One Pass DAO smart contract, a meta project (concerns the Pass DAO project as a whole and not a specific project) and a project smart contract for each project.
 
 =
 
