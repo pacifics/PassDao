@@ -1,6 +1,6 @@
 # The PASS Distributed Application
 
-The source includes a forum website and smart contracts with ABI to read from or write into the Blockchain.  
+The source includes a forum website and smart contracts with ABI to read from or write into the Blockchain using generic Ethereum applications (Mist, Myetherwallet.com ...). 
 
 =
 
