@@ -57,7 +57,7 @@ ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassManager
 Used for the management of tokens. Includes the PASS token Manager smart contract. One smart contract for the DAO shares and one smart contract for the PASS tokens. The smart contracts are conform to ERC20. Public functions are : 
 
 #### Buy tokens for a proposal: 
-Allows to buy tokens in order to pay a project manager (or contractor if shares) according to an approved proposal. Inputs : the index of the proposal and the address of the buyer (default: msg.sender).
+Allows to buy tokens in order to fund the Dao according to an approved proposal. Inputs : the index of the proposal and the address of the buyer (default: msg.sender).
 
 #### Withdraw pending amounts: 
 Allows receiving tokens or refunding after the closing time of the fundings.
