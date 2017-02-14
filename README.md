@@ -76,7 +76,7 @@ Allows selling tokens from the buy orders. Inputs: the amount in token you want 
 ## Contractor Smart Contracts
 ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractor  
   
-Used by the project managers and contractors of the application. One smart contract for each project manager or contractor.  
+Created by a contractor creator smart contract (you can use a verified: 0xf03262DCE825ACd93d0630d3e6aE495B7d907890, ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassContractorCreator) and used by the project managers and contractors of the application. One smart contract for each project manager or contractor.  
   
 Public functions are : 
 
