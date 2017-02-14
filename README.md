@@ -98,7 +98,7 @@ Payments to the contractors are done with ethers and step by step. For each step
 
 - This Dapp is for Ethereum Blockchain (ETH) only and is not foreseen to run on "Ethereum Classic" Blockchain (ETC).
 
-- During the development phase of projects, Pass DAO will not collect and share any revenue from his customers or contractors. On the other side, with the success of the promoted services, the price of shares and tokens (which will be sold to customers when launching a service) should raise.
+- During the development phase of projects, Pass DAO will not collect and share any revenue from his contractors. On the other side, in case of success of the promoted services, the price of shares and tokens (which will be sold to customers when launching a service) should raise.
 
 - The creators of proposals have to pay committee fees. If the proposal is estimated (and not necessarily approved), the creator of the proposal receives shares with an amount equal to the minimum committee fees.
 
