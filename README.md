@@ -21,7 +21,7 @@ Used for the management and display ("DappScan") of the upgrades and projects fr
 ## Committee Room Smart Contract
 ABI: https://github.com/pacifics/Dao/blob/master/ABI/ABI%20PassCommitteeRoom  
   
-Used to submit proposals, vote and execute the decisions taken by the Community of shareholders.  
+Used to submit proposals, vote and execute the decisions made by the Community of shareholders.  
   
 Public functions are :
 
